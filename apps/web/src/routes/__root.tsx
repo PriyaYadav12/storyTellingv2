@@ -18,11 +18,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	head: () => ({
 		meta: [
 			{
-				title: "story-telling-v2",
+				title: "Lalli Fafa - Interactive Storytelling for Kids",
 			},
 			{
 				name: "description",
-				content: "story-telling-v2 is a web application",
+				content: "A magical story-telling platform for children 3+ with interactive adventures",
 			},
 		],
 		links: [
@@ -44,11 +44,11 @@ function RootComponent() {
 			<HeadContent />
 			<ThemeProvider
 				attribute="class"
-				defaultTheme="dark"
+				defaultTheme="light"
 				disableTransitionOnChange
 				storageKey="vite-ui-theme"
 			>
-				<div className="grid grid-rows-[auto_1fr] h-svh">
+				<div className="min-h-screen">
 					<Header />
 					{isFetching ? <Loader /> : <Outlet />}
 				</div>
