@@ -219,7 +219,7 @@ export default function OnboardingForm() {
 				>
 					<div className="aspect-square relative">
 						<img
-							src="/Lalli.jpg"
+							src="/Lalli_2.png"
 							alt="Girl character - Lalli"
 							className="w-full h-full object-cover"
 						/>
@@ -253,7 +253,7 @@ export default function OnboardingForm() {
 				>
 					<div className="aspect-square relative">
 						<img
-							src="/Fafa.jpg"
+							src="/Fafa_1.jpg"
 							alt="Boy character - Fafa"
 							className="w-full h-full object-cover"
 						/>

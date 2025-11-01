@@ -11,7 +11,19 @@
 import type * as auth from "../auth.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
+import type * as migration_flavor_endings from "../migration/flavor_endings.js";
+import type * as migration_flavor_magical_triggers from "../migration/flavor_magical_triggers.js";
+import type * as migration_flavor_obstacles from "../migration/flavor_obstacles.js";
+import type * as migration_flavor_openings from "../migration/flavor_openings.js";
+import type * as migration_flavor_payoffs from "../migration/flavor_payoffs.js";
+import type * as migration_lesson from "../migration/lesson.js";
+import type * as migration_personality from "../migration/personality.js";
+import type * as migration_structure from "../migration/structure.js";
+import type * as migration_theme from "../migration/theme.js";
+import type * as migration_theme_compatibility from "../migration/theme_compatibility.js";
 import type * as privateData from "../privateData.js";
+import type * as stories from "../stories.js";
+import type * as storiesActions from "../storiesActions.js";
 import type * as userProfiles from "../userProfiles.js";
 
 import type {
@@ -32,7 +44,19 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   healthCheck: typeof healthCheck;
   http: typeof http;
+  "migration/flavor_endings": typeof migration_flavor_endings;
+  "migration/flavor_magical_triggers": typeof migration_flavor_magical_triggers;
+  "migration/flavor_obstacles": typeof migration_flavor_obstacles;
+  "migration/flavor_openings": typeof migration_flavor_openings;
+  "migration/flavor_payoffs": typeof migration_flavor_payoffs;
+  "migration/lesson": typeof migration_lesson;
+  "migration/personality": typeof migration_personality;
+  "migration/structure": typeof migration_structure;
+  "migration/theme": typeof migration_theme;
+  "migration/theme_compatibility": typeof migration_theme_compatibility;
   privateData: typeof privateData;
+  stories: typeof stories;
+  storiesActions: typeof storiesActions;
   userProfiles: typeof userProfiles;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

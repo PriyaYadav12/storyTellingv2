@@ -15,4 +15,110 @@ export default defineSchema({
 		createdAt: v.number(),
 		updatedAt: v.number(),
 	}).index("by_user", ["userId"]),
+	stories: defineTable({
+		userId: v.string(),
+		profileId: v.id("user_profiles"),
+		title: v.string(),
+		params: v.object({
+			theme: v.string(),
+			length: v.union(v.literal("short"), v.literal("medium"), v.literal("long")),
+			language: v.optional(v.string()),
+			useFavorites: v.optional(v.boolean()),
+		}),
+		status: v.union(
+			v.literal("queued"),
+			v.literal("generating"),
+			v.literal("ready"),
+			v.literal("error")
+		),
+		error: v.optional(v.string()),
+		content: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+	.index("by_user", ["userId"])
+	.index("by_profile", ["profileId"])
+	.index("by_status", ["status"]),
+	structures: defineTable({
+		// e.g., "Adventure Quest"
+		name: v.string(),
+		// Ordered steps, e.g., ["Problem", "Journey", "Challenges", "Resolution"]
+		pattern: v.array(v.string()),
+		// Optional, e.g., "Action stories"
+		useFor: v.optional(v.string()),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	}).index("by_name", ["name"]),
+
+	personality_traits: defineTable({
+		// Canonical identifier like "CD_01"
+		code: v.string(),
+		// Descriptions for each role in the dynamic
+		fafaRole: v.string(),
+		childRole: v.string(),
+		lalliRole: v.string(),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	}).index("by_code", ["code"]),
+
+	themes:defineTable({
+		name: v.string(),
+		createdAt: v.number(),
+	}).index("by_name", ["name"]),
+	
+	lessons:defineTable({
+		name: v.string(),
+		createdAt: v.number(),
+	}).index("by_name", ["name"]),
+	// Openings
+flavor_openings: defineTable({
+	code: v.string(),            // e.g., "OP_01"
+	description: v.string(),
+	createdAt: v.number(),
+  }).index("by_code", ["code"]),
+  
+  // Magical Triggers
+  flavor_magical_triggers: defineTable({
+	code: v.string(),            // e.g., "MT_01"
+	description: v.string(),
+	keywords: v.array(v.string()),
+	createdAt: v.number(),
+  }).index("by_code", ["code"]),
+  
+  // Obstacles
+  flavor_obstacles: defineTable({
+	code: v.string(),            // e.g., "OB_01"
+	description: v.string(),
+	exampleContext: v.array(v.string()),
+	solutions: v.array(v.string()),
+	createdAt: v.number(),
+  }).index("by_code", ["code"]),
+  
+  // Payoffs
+  flavor_payoffs: defineTable({
+	code: v.string(),            // e.g., "PY_01"
+	description: v.string(),
+	createdAt: v.number(),
+  }).index("by_code", ["code"]),
+  
+  // Endings
+  flavor_endings: defineTable({
+	code: v.string(),            // e.g., "EN_01"
+	description: v.string(),
+	createdAt: v.number(),
+  }).index("by_code", ["code"]),
+  
+  // Compatibility map per theme x category
+  theme_flavor_compatibility: defineTable({
+	themeId: v.id("themes"),
+	category: v.union(
+	  v.literal("OP"), v.literal("MT"), v.literal("OB"),
+	  v.literal("PY"), v.literal("EN")
+	),
+	allowedCodes: v.array(v.string()), // e.g., ["OP_01","OP_04","OP_08"]
+	createdAt: v.number(),
+  }).index("by_theme_category", ["themeId", "category"]),
 });
+
+
+
