@@ -21,10 +21,16 @@ export default defineSchema({
 		title: v.string(),
 		params: v.object({
 			theme: v.string(),
+			lesson: v.optional(v.string()),
 			length: v.union(v.literal("short"), v.literal("medium"), v.literal("long")),
 			language: v.optional(v.string()),
 			useFavorites: v.optional(v.boolean()),
 		}),
+		sceneMetadata: v.optional(v.array(v.object({
+			sceneNumber: v.number(),
+			description: v.string(),
+			filePath: v.string(),
+		}))),
 		status: v.union(
 			v.literal("queued"),
 			v.literal("generating"),
@@ -41,6 +47,7 @@ export default defineSchema({
 	.index("by_status", ["status"]),
 	structures: defineTable({
 		// e.g., "Adventure Quest"
+		code: v.string(),
 		name: v.string(),
 		// Ordered steps, e.g., ["Problem", "Journey", "Challenges", "Resolution"]
 		pattern: v.array(v.string()),
@@ -118,6 +125,23 @@ flavor_openings: defineTable({
 	allowedCodes: v.array(v.string()), // e.g., ["OP_01","OP_04","OP_08"]
 	createdAt: v.number(),
   }).index("by_theme_category", ["themeId", "category"]),
+
+  // Per-user story element usage tracking
+  user_story_element_usage: defineTable({
+	userId: v.string(),
+	lastStructureCode: v.optional(v.string()), // Last used structure code (SQ_01, SQ_02, SQ_03)
+	storyCount: v.number(), // Number of stories generated (resets at 10)
+	usedCodes: v.object({
+		OP: v.array(v.string()),
+		MT: v.array(v.string()),
+		OB: v.array(v.string()),
+		PY: v.array(v.string()),
+		EN: v.array(v.string()),
+		PT: v.array(v.string()),
+	}),
+	createdAt: v.number(),
+	updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
 });
 
 

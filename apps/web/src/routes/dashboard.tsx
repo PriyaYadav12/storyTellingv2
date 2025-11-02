@@ -11,24 +11,27 @@ import {
 } from "convex/react";
 import { useQuery } from "convex/react";
 import { useState } from "react";
-import { BookOpen, Sparkles, Star, Users } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import StoryCreateForm from "@/components/story-create-form";
-import type { Doc } from "@story-telling-v2/backend/convex/_generated/dataModel";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { StoriesList } from "@/components/dashboard/StoriesList";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
+	const navigate = useNavigate();
 	const [mode, setMode] = useState<"signin" | "signup">("signin");
 	const [activeTab, setActiveTab] = useState<"generate" | "view">("generate");
 	const { isAuthenticated } = useConvexAuth();
 	const hasProfile = useQuery(api.userProfiles.hasProfile,isAuthenticated ? {} : "skip");
 	const stories = useQuery(api.stories.list,isAuthenticated ? {} : "skip");
+	const handleStoryGenerated = (storyId: string) => {
+		// Navigate directly to the story page
+		navigate({ to: "/story/$storyId", params: { storyId } });
+	};
 
 	return (
 		<>
@@ -78,7 +81,7 @@ function RouteComponent() {
 
 							<div className="border border-muted-foreground/20 rounded-b-md rounded-tr-md p-4">
 								{activeTab === "generate" ? (
-									<StoryCreateForm onStoryGenerated={() => setActiveTab("view")} />
+									<StoryCreateForm onStoryGenerated={handleStoryGenerated} />
 								) : (
 									<StoriesList stories={stories} />
 								)}

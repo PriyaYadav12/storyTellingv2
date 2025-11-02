@@ -1,11 +1,12 @@
-import React from "react";
 import type { Doc } from "@story-telling-v2/backend/convex/_generated/dataModel";
+import { useNavigate } from "@tanstack/react-router";
 
 type Props = {
 	stories: Doc<"stories">[] | undefined;
 };
 
 export function StoriesList({ stories }: Props) {
+	const navigate = useNavigate();
 	if (stories === undefined) {
 		return (
 			<div className="flex items-center justify-center py-8">
@@ -21,7 +22,7 @@ export function StoriesList({ stories }: Props) {
 	return (
 		<div className="space-y-3">
 			{stories.map((s) => (
-				<div key={s._id} className="p-3 border rounded">
+				<div key={s._id} className="p-3 border rounded" onClick={() => navigate({ to: `/story/${s._id}` })}	>
 					<div className="flex items-center justify-between gap-2">
 						<div className="font-semibold truncate max-w-[65%]">{s.title}</div>
 						<div className="text-xs opacity-70 shrink-0">{s.status}</div>

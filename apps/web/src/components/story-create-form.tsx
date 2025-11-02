@@ -38,13 +38,14 @@ export default function StoryCreateForm({ onStoryGenerated }: Props) {
 			setIsSubmitting(true);
 			const { storyId } = await generateNow({
 				params: {
-					theme: `${theme.trim()}${lesson ? ` | Lesson: ${lesson.trim()}` : ""}`,
+					theme: theme.trim(),
+					lesson: lesson.trim(),
 					length,
 					language,
 					useFavorites,
 				},
 			});
-			toast.success("Story is being generated!");
+			toast.success("Story is generated!");
 			onStoryGenerated?.(storyId as unknown as string);
 			setIsSubmitting(false);
 		} catch (e) {

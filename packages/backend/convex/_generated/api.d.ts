@@ -22,8 +22,11 @@ import type * as migration_structure from "../migration/structure.js";
 import type * as migration_theme from "../migration/theme.js";
 import type * as migration_theme_compatibility from "../migration/theme_compatibility.js";
 import type * as privateData from "../privateData.js";
+import type * as sceneImageGenerator from "../sceneImageGenerator.js";
 import type * as stories from "../stories.js";
 import type * as storiesActions from "../storiesActions.js";
+import type * as storyElementSelector from "../storyElementSelector.js";
+import type * as storyPromptFormatter from "../storyPromptFormatter.js";
 import type * as userProfiles from "../userProfiles.js";
 
 import type {
@@ -55,8 +58,11 @@ declare const fullApi: ApiFromModules<{
   "migration/theme": typeof migration_theme;
   "migration/theme_compatibility": typeof migration_theme_compatibility;
   privateData: typeof privateData;
+  sceneImageGenerator: typeof sceneImageGenerator;
   stories: typeof stories;
   storiesActions: typeof storiesActions;
+  storyElementSelector: typeof storyElementSelector;
+  storyPromptFormatter: typeof storyPromptFormatter;
   userProfiles: typeof userProfiles;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
