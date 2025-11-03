@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { GoogleGenAI, Part } from "@google/genai";
 import { ActionCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { api } from "./_generated/api";
@@ -21,20 +21,25 @@ export interface SceneMetadata {
 const LALLI_FAFA_STORAGE_ID = "kg26dz7f94zyhf1f0nhvbfr1157tmatf" as Id<"_storage">;
 
 /**
- * Loads the reference image as base64 (used for visual consistency)
+ * Loads the reference image as base64 directly from Convex storage
  */
 async function loadReferenceImage(ctx: ActionCtx): Promise<string | undefined> {
   try {
-    const imageUrl = await ctx.storage.getUrl(LALLI_FAFA_STORAGE_ID);
-    if (!imageUrl) throw new Error("Missing reference image URL");
+    const blob = await ctx.storage.get(LALLI_FAFA_STORAGE_ID);
+    if (!blob) throw new Error("Could not read reference image from storage");
 
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+    const arrayBuffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
 
-    const buffer = await response.arrayBuffer();
-    return Buffer.from(buffer).toString("base64");
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+
+    const base64 = btoa(binary);
+    return base64;
   } catch (err) {
-    console.warn("Reference image load failed:", err);
+    console.warn("Failed to load reference image:", err);
     return undefined;
   }
 }
@@ -61,109 +66,168 @@ Also include ${child.name}, a ${child.age}-year-old ${genderLabel}, matching the
 
 Art Style: bright, clean, warm cartoon style, consistent with the reference image.
 Composition: engaging and centered, child-friendly lighting, colorful background.
+Maintain visual consistency with the previous scene image - keep characters looking the same, same art style, same color palette, and smooth visual continuity.
 `;
 }
 
 /**
+ * Loads an image from storage as base64
+ */
+async function loadImageFromStorage(ctx: ActionCtx, storageId: string): Promise<string | undefined> {
+  try {
+    const blob = await ctx.storage.get(storageId as any);
+    if (!blob) return undefined;
+
+    const arrayBuffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+
+    const base64 = btoa(binary);
+    return base64;
+  } catch (err) {
+    console.warn("Failed to load image from storage:", err);
+    return undefined;
+  }
+}
+
+/**
  * Generates one scene image using DALL·E 3
+ * Can accept multiple reference images: the Lalli/Fafa reference and previous scene image
  */
 async function generateSceneImage(
   ctx: ActionCtx,
-  openai: OpenAI,
   scene: SceneMetadata,
   child: ChildInfo,
-  referenceBase64?: string
-): Promise<{ imageUrl?: string; error?: string }> {
+  characterReferenceBase64?: string,
+  previousSceneBase64?: string
+): Promise<{ imageBase64?: string; error?: string }> {
   try {
-    const prompt = createImagePrompt(scene, child);
+    const textPrompt = createImagePrompt(scene, child);
+    console.log("Prompt:", textPrompt);
 
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt,
-      n: 1,
-      size: "1024x1024",
-      ...(referenceBase64
-        ? { image: `data:image/png;base64,${referenceBase64}` }
-        : {}),
+    const promptParts: Part[] = [{ text: textPrompt }];
+    
+    // Add character reference (Lalli & Fafa) if available
+    if (characterReferenceBase64) {
+      promptParts.push({
+        inlineData: {
+          mimeType: "image/png",
+          data: characterReferenceBase64,
+        },
+      });
+    }
+    
+    // Add previous scene image for visual consistency
+    if (previousSceneBase64) {
+      promptParts.push({
+        inlineData: {
+          mimeType: "image/png",
+          data: previousSceneBase64,
+        },
+      });
+    }
+
+    const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
+    if (!ai) throw new Error("Gemini API key not found");
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: promptParts,
     });
 
-    const imageUrl = response.data?.[0]?.url;
-    if (!imageUrl) return { error: "No image URL returned" };
-
-    return { imageUrl };
+    for (const part of response?.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return { imageBase64: part.inlineData.data };
+      }
+    }
+    return { error: "No image data returned" };
   } catch (err: any) {
     return { error: err?.message || "Image generation failed" };
   }
 }
 
 /**
- * Stores an image URL into Convex storage
+ * Stores an image from a base64 string into Convex storage
  */
-async function storeImageInConvex(ctx: ActionCtx, url: string) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Download failed: ${res.statusText}`);
-  const blob = await res.blob();
+async function storeImageFromBase64(ctx: ActionCtx, base64: string) {
+  const binary_string = atob(base64);
+  const len = binary_string.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  const blob = new Blob([bytes.buffer], { type: "image/png" });
   return ctx.storage.store(blob);
 }
 
 /**
- * Generates and stores an image for a single scene
- */
-export async function generateAndStoreSceneImage(
-  ctx: ActionCtx,
-  openai: OpenAI,
-  scene: SceneMetadata,
-  child: ChildInfo
-) {
-  try {
-    const refBase64 = await loadReferenceImage(ctx);
-    const result = await generateSceneImage(ctx, openai, scene, child, refBase64);
-    if (result.error || !result.imageUrl)
-      return { sceneNumber: scene.sceneNumber, success: false, error: result.error };
-
-    const storageId = await storeImageInConvex(ctx, result.imageUrl);
-    await ctx.runMutation(api.stories._updateSceneFilePath, {
-      storyId: scene.filePath as Id<"stories">, // adjust if storyId separate
-      sceneNumber: scene.sceneNumber,
-      filePath: storageId,
-    });
-
-    return { sceneNumber: scene.sceneNumber, success: true };
-  } catch (err: any) {
-    console.error(`Scene ${scene.sceneNumber} failed:`, err);
-    return { sceneNumber: scene.sceneNumber, success: false, error: err.message };
-  }
-}
-
-/**
- * Generates and stores all scene images in parallel
+ * Generates and stores all scene images sequentially
+ * Each scene uses the previous scene's image as reference to maintain visual consistency
  */
 export async function generateAllSceneImages(
   ctx: ActionCtx,
-  openai: OpenAI,
   scenes: SceneMetadata[],
   child: ChildInfo,
   storyId: Id<"stories">
 ) {
   if (!scenes.length) return [];
 
-  const refBase64 = await loadReferenceImage(ctx);
-  const tasks = scenes.map(async (scene) => {
-    const result = await generateSceneImage(ctx, openai, scene, child, refBase64);
-    if (result.error || !result.imageUrl)
-      return { sceneNumber: scene.sceneNumber, success: false, error: result.error };
+  // Sort scenes by sceneNumber to process in order
+  const sortedScenes = [...scenes].sort((a, b) => a.sceneNumber - b.sceneNumber);
+  
+  // Load character reference image (Lalli & Fafa) once
+  const characterRefBase64 = await loadReferenceImage(ctx);
+  
+  let previousSceneStorageId: string | undefined = undefined;
+  const results = [];
 
-    const storageId = await storeImageInConvex(ctx, result.imageUrl);
+  // Process scenes sequentially so each can use the previous scene as reference
+  for (const scene of sortedScenes) {
+    let previousSceneBase64: string | undefined = undefined;
+    
+    // Load previous scene image if available
+    if (previousSceneStorageId) {
+      previousSceneBase64 = await loadImageFromStorage(ctx, previousSceneStorageId);
+    }
+
+    console.log(`Generating scene ${scene.sceneNumber}...`);
+    const result = await generateSceneImage(
+      ctx,
+      scene,
+      child,
+      characterRefBase64,
+      previousSceneBase64
+    );
+
+    if (result.error || !result.imageBase64) {
+      results.push({
+        sceneNumber: scene.sceneNumber,
+        success: false,
+        error: result.error,
+      });
+      continue; // Skip to next scene if this one failed
+    }
+
+    // Store the generated image
+    const storageId = await storeImageFromBase64(ctx, result.imageBase64);
     await ctx.runMutation(api.stories._updateSceneFilePath, {
       storyId,
       sceneNumber: scene.sceneNumber,
       filePath: storageId,
     });
 
-    return { sceneNumber: scene.sceneNumber, success: true };
-  });
+    // Update previous scene reference for next iteration
+    previousSceneStorageId = storageId;
+    
+    results.push({
+      sceneNumber: scene.sceneNumber,
+      success: true,
+    });
+  }
 
-  const results = await Promise.all(tasks);
   const failed = results.filter((r) => !r.success);
   if (failed.length) console.warn("Failed scenes:", failed);
 

@@ -24,6 +24,31 @@ export const get = query({
 	},
 });
 
+export const getSceneImageUrls = query({
+    args: { storyId: v.id("stories") },
+    handler: async (ctx, { storyId }) => {
+        const story = await ctx.db.get(storyId);
+        if (!story?.sceneMetadata || story.sceneMetadata.length === 0) return [];
+
+        const sorted = [...story.sceneMetadata].sort((a, b) => a.sceneNumber - b.sceneNumber);
+        const scenes = await Promise.all(
+            sorted.map(async (scene) => {
+                const url = scene.filePath
+                    ? await ctx.storage.getUrl(scene.filePath as any)
+                    : undefined;
+                return {
+                    sceneNumber: scene.sceneNumber,
+                    description: scene.description,
+                    filePath: scene.filePath,
+                    url,
+                };
+            })
+        );
+
+        return scenes;
+    },
+});
+
 export const _create = mutation({
 	args: {
 		title: v.string(),
@@ -89,28 +114,37 @@ export const _setContent = mutation({
 		// First line is the title
 		const title = lines.length > 0 ? lines[0] : story.title || "Untitled Story";
 		
-		// Find SCENE METADATA separator
-		const metadataStartIndex = lines.findIndex(line => line.toUpperCase() === 'SCENE METADATA');
+		// Find SCENE METADATA separator OR look for Scene 1: pattern
+		const metadataStartIndex = lines.findIndex(line => 
+			line.toUpperCase() === 'SCENE METADATA' || 
+			/^Scene \d+:/i.test(line)
+		);
 		
 		let contentBody: string;
 		let sceneMetadata: any[] | undefined;
 		
 		if (metadataStartIndex !== -1) {
+			// Check if we found "SCENE METADATA" header or went straight to Scene 1:
+			const isMetadataHeader = lines[metadataStartIndex].toUpperCase() === 'SCENE METADATA';
+			
 			// Content is everything between title and metadata
 			contentBody = lines.slice(1, metadataStartIndex).join('\n').trim();
 			
-			// Parse scene metadata
-			const metadataLines = lines.slice(metadataStartIndex + 1);
+			// Parse scene metadata - skip the header line if present
+			const metadataLines = isMetadataHeader 
+				? lines.slice(metadataStartIndex + 1)
+				: lines.slice(metadataStartIndex);
+				
 			sceneMetadata = metadataLines
 				.map(line => {
-					// Parse: "Scene 1: Sunset beach shoreline, friends begin exploring, warm-excited-cozy, peach-gold sky, gentle waves, soft sand texture, salty breeze."
+					// Parse: "Scene 1: [setting], [main action], [mood keywords], [visual details]"
 					const match = line.match(/Scene (\d+):\s*(.+)/);
 					if (!match) return null;
 					
 					const sceneNumber = parseInt(match[1]);
 					const rest = match[2];
 					
-					// Try to extract structured data (location, description, moods, visuals)
+					// Try to extract structured data
 					return {
 						sceneNumber,
 						description: rest || '',

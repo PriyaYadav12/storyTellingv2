@@ -91,22 +91,24 @@ export const generateNow: ReturnType<typeof action> = action({
 			if (!story) throw new Error("Story not found after content set");
 
 			// Generate images for each scene in parallel if sceneMetadata exists
+			console.log("Generating images for story:", story);
 			if (story.sceneMetadata && story.sceneMetadata.length > 0) {
 				const childInfo = {
 					name: name || "",
 					gender,
 					age,
 				};
-
+				console.log("Generating images for story:", story.sceneMetadata);
+				console.log("Child info:", childInfo);
+				console.log("Story ID:", storyId);
 				await generateAllSceneImages(
 					ctx,
-					client,
 					story.sceneMetadata,
 					childInfo,
 					storyId
 				);
 			}
-
+			console.log("Generating images for story completed");
 			return { storyId };
 		} catch (err: any) {
 			await ctx.runMutation(api.stories._markStatus, {
