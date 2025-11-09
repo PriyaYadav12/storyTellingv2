@@ -203,8 +203,8 @@ export default function OnboardingForm() {
 	const renderStep3 = () => (
 		<div className="space-y-6 animate-fade-in">
 			<div className="text-center mb-6">
-				<h2 className="text-3xl font-bold text-primary mb-2">Choose Your Character! 🎭</h2>
-				<p className="text-muted-foreground">Select a character for your child</p>
+				<h2 className="text-3xl font-bold text-primary mb-2">Choose Your Gender! 🎭</h2>
+				<p className="text-muted-foreground">Select a gender for your child</p>
 			</div>
 			
 			<div className="grid grid-cols-2 gap-4 mb-6">

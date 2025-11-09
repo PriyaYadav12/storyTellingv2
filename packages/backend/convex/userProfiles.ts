@@ -1,6 +1,9 @@
 import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
 import { v, GenericId } from "convex/values";
+import { action } from "./_generated/server";
+import { api } from "./_generated/api";
+import { generateChildAvatar } from "./sceneImageGenerator";
 
 export const getProfile = query({
 	args: {},
@@ -109,4 +112,74 @@ export const hasProfile = query({
 			return false;
 		}
 	},
+});
+
+export const generateAndStoreAvatar: ReturnType<typeof action> = action({
+  args: {},
+  handler: async (ctx) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get profile
+    const profile = await ctx.runQuery(api.userProfiles.getProfile, {});
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    // Check if avatar already exists
+    if (profile.childAvatarStorageId) {
+      return { avatarStorageId: profile.childAvatarStorageId, generated: false };
+    }
+
+    // Generate avatar
+    const childInfo = {
+      name: profile.childName || profile.childNickName || "Child",
+      gender: profile.childGender,
+      age: profile.childAge,
+    };
+
+    const result = await generateChildAvatar(ctx, childInfo);
+    
+    if (result.error || !result.avatarStorageId) {
+      throw new Error(result.error || "Avatar generation failed");
+    }
+
+    // Store avatar ID in profile
+    await ctx.runMutation(api.userProfiles._updateAvatarStorageId, {
+      avatarStorageId: result.avatarStorageId,
+    });
+
+    return { avatarStorageId: result.avatarStorageId, generated: true };
+  },
+});
+
+// Internal mutation to update avatar storage ID
+export const _updateAvatarStorageId = mutation({
+  args: {
+    avatarStorageId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    const userId = user._id as unknown as GenericId<"betterAuth:user">;
+
+    const profile = await ctx.db
+      .query("user_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    return await ctx.db.patch(profile._id, {
+      childAvatarStorageId: args.avatarStorageId,
+      updatedAt: Date.now(),
+    });
+  },
 });

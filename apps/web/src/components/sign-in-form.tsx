@@ -126,6 +126,17 @@ export default function SignInForm({
 							</form.Field>
 						</div>
 
+						<div className="flex justify-end -mt-2">
+							<Button
+								type="button"
+								variant="link"
+								onClick={() => navigate({ to: "/forgot-password" })}
+								className="text-purple-600 hover:text-purple-800 px-0"
+							>
+								Forgot password?
+							</Button>
+						</div>
+
 						<form.Subscribe>
 							{(state) => (
 								<Button

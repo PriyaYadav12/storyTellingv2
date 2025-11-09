@@ -5,6 +5,7 @@ import { components } from "./_generated/api";
 import { DataModel } from "./_generated/dataModel";
 import { query } from "./_generated/server";
 import { betterAuth } from "better-auth";
+import { emailOTP } from "better-auth/plugins/email-otp";
 import { v } from "convex/values";
 
 const siteUrl = process.env.SITE_URL!;
@@ -32,7 +33,40 @@ function createAuth(
 				clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
 			}, 
 		},
-		plugins: [crossDomain({ siteUrl }), convex()],
+		plugins: [
+			crossDomain({ siteUrl }),
+			convex(),
+			emailOTP({
+				async sendVerificationOTP({ email, otp, type }) {
+					// Prefer a real email provider when available; fallback to console for development
+					const resendKey = process.env.RESEND_API_KEY;
+					if (resendKey) {
+						try {
+							// Dynamic import to avoid bundling if not configured
+							const { Resend } = await import("resend");
+							const resend = new Resend(resendKey);
+							await resend.emails.send({
+								from: "Lalli Fafa <onboarding@resend.dev>",
+								to: [email],
+								subject: type === "forget-password" ? "Reset your password" : "Your verification code",
+								text:
+									type === "forget-password"
+										? `Use this code to reset your password: ${otp}\nThis code expires in 5 minutes.`
+										: `Your verification code is: ${otp}\nThis code expires in 5 minutes.`,
+							});
+							return;
+						} catch (err) {
+							// If sending fails, log and continue to console output to avoid blocking dev
+							console.error("Failed to send OTP email via Resend:", err);
+						}
+					}
+					// Dev fallback
+					console.log(`[email-otp] (${type}) OTP for ${email}: ${otp}`);
+				},
+				otpLength: 6,
+				expiresIn: 60 * 5,
+			}),
+		],
 	});
 }
 

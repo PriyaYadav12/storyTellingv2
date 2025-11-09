@@ -107,9 +107,9 @@ export default function StoryCreateForm({ onStoryGenerated }: Props) {
 								value={length}
 								onChange={(e) => setLength(e.target.value as any)}
 							>
-								<option value="short">Short (~300w)</option>
-								<option value="medium">Medium (~700w)</option>
-								<option value="long">Long (~1200w)</option>
+								<option value="short">Quick Sparkle (~2mins)</option>
+								<option value="medium">Magical Journey (~3mins)</option>
+								<option value="long">Dreamland Adventure (~5mins)</option>
 							</select>
 						</div>
 						<div className="col-span-2">

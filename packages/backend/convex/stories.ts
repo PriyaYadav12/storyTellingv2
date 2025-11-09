@@ -191,5 +191,26 @@ export const _updateSceneFilePath = mutation({
 		});
 	},
 });
+export const _setNarrationFilePath = mutation({
+	args: { storyId: v.id("stories"), filePath: v.string() },
+	handler: async (ctx, { storyId, filePath }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		return await ctx.db.patch(storyId, {
+			narrationFilePath: filePath,
+			updatedAt: Date.now(),
+		});
+	},
+});
+
+export const getNarrationFileUrl = query({
+	args: { storyId: v.id("stories") },
+	handler: async (ctx, { storyId }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story?.narrationFilePath) return null;
+		const url = await ctx.storage.getUrl(story.narrationFilePath as any);
+		return { url };
+	},
+});
 
 // generateNow action moved to storiesActions.ts to avoid circular type inference

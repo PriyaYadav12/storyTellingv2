@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import { api } from "./_generated/api";
 import { formatStoryPrompt } from "./storyPromptFormatter";
 import { generateAllSceneImages } from "./sceneImageGenerator";
+import { generateMergedNarration } from "./narrationGenerator";
 
 export const generateNow: ReturnType<typeof action> = action({
 	args: {
@@ -19,14 +20,12 @@ export const generateNow: ReturnType<typeof action> = action({
 	handler: async (ctx, { params }) => {
 		const user = await authComponent.getAuthUser(ctx);
 		if (!user) throw new Error("Not authenticated");
-
 		// Get profile to personalize
 		const profile = await ctx.runQuery(api.userProfiles.getProfile, {});
 		if (!profile) throw new Error("Profile not found");
 		
 		// Get selected story elements
 		const allowedFlavorElements = await ctx.runMutation(api.storyElementSelector.selectStoryElements, { themeName: params.theme });
-		console.log(allowedFlavorElements);
 		
 		// Fetch structure info using the structureCode
 		const structure = await ctx.runQuery(api.migration.structure.getByCode, { 
@@ -71,19 +70,28 @@ export const generateNow: ReturnType<typeof action> = action({
 
 			// Use the formatted prompt as the user prompt
 			const userPrompt = formattedPrompt;
-			console.log(userPrompt);
 			const resp = await client.chat.completions.create({
-				model: "gpt-5",
-				temperature: 1,
+				model: "gpt-4o",
+				temperature: 0.7,
 				messages: [
 					{ role: "system", content: system },
 					{ role: "user", content: userPrompt },
 				],
 			});
-			console.log(resp);
 			const content =
-				resp.choices?.[0]?.message?.content?.toString().trim() || "Story generation failed.";
-
+				resp.choices?.[0]?.message?.content?.toString().trim() || "Story generation failed.";			
+			// Validate scene metadata is present
+			if (!content.includes("SCENE METADATA") && !/Scene \d+:/i.test(content)) {
+				console.error("ERROR: Generated story missing scene metadata!");
+				await ctx.runMutation(api.stories._markStatus, {
+					storyId,
+					status: "error",
+					error: "Story generation failed: Missing scene metadata. Please try again.",
+				});
+				throw new Error("Generated story missing required scene metadata");
+			}
+			
+			await ctx.runMutation(api.stories._setContent, { storyId, content });
 			await ctx.runMutation(api.stories._setContent, { storyId, content });
 
 			// Get the updated story with sceneMetadata
@@ -91,24 +99,29 @@ export const generateNow: ReturnType<typeof action> = action({
 			if (!story) throw new Error("Story not found after content set");
 
 			// Generate images for each scene in parallel if sceneMetadata exists
-			console.log("Generating images for story:", story);
 			if (story.sceneMetadata && story.sceneMetadata.length > 0) {
 				const childInfo = {
 					name: name || "",
 					gender,
 					age,
 				};
-				console.log("Generating images for story:", story.sceneMetadata);
-				console.log("Child info:", childInfo);
-				console.log("Story ID:", storyId);
 				await generateAllSceneImages(
 					ctx,
 					story.sceneMetadata,
 					childInfo,
-					storyId
+					storyId,
+					profile.childAvatarStorageId
 				);
+				//   return { ok: true };
 			}
-			console.log("Generating images for story completed");
+			//generate voice narration
+			await generateMergedNarration(ctx, {
+				storyId: storyId,
+				content: story.content || "",
+				childName: (profile.childName || profile.childNickName || "Child").trim(),
+				childGender: profile.childGender,
+			  });
+			  console.log("Voice narration generated for story");
 			return { storyId };
 		} catch (err: any) {
 			await ctx.runMutation(api.stories._markStatus, {
