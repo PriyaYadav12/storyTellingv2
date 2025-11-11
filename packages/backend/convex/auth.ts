@@ -76,6 +76,11 @@ export const getCurrentUser = query({
 	args: {},
 	returns: v.any(),
 	handler: async function (ctx, args) {
-		return authComponent.getAuthUser(ctx);
+		try {
+			return await authComponent.getAuthUser(ctx);
+		} catch {
+			// Return null instead of throwing to avoid noisy unauthenticated errors
+			return null;
+		}
 	},
 });

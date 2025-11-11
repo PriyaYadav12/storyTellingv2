@@ -1,20 +1,12 @@
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-
-const COLORS = [
-	"Red", "Blue", "Green", "Yellow", "Purple", "Pink", "Orange", "Black", "White", "Brown"
-];
-
-const ANIMALS = [
-	"Dog", "Cat", "Elephant", "Lion", "Tiger", "Bear", "Rabbit", "Bird", "Fish", "Horse",
-	"Cow", "Pig", "Sheep", "Duck", "Butterfly", "Dolphin", "Whale", "Penguin", "Monkey", "Zebra"
-];
+import { COLORS, ANIMALS } from "@/lib/constants";
 
 export default function OnboardingForm() {
 	const [currentStep, setCurrentStep] = useState(1);
@@ -27,8 +19,13 @@ export default function OnboardingForm() {
 		favoriteColor: "",
 		favoriteAnimal: "",
 	});
+	const [childPhoto, setChildPhoto] = useState<File | null>(null);
+	const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
 	const createProfile = useMutation(api.userProfiles.createProfile);
+	const generateUploadUrl = useMutation(api.userProfiles.generateProfilePictureUploadUrl);
+	const setProfilePicture = useMutation(api.userProfiles.setProfilePicture);
+	const generateAndStoreAvatar = useAction(api.userProfiles.generateAndStoreAvatar);
 	const navigate = useNavigate();
 
 	const totalSteps = 4;
@@ -67,7 +64,37 @@ export default function OnboardingForm() {
 				favoriteColor: formData.favoriteColor,
 				favoriteAnimal: formData.favoriteAnimal,
 			});
-			
+
+			// Optional: upload child's photo to storage and store storageId in profile
+			if (childPhoto) {
+				try {
+					setIsUploadingPhoto(true);
+					const uploadUrl = await generateUploadUrl({});
+					const res = await fetch(uploadUrl, {
+						method: "POST",
+						headers: { "Content-Type": childPhoto.type || "application/octet-stream" },
+						body: childPhoto,
+					});
+					if (!res.ok) {
+						throw new Error("Upload failed");
+					}
+					const json = (await res.json()) as { storageId?: string };
+					if (json?.storageId) {
+						await setProfilePicture({ storageId: json.storageId });
+						// Trigger avatar generation using the uploaded photo as reference
+						try {
+							await generateAndStoreAvatar({});
+						} catch {
+							// Non-blocking: avatar can be generated later
+						}
+					}
+				} catch (_err) {
+					toast.error("Photo upload failed. You can add it later in settings.");
+				} finally {
+					setIsUploadingPhoto(false);
+				}
+			}
+
 			toast.success("Profile created successfully! Welcome to Lalli Fafa!");
 			
 			navigate({
@@ -306,6 +333,27 @@ export default function OnboardingForm() {
 			</div>
 
 			<div>
+				<label htmlFor="childPhoto" className="block text-sm font-medium mb-2">
+					Child's Photo (Optional)
+				</label>
+				<input
+					id="childPhoto"
+					type="file"
+					accept="image/*"
+					onChange={(e) => {
+						const file = e.target.files?.[0] ?? null;
+						setChildPhoto(file ?? null);
+					}}
+					className="w-full p-4 border rounded-lg text-lg transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white text-primary border-primary"
+				/>
+				{childPhoto && (
+					<p className="text-sm text-muted-foreground mt-2">
+						Selected: {childPhoto.name} {isUploadingPhoto ? "(Uploading...)" : ""}
+					</p>
+				)}
+			</div>
+
+			<div>
 				<label htmlFor="favoriteColor" className="block text-sm font-medium mb-2">
 					Favorite Color
 				</label>
@@ -359,8 +407,9 @@ export default function OnboardingForm() {
 					type="submit"
 					className="flex-1 py-6 text-lg font-semibold bg-primary hover:bg-primary/90"
 					size="lg"
+					disabled={isUploadingPhoto}
 				>
-					Create Profile ✨
+					{isUploadingPhoto ? "Finishing up..." : "Create Profile ✨"}
 				</Button>
 			</div>
 		</form>

@@ -10,7 +10,7 @@ export const getProfile = query({
 	handler: async (ctx) => {
 		const user = await authComponent.getAuthUser(ctx);
 		if (!user) return null;
-			const userId = user._id as unknown as GenericId<"betterAuth:user">;
+		const userId = user._id as unknown as GenericId<"betterAuth:user">;
 		if (!userId) return null;
 		console.log(userId);
 		return await ctx.db
@@ -98,14 +98,14 @@ export const hasProfile = query({
 		try {
 			const user = await authComponent.getAuthUser(ctx);
 			if (!user) return false;
-			
+
 			const userId = user._id as unknown as GenericId<"betterAuth:user">;
-			
+
 			const profile = await ctx.db
 				.query("user_profiles")
 				.withIndex("by_user", (q) => q.eq("userId", userId))
 				.first();
-			
+
 			return !!profile;
 		} catch (error) {
 			// If unauthenticated, return false instead of throwing
@@ -140,7 +140,12 @@ export const generateAndStoreAvatar: ReturnType<typeof action> = action({
       age: profile.childAge,
     };
 
-    const result = await generateChildAvatar(ctx, childInfo);
+    const result = await generateChildAvatar(
+      ctx,
+      childInfo,
+      // Use the uploaded child profile picture as a reference if available
+      profile.childProfilePicture
+    );
     
     if (result.error || !result.avatarStorageId) {
       throw new Error(result.error || "Avatar generation failed");
@@ -182,4 +187,63 @@ export const _updateAvatarStorageId = mutation({
       updatedAt: Date.now(),
     });
   },
+});
+
+export const generateProfilePictureUploadUrl = mutation({
+	args: {},
+	handler: async (ctx) => {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) {
+			throw new Error("Not authenticated");
+		}
+		return await ctx.storage.generateUploadUrl();
+	},
+});
+
+export const setProfilePicture = mutation({
+	args: {
+		storageId: v.string(),
+	},
+	handler: async (ctx, { storageId }) => {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) {
+			throw new Error("Not authenticated");
+		}
+
+		const userId = user._id as unknown as GenericId<"betterAuth:user">;
+		const profile = await ctx.db
+			.query("user_profiles")
+			.withIndex("by_user", (q) => q.eq("userId", userId))
+			.first();
+		if (!profile) {
+			throw new Error("Profile not found");
+		}
+
+		return await ctx.db.patch(profile._id, {
+			childProfilePicture: storageId,
+			updatedAt: Date.now(),
+		});
+	},
+});
+
+export const getProfilePhotoUrl = query({
+	args: {},
+	handler: async (ctx) => {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) {
+			return null;
+		}
+
+		const userId = user._id as unknown as GenericId<"betterAuth:user">;
+		const profile = await ctx.db
+			.query("user_profiles")
+			.withIndex("by_user", (q) => q.eq("userId", userId))
+			.first();
+
+		if (!profile?.childProfilePicture) {
+			return null;
+		}
+
+		return await ctx.storage.getUrl(profile.childProfilePicture);
+	},
 });

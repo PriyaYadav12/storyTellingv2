@@ -41,19 +41,61 @@ function getGeminiClient(): GoogleGenAI {
   return new GoogleGenAI({ apiKey });
 }
 
-function assemblePromptParts(textPrompt: string, base64Images: Array<string | undefined>): Part[] {
-  const promptParts: Part[] = [{ text: textPrompt }];
-  for (const img of base64Images) {
-    if (!img) continue;
-    promptParts.push({
+function assemblePromptPartsWithLabels({
+  textPrompt,
+  characterRefBase64,
+  childAvatarBase64,
+  previousSceneBase64,
+}: {
+  textPrompt: string;
+  characterRefBase64?: string;
+  childAvatarBase64?: string;
+  previousSceneBase64?: string;
+}): Part[] {
+  const parts: Part[] = [];
+
+  if (characterRefBase64) {
+    parts.push({
+      text: "Reference image of Lalli and Fafa (keep them consistent):",
+    });
+    parts.push({
       inlineData: {
-        mimeType: PNG_MIME_TYPE,
-        data: img,
+        mimeType: "image/png",
+        data: characterRefBase64,
       },
     });
   }
-  return promptParts;
+
+  if (childAvatarBase64) {
+    parts.push({
+      text: "Reference image for the child character’s appearance:",
+    });
+    parts.push({
+      inlineData: {
+        mimeType: "image/png",
+        data: childAvatarBase64,
+      },
+    });
+  }
+
+  if (previousSceneBase64) {
+    parts.push({
+      text: "Previous scene for visual continuity:",
+    });
+    parts.push({
+      inlineData: {
+        mimeType: "image/png",
+        data: previousSceneBase64,
+      },
+    });
+  }
+
+  // Finally add main text prompt
+  parts.push({ text: textPrompt });
+
+  return parts;
 }
+
 
 /**
  * Loads the reference image as base64 directly from Convex storage
@@ -75,7 +117,7 @@ async function loadReferenceImage(ctx: ActionCtx): Promise<string | undefined> {
  */
 async function loadImageFromStorage(ctx: ActionCtx, storageId: string): Promise<string | undefined> {
   try {
-    const blob = await ctx.storage.get(storageId);
+    const blob = await ctx.storage.get(storageId as Id<"_storage">);
     if (!blob) throw new Error("Could not read image from storage");
 
     return await blobToBase64(blob);
@@ -88,7 +130,12 @@ async function loadImageFromStorage(ctx: ActionCtx, storageId: string): Promise<
 /**
  * Creates an image generation prompt for a story scene.
  */
-function createImagePrompt(scene: SceneMetadata, child: ChildInfo): string {
+function createImagePrompt(
+  scene: SceneMetadata,
+  child: ChildInfo,
+  hasChildAvatar: boolean,
+  hasPreviousScene: boolean
+): string {
   const genderLabel =
     child.gender === "male"
       ? "boy"
@@ -96,18 +143,27 @@ function createImagePrompt(scene: SceneMetadata, child: ChildInfo): string {
       ? "girl"
       : "child";
 
+  // Build prompt parts dynamically
+  const childPrompt = hasChildAvatar
+    ? `Use the 'Reference image for the child character’s appearance' to draw ${child.name}.`
+    : `Draw ${child.name}, a ${child.age}-year-old ${genderLabel}.`;
+
+  const continuityPrompt = hasPreviousScene
+    ? "Maintain visual consistency with the 'Previous scene for visual continuity' image (same art style, color palette, and character appearances)."
+    : "";
+
   return `
 Create a vibrant children's storybook illustration for this scene:
 
 SCENE DESCRIPTION:
 ${scene.description}
 
-Include the characters Lalli and Fafa exactly as they appear in the reference image.
-Also include ${child.name}, a ${child.age}-year-old ${genderLabel}. If a child character reference image is provided, use it to maintain consistent appearance of ${child.name}.
+Include the characters Lalli and Fafa exactly as they appear in the 'Reference image of Lalli and Fafa'.
+Also include the child character. ${childPrompt}
 
-Art Style: bright, clean, warm cartoon style, consistent with the reference images.
+Art Style: bright, clean, warm cartoon style, consistent with all reference images.
 Composition: engaging and centered, child-friendly lighting, colorful background.
-Maintain visual consistency with the previous scene image - keep characters looking the same, same art style, same color palette, and smooth visual continuity.
+${continuityPrompt}
 `;
 }
 /**
@@ -123,14 +179,13 @@ async function generateSceneImage(
   childAvatarBase64?: string // Add this parameter
 ): Promise<{ imageBase64?: string; error?: string }> {
   try {
-    const textPrompt = createImagePrompt(scene, child);
+    const textPrompt = createImagePrompt(scene, child, !!childAvatarBase64, !!previousSceneBase64);
     console.log("Prompt:", textPrompt);
 
-    const promptParts = assemblePromptParts(textPrompt, [
-      characterReferenceBase64,
-      childAvatarBase64,
-      previousSceneBase64,
-    ]);
+    const promptParts = assemblePromptPartsWithLabels({textPrompt,
+      characterRefBase64: characterReferenceBase64,
+      childAvatarBase64: childAvatarBase64,
+      previousSceneBase64: previousSceneBase64});
 
     const ai = getGeminiClient();
     const response = await ai.models.generateContent({
@@ -185,7 +240,7 @@ CHARACTER DETAILS:
 Art Style: bright, clean, warm cartoon style, consistent with children's storybook illustrations.
 Composition: centered character portrait, friendly expression, colorful background.
 The character should be recognizable and suitable for a ${child.age}-year-old ${genderLabel}.
-Make the character look friendly, approachable, and age-appropriate.
+Make the character look friendly, approachable, and age-appropriate, Strictly use child reference image if provided.
 `;
 }
 
@@ -194,16 +249,28 @@ Make the character look friendly, approachable, and age-appropriate.
  */
 export async function generateChildAvatar(
   ctx: ActionCtx,
-  child: ChildInfo
+  child: ChildInfo,
+  referenceStorageId?: string
 ): Promise<{ avatarStorageId?: string; error?: string }> {
   try {
     const textPrompt = createChildAvatarPrompt(child);
     console.log("Avatar Prompt:", textPrompt);
 
+    // If we have a reference image (child's uploaded photo), include it
+    const referenceBase64 = referenceStorageId
+      ? await loadImageFromStorage(ctx, referenceStorageId)
+      : undefined;
+
+    const promptParts = assemblePromptPartsWithLabels({textPrompt,
+      characterRefBase64: undefined,
+      childAvatarBase64: referenceBase64,
+      previousSceneBase64: undefined});  
+    console.log("Prompt Parts:", promptParts);
+
     const ai = getGeminiClient();
     const response = await ai.models.generateContent({
       model: GEMINI_IMAGE_MODEL,
-      contents: [{ text: textPrompt }],
+      contents: promptParts,
     });
 
     for (const part of response?.candidates?.[0]?.content?.parts || []) {
@@ -244,7 +311,7 @@ export async function generateAllSceneImages(
   const childAvatarBase64 = childAvatarStorageId 
     ? await loadImageFromStorage(ctx, childAvatarStorageId)
     : undefined;
-  
+  console.log("Child Avatar Base64:", childAvatarBase64);
   const results = [];
 
   // STEP 1: Generate first scene
@@ -300,7 +367,7 @@ export async function generateAllSceneImages(
         child,
         characterRefBase64,
         firstSceneBase64,
-        childAvatarBase64 // Pass child avatar
+        childAvatarBase64 ? childAvatarBase64 : undefined // Pass child avatar
       );
 
       if (result.error || !result.imageBase64) {

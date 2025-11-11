@@ -71,7 +71,7 @@ export const generateNow: ReturnType<typeof action> = action({
 			// Use the formatted prompt as the user prompt
 			const userPrompt = formattedPrompt;
 			const resp = await client.chat.completions.create({
-				model: "gpt-4o",
+				model: "gpt-4o-mini",
 				temperature: 0.7,
 				messages: [
 					{ role: "system", content: system },
@@ -92,7 +92,6 @@ export const generateNow: ReturnType<typeof action> = action({
 			}
 			
 			await ctx.runMutation(api.stories._setContent, { storyId, content });
-			await ctx.runMutation(api.stories._setContent, { storyId, content });
 
 			// Get the updated story with sceneMetadata
 			const story = await ctx.runQuery(api.stories.get, { storyId });
@@ -109,8 +108,8 @@ export const generateNow: ReturnType<typeof action> = action({
 					ctx,
 					story.sceneMetadata,
 					childInfo,
-					storyId,
-					profile.childAvatarStorageId
+					storyId
+					//profile.childAvatarStorageId
 				);
 				//   return { ok: true };
 			}
@@ -120,6 +119,7 @@ export const generateNow: ReturnType<typeof action> = action({
 				content: story.content || "",
 				childName: (profile.childName || profile.childNickName || "Child").trim(),
 				childGender: profile.childGender,
+				language: params.language || "english",
 			  });
 			  console.log("Voice narration generated for story");
 			return { storyId };

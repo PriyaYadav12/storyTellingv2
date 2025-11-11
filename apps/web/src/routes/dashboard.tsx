@@ -87,11 +87,6 @@ function RouteComponent() {
 								)}
 							</div>
 						</div>
-
-						{/* User Menu */}
-						<div className="flex justify-end">
-							<UserMenu />
-						</div>
 					</div>
 				)}
 			</Authenticated>

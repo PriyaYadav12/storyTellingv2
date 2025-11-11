@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoryStoryIdRouteImport } from './routes/story.$storyId'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/story/$storyId': typeof StoryStoryIdRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/story/$storyId': typeof StoryStoryIdRoute
 }
 export interface FileRoutesById {
@@ -61,6 +69,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/story/$storyId': typeof StoryStoryIdRoute
 }
 export interface FileRouteTypes {
@@ -70,6 +79,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot-password'
     | '/onboarding'
+    | '/profile'
     | '/story/$storyId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -77,6 +87,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot-password'
     | '/onboarding'
+    | '/profile'
     | '/story/$storyId'
   id:
     | '__root__'
@@ -84,6 +95,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/forgot-password'
     | '/onboarding'
+    | '/profile'
     | '/story/$storyId'
   fileRoutesById: FileRoutesById
 }
@@ -92,11 +104,19 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   OnboardingRoute: typeof OnboardingRoute
+  ProfileRoute: typeof ProfileRoute
   StoryStoryIdRoute: typeof StoryStoryIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -140,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   OnboardingRoute: OnboardingRoute,
+  ProfileRoute: ProfileRoute,
   StoryStoryIdRoute: StoryStoryIdRoute,
 }
 export const routeTree = rootRouteImport

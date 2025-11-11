@@ -6,21 +6,21 @@ import { Id } from "./_generated/dataModel";
 
 type Gender = "male" | "female" | "other";
 
-function resolveChildVoice(gender: Gender) {
-  if (gender === "male") return VOICE_MAP.BoyChild;
-  if (gender === "female") return VOICE_MAP.GirlChild;
-  return VOICE_MAP.GirlChild;
+function resolveChildVoice(gender: Gender, language: string) {
+  if (gender === "male") return language === "Hindi" ? VOICE_MAP.HindiBoyChild : VOICE_MAP.BoyChild;
+  if (gender === "female") return language === "Hindi" ? VOICE_MAP.HindiGirlChild : VOICE_MAP.GirlChild;
+  return language === "Hindi" ? VOICE_MAP.HindiGirlChild : VOICE_MAP.GirlChild;
 }
 
-function pickVoiceForSpeaker(speaker: string, childName: string, gender: Gender): string {
+function pickVoiceForSpeaker(speaker: string, childName: string, gender: Gender, language: string): string {
   const s = speaker.trim().toLowerCase();
-  if (s === "narrator") return VOICE_MAP.Narrator;
-  if (s === "lalli") return VOICE_MAP.Lalli;
-  if (s === "fafa") return VOICE_MAP.Fafa;
+  if (s === "narrator") return language === "Hindi" ? VOICE_MAP.HindiNarrator : VOICE_MAP.Narrator;
+  if (s === "lalli") return language === "Hindi" ? VOICE_MAP.HindiLalli : VOICE_MAP.Lalli;
+  if (s === "fafa") return language === "Hindi" ? VOICE_MAP.HindiFafa : VOICE_MAP.Fafa;
   if (s === "child" || s === "girl child" || s === "boy child" || s === childName.trim().toLowerCase()) {
-    return resolveChildVoice(gender);
+    resolveChildVoice(gender, language);
   }
-  return VOICE_MAP.Narrator;
+  return language === "Hindi" ? VOICE_MAP.HindiNarrator : VOICE_MAP.Narrator;
 }
 
 function parseStoryToSpeakerLines(content: string, childName: string) {
@@ -118,17 +118,18 @@ export async function generateMergedNarration(
     content: string;
     childName: string;
     childGender: Gender;
+    language: string;
   }
 ) {
   console.log("Generating voice narration for story");
-  const { storyId, content, childName, childGender } = args;
+  const { storyId, content, childName, childGender, language } = args;
 
   const lines = parseStoryToSpeakerLines(content, childName);
   console.log("Parsed Lines:", lines);
 
   // Limit concurrency to 3 TTS calls at a time
   const results = await mapWithConcurrencyLimit(lines, 1, async (l) => {
-    const voiceId = pickVoiceForSpeaker(l.speaker, childName, childGender);
+    const voiceId = pickVoiceForSpeaker(l.speaker, childName, childGender, language);
     const ab = await ttsArrayBuffer(voiceId, l.text);
     return { order: l.order, ab };
   });
