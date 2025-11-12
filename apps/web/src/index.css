@@ -131,5 +131,29 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 1.25rem;
+  }
+
+  p {
+    margin-bottom: 0.9375rem;
+  }
+}
+
+/**
+ * Using the elevate system.
+ * Automatic contrast adjustment.
+ */
+@layer utilities {
+  /* Hover elevate effects */
+  .hover-elevate {
+    @apply transition-all duration-300 hover:shadow-lg;
+  }
+
+  .hover-elevate-2 {
+    @apply transition-all duration-300 hover:shadow-xl;
   }
 }

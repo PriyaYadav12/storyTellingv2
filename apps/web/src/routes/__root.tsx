@@ -7,6 +7,7 @@ import {
 	Outlet,
 	createRootRouteWithContext,
 	useRouterState,
+	useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import "../index.css";
@@ -38,6 +39,10 @@ function RootComponent() {
 	const isFetching = useRouterState({
 		select: (s) => s.isLoading,
 	});
+	const location = useLocation();
+	
+	// Hide header on landing page
+	const showHeader = location.pathname !== "/";
 
 	return (
 		<>
@@ -49,7 +54,7 @@ function RootComponent() {
 				storageKey="vite-ui-theme"
 			>
 				<div className="min-h-screen">
-					<Header />
+					{showHeader && <Header />}
 					{isFetching ? <Loader /> : <Outlet />}
 				</div>
 				<Toaster richColors />
