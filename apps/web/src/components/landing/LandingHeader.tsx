@@ -77,7 +77,7 @@ export function LandingHeader({ onGetStarted }: LandingHeaderProps) {
         {/* Logo */}
         <div className="flex items-center gap-2 md:gap-3 cursor-pointer hover-elevate rounded-lg p-2">
           <img
-            src="/logo.jpg"
+            src="/logoNoBg.png"
             alt="LalliFafa"
             className="w-10 h-10 md:w-12 md:h-12 object-contain rounded-full"
           />
