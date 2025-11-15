@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
+import { useConvexAuth } from "convex/react";
 import { ModeToggle } from "./mode-toggle";
 import UserMenu from "./user-menu";
 
 export default function Header() {
+	const { isAuthenticated } = useConvexAuth();
+
 	return (
 		<div>
 			<div className="flex flex-row items-center justify-between px-2 py-1">
@@ -15,7 +18,7 @@ export default function Header() {
 				</Link>
 				<div className="flex items-center gap-2">
 					<ModeToggle />
-					<UserMenu />
+					{isAuthenticated && <UserMenu />}
 				</div>
 			</div>
 			<hr />

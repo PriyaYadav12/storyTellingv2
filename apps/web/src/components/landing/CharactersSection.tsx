@@ -14,7 +14,6 @@ const characters = [
     gradientTo: "#C77DFF",
     borderColor: "pink-500",
     buttonBg: "#C77DFF",
-    buttonText: "💜 Lalli's Stories",
     adventures: [
       { emoji: "🌈", name: "Rainbow Valley" },
       { emoji: "🎨", name: "Art Studio" },
@@ -33,7 +32,6 @@ const characters = [
     borderColor: "blue-500",
     buttonBg: "#A8D8FF",
     buttonColor: "#2D3748",
-    buttonText: "💙 Fafa's Stories",
     adventures: [
       { emoji: "🔧", name: "Gadget Workshop" },
       { emoji: "🚀", name: "Space Station" },
@@ -96,13 +94,6 @@ export function CharactersSection() {
                       ))}
                     </div>
                   </div>
-                  <Button 
-                    size="lg" 
-                    className="w-full group-hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-[30px]"
-                    style={{ backgroundColor: character.buttonBg, color: character.buttonColor }}
-                  >
-                    {character.buttonText}
-                  </Button>
                 </div>
               </div>
             </Card>

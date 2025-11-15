@@ -124,21 +124,6 @@ export default function Hero({ onGetStarted, isAuthenticated }: HeroProps) {
                   </div>
                 </div>
               </div>
-
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="text-center space-y-2">
-                  <Button
-                    size="icon"
-                    className="w-20 h-20 rounded-[30px] bg-[#C77DFF] hover:bg-[#C77DFF] hover:scale-110 transition-all duration-300 shadow-[0_4px_20px_rgba(199,125,255,0.4)] hover:shadow-[0_0_20px_rgba(199,125,255,0.6)] mx-auto"
-                    aria-label="Meet Lalli and Fafa - Play introduction video"
-                  >
-                    <Play className="w-8 h-8 text-white fill-white ml-1" />
-                  </Button>
-                  <div className="text-xs md:text-sm font-bold text-foreground bg-white/90 dark:bg-background/90 backdrop-blur-sm px-4 py-2 rounded-[30px] border border-border/50 shadow-lg">
-                    Meet Lalli & Fafa
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
