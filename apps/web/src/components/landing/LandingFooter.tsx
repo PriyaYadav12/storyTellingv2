@@ -61,7 +61,9 @@ export function LandingFooter() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 hover:text-primary transition-colors"
               >
-                <span>📷</span>
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                <img width="30" height="30" src="https://img.icons8.com/fluency/48/instagram-new.png" alt="instagram-new"/>
+                </div>
                 <span>Instagram</span>
               </a>
               <p className="text-sm text-muted-foreground italic flex items-center gap-2">

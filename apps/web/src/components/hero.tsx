@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles, Globe, Shield, Heart, TrendingUp, Play, Star } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface HeroProps {
   onGetStarted?: () => void;
@@ -7,6 +8,15 @@ interface HeroProps {
 }
 
 export default function Hero({ onGetStarted, isAuthenticated }: HeroProps) {
+  const [lalliOnTop, setLalliOnTop] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLalliOnTop(prev => !prev);
+    }, 3000); // Switch every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
   return (
     <section className="relative min-h-[90vh] md:min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#FFF8F0] via-[#FFE5D9] to-[#F5F3FF] dark:from-purple-950/20 dark:via-pink-950/20 dark:to-lavender-950/20"></div>
@@ -93,32 +103,52 @@ export default function Hero({ onGetStarted, isAuthenticated }: HeroProps) {
             <div className="absolute inset-0 bg-gradient-to-br from-[#FFEB99]/30 via-[#FFE5D9]/20 to-[#FFB6D9]/30 rounded-full blur-3xl"></div>
             
             <div className="relative w-full h-full flex items-center justify-center group/hero">
-              <div className="absolute left-[10%] md:left-0 top-1/2 -translate-y-1/2 z-20 transition-all duration-700 group-hover/hero:translate-x-8">
+              <div 
+                className={`absolute left-[10%] md:left-0 top-1/2 -translate-y-1/2 transition-all duration-1000 group-hover/hero:translate-x-8 ${
+                  lalliOnTop ? 'z-30 scale-100' : 'z-10 scale-95'
+                }`}
+              >
                 <div className="relative cursor-pointer">
-                  <div className="absolute -inset-4 bg-gradient-to-br from-[#FFEB99]/40 to-[#FFB5A7]/40 rounded-full blur-2xl transition-all duration-500"></div>
+                  <div className={`absolute -inset-4 bg-gradient-to-br from-[#FFEB99]/40 to-[#FFB5A7]/40 rounded-full blur-2xl transition-all duration-1000 ${
+                    lalliOnTop ? 'opacity-100' : 'opacity-50'
+                  }`}></div>
                   <img 
                     src="/Lalli_2.png" 
                     alt="Lalli - A caring 6-year-old girl character" 
-                    className="relative w-48 md:w-64 h-auto object-contain drop-shadow-2xl transition-transform duration-700 group-hover/hero:scale-105"
+                    className={`relative w-48 md:w-64 h-auto object-contain drop-shadow-2xl transition-all duration-1000 group-hover/hero:scale-105 ${
+                      lalliOnTop ? 'brightness-100' : 'brightness-75'
+                    }`}
                     style={{mixBlendMode: 'multiply'}}
                   />
-                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-background/90 backdrop-blur-sm px-4 py-1.5 rounded-[30px] text-xs md:text-sm font-bold shadow-lg border border-border/50">
+                  <div className={`absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-background/90 backdrop-blur-sm px-4 py-1.5 rounded-[30px] text-xs md:text-sm font-bold shadow-lg border border-border/50 transition-all duration-1000 ${
+                    lalliOnTop ? 'opacity-100' : 'opacity-60'
+                  }`}>
                     <Star className="w-3 h-3 inline mr-1 text-yellow-500 fill-yellow-500" />
                     Lalli, 6
                   </div>
                 </div>
               </div>
               
-              <div className="absolute right-[10%] md:right-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-700 group-hover/hero:-translate-x-8">
+              <div 
+                className={`absolute right-[10%] md:right-0 top-1/2 -translate-y-1/2 transition-all duration-1000 group-hover/hero:-translate-x-8 ${
+                  !lalliOnTop ? 'z-30 scale-100' : 'z-10 scale-95'
+                }`}
+              >
                 <div className="relative cursor-pointer">
-                  <div className="absolute -inset-4 bg-gradient-to-br from-[#A8D8FF]/40 to-[#B8F3D1]/40 rounded-full blur-2xl transition-all duration-500"></div>
+                  <div className={`absolute -inset-4 bg-gradient-to-br from-[#A8D8FF]/40 to-[#B8F3D1]/40 rounded-full blur-2xl transition-all duration-1000 ${
+                    !lalliOnTop ? 'opacity-100' : 'opacity-50'
+                  }`}></div>
                   <img 
                     src="/Fafa_1.jpg" 
                     alt="Fafa - A playful 3-year-old boy character" 
-                    className="relative w-40 md:w-56 h-auto object-contain drop-shadow-2xl transition-transform duration-700 group-hover/hero:scale-105"
+                    className={`relative w-40 md:w-56 h-auto object-contain drop-shadow-2xl transition-all duration-1000 group-hover/hero:scale-105 ${
+                      !lalliOnTop ? 'brightness-100' : 'brightness-75'
+                    }`}
                     style={{mixBlendMode: 'multiply'}}
                   />
-                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-background/90 backdrop-blur-sm px-4 py-1.5 rounded-[30px] text-xs md:text-sm font-bold shadow-lg border border-border/50">
+                  <div className={`absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-background/90 backdrop-blur-sm px-4 py-1.5 rounded-[30px] text-xs md:text-sm font-bold shadow-lg border border-border/50 transition-all duration-1000 ${
+                    !lalliOnTop ? 'opacity-100' : 'opacity-60'
+                  }`}>
                     <Heart className="w-3 h-3 inline mr-1 text-red-500 fill-red-500" />
                     Fafa, 3
                   </div>

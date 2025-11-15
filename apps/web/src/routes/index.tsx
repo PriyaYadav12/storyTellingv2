@@ -6,6 +6,7 @@ import Hero from "@/components/hero";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { CharactersSection } from "@/components/landing/CharactersSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import { ShopSection } from "@/components/landing/ShopSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { CTASection } from "@/components/landing/CTASection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
@@ -46,13 +47,14 @@ function HomeComponent() {
 				<div className="min-h-screen bg-background">
 					<LandingHeader onGetStarted={handleGetStarted} />
 					
-					<main>
-						<Hero onGetStarted={handleGetStarted} isAuthenticated={false} />
-						<CharactersSection />
-						<FeaturesSection />
-						<TestimonialsSection />
-						<CTASection onGetStarted={handleGetStarted} />
-					</main>
+				<main>
+					<Hero onGetStarted={handleGetStarted} isAuthenticated={false} />
+					<CharactersSection />
+					<FeaturesSection />
+					<ShopSection />
+					<TestimonialsSection />
+					<CTASection onGetStarted={handleGetStarted} />
+				</main>
 
 					<LandingFooter />
 				</div>
