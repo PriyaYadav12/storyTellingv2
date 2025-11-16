@@ -91,11 +91,7 @@ function RouteComponent() {
 				)}
 			</Authenticated>
 			<Unauthenticated>
-				{mode === "signin" ? (
-					<SignInForm onSwitchToSignUp={() => setMode("signup")} />
-				) : (
-					<SignUpForm onSwitchToSignIn={() => setMode("signin")} />
-				)}
+				<SignUpForm onSwitchToSignIn={() => setMode("signin")} />
 			</Unauthenticated>
 			{/* Auth loading handled above to prevent false unauthenticated redirects */}
 		</>

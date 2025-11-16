@@ -28,6 +28,7 @@
     "zod": "^4.0.2",
     "convex": "^1.27.0",
     "@story-telling-v2/backend": "*",
+    "@story-telling-v2/shared": "*",
     "better-auth": "1.3.27",
     "@convex-dev/better-auth": "^0.9.1"
   },

@@ -13,7 +13,8 @@
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
     "dev:server": "turbo -F @story-telling-v2/backend dev",
-    "dev:setup": "turbo -F @story-telling-v2/backend dev:setup"
+    "dev:setup": "turbo -F @story-telling-v2/backend dev:setup",
+    "dev:admin": "turbo -F admin dev"
   },
   "dependencies": {},
   "devDependencies": {

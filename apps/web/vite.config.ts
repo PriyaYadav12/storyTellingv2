@@ -9,6 +9,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
+			"@story-telling-v2/shared": path.resolve(__dirname, "../shared/src"),
 		},
 	},
 });
