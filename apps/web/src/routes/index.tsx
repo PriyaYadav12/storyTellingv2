@@ -17,6 +17,7 @@ export const Route = createFileRoute("/")({
 
 function HomeComponent() {
 	const hasProfile = useQuery(api.userProfiles.hasProfile);
+	const userRole = useQuery(api.auth.getUserRole);
 	const navigate = useNavigate();
 
 	const handleGetStarted = () => {
@@ -28,16 +29,19 @@ function HomeComponent() {
 			{/* Prevent flicker while auth is resolving */}
 			<AuthLoading>{null}</AuthLoading>
 			
-			{/* If logged in, check profile and redirect accordingly */}
+			{/* If logged in, check role and redirect accordingly */}
 			<Authenticated>
-				{hasProfile === undefined ? (
+				{userRole === undefined || hasProfile === undefined ? (
 					// Loading state
 					null
+				) : userRole === "admin" ? (
+					// Admin user, redirect to admin dashboard
+					<Navigate to="/admin/dashboard" replace />
 				) : hasProfile === false ? (
-					// No profile, redirect to onboarding
+					// Regular user without profile, redirect to onboarding
 					<Navigate to="/onboarding" replace />
 				) : (
-					// Has profile, go to dashboard
+					// Regular user with profile, go to dashboard
 					<Navigate to="/dashboard" replace />
 				)}
 			</Authenticated>

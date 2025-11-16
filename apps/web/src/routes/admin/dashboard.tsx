@@ -1,5 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { useQuery } from "convex/react";
+import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -8,19 +10,47 @@ import {
 	BookOpen, 
 	Users, 
 	FolderOpen,
-	LayoutDashboard 
+	LayoutDashboard,
+	Shield
 } from "lucide-react";
+import AdminHeader from "@/components/admin/admin-header";
 
 export const Route = createFileRoute("/admin/dashboard")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
+	const userRole = useQuery(api.auth.getUserRole);
+
 	return (
 		<>
 			<AuthLoading>{null}</AuthLoading>
 			<Authenticated>
-				<DashboardContent />
+				{userRole === undefined ? (
+					// Loading state
+					<div className="flex items-center justify-center min-h-screen">
+						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+					</div>
+				) : userRole === "admin" ? (
+					// Admin user, show dashboard
+					<DashboardContent />
+				) : (
+					// Not an admin, redirect to home
+					<>
+						<Navigate to="/" replace />
+						<div className="flex items-center justify-center min-h-screen">
+							<div className="text-center p-8 bg-red-50 dark:bg-red-900/20 rounded-lg">
+								<Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
+								<h2 className="text-xl font-bold text-red-700 dark:text-red-400">
+									Access Denied
+								</h2>
+								<p className="text-red-600 dark:text-red-300 mt-2">
+									You don't have permission to access the admin panel.
+								</p>
+							</div>
+						</div>
+					</>
+				)}
 			</Authenticated>
 			<Unauthenticated>
 				<Navigate to="/admin" replace />
@@ -32,6 +62,7 @@ function RouteComponent() {
 function DashboardContent() {
 	return (
 		<div className="min-h-screen bg-background">
+			<AdminHeader />
 			<div className="container mx-auto max-w-7xl px-4 py-8">
 				{/* Dashboard Header */}
 				<div className="mb-8">

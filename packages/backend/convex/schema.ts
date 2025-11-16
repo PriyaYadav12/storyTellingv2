@@ -3,6 +3,13 @@ import { v } from "convex/values";
 
 export default defineSchema({
 	
+	user_roles: defineTable({
+		userId: v.string(),
+		role: v.union(v.literal("user"), v.literal("admin")),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	}).index("by_user", ["userId"]),
+
 	user_profiles: defineTable({
 		userId: v.string(),
 		parentName: v.string(),

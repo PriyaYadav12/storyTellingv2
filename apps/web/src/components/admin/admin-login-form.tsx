@@ -7,6 +7,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Shield } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "@story-telling-v2/backend/convex/_generated/api";
 
 export default function AdminLoginForm() {
 	const navigate = useNavigate();
@@ -23,12 +25,16 @@ export default function AdminLoginForm() {
 					password: value.password,
 				},
 				{
-					onSuccess: () => {
-						navigate({
-							to: "/admin/dashboard",
-							replace: true,
-						});
-						toast.success("Welcome to Admin Panel! 🎉");
+					onSuccess: async () => {
+						// Wait a moment for the auth state to update
+						setTimeout(() => {
+							// The role check will happen in the route component
+							navigate({
+								to: "/admin/dashboard",
+								replace: true,
+							});
+							toast.success("Welcome to Admin Panel! 🎉");
+						}, 100);
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);

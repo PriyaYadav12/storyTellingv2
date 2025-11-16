@@ -3,7 +3,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { crossDomain } from "@convex-dev/better-auth/plugins";
 import { components } from "./_generated/api";
 import { DataModel } from "./_generated/dataModel";
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { v } from "convex/values";
@@ -82,5 +82,97 @@ export const getCurrentUser = query({
 			// Return null instead of throwing to avoid noisy unauthenticated errors
 			return null;
 		}
+	},
+});
+
+export const getUserRole = query({
+	args: {},
+	returns: v.union(v.string(), v.null()),
+	handler: async function (ctx, args) {
+		try {
+			const user = await authComponent.getAuthUser(ctx);
+			if (!user) return null;
+			
+			// Use userId or _id as the identifier
+			const userIdentifier = user.userId || user._id;
+			
+			// Query the user_roles table
+			const userRole = await ctx.db
+				.query("user_roles")
+				.withIndex("by_user", (q) => q.eq("userId", userIdentifier))
+				.first();
+			
+			// Return the role, defaulting to "user" if not found
+			return userRole?.role ?? "user";
+		} catch {
+			return null;
+		}
+	},
+});
+
+// Create or update a user's role (admin only or for initial setup)
+export const setUserRole = mutation({
+	args: {
+		userId: v.string(),
+		role: v.union(v.literal("user"), v.literal("admin")),
+	},
+	handler: async function (ctx, args) {
+		// Check if role already exists
+		const existingRole = await ctx.db
+			.query("user_roles")
+			.withIndex("by_user", (q) => q.eq("userId", args.userId))
+			.first();
+		
+		const now = Date.now();
+		
+		if (existingRole) {
+			// Update existing role
+			await ctx.db.patch(existingRole._id, {
+				role: args.role,
+				updatedAt: now,
+			});
+		} else {
+			// Create new role entry
+			await ctx.db.insert("user_roles", {
+				userId: args.userId,
+				role: args.role,
+				createdAt: now,
+				updatedAt: now,
+			});
+		}
+		
+		return { success: true };
+	},
+});
+
+// Initialize role for new users (call this after user signup)
+export const initializeUserRole = mutation({
+	args: {},
+	handler: async function (ctx, args) {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) {
+			throw new Error("User not authenticated");
+		}
+		
+		// Use userId or _id as the identifier
+		const userIdentifier = user.userId || user._id;
+		
+		// Check if role already exists
+		const existingRole = await ctx.db
+			.query("user_roles")
+			.withIndex("by_user", (q) => q.eq("userId", userIdentifier))
+			.first();
+		
+		if (!existingRole) {
+			const now = Date.now();
+			await ctx.db.insert("user_roles", {
+				userId: userIdentifier,
+				role: "user",
+				createdAt: now,
+				updatedAt: now,
+			});
+		}
+		
+		return { success: true };
 	},
 });
