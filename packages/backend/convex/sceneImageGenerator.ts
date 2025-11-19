@@ -18,7 +18,7 @@ export interface SceneMetadata {
 /**
  * Reference image of Lalli & Fafa in Convex Storage
  */
-const LALLI_FAFA_STORAGE_ID = "kg266f69m4h0yy1wzhm3gk36qh7v76p5" as Id<"_storage">;
+const LALLI_FAFA_STORAGE_ID = "kg26dz7f94zyhf1f0nhvbfr1157tmatf" as Id<"_storage">;
 
 // Image/Model constants
 const PNG_MIME_TYPE = "image/png";

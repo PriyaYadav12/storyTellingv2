@@ -8,7 +8,11 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { BookOpen } from "lucide-react";
 
-export default function SignInForm() {
+interface SignInFormProps {
+	onSwitchToSignUp?: () => void;
+}
+
+export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
 	const navigate = useNavigate({
 		from: "/",
 	});
@@ -191,6 +195,19 @@ export default function SignInForm() {
 							Sign in with Google
 						</Button>
 					</div>
+					{onSwitchToSignUp && (
+						<div className="text-center text-sm">
+							<span className="text-muted-foreground">Don't have an account? </span>
+							<Button
+								type="button"
+								variant="link"
+								onClick={onSwitchToSignUp}
+								className="text-purple-600 hover:text-purple-800 px-0"
+							>
+								Sign up
+							</Button>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
