@@ -1,4 +1,5 @@
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import Loader from "@/components/loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -41,8 +42,8 @@ function RootComponent() {
 	});
 	const location = useLocation();
 	
-	// Hide header on landing page
-	const showHeader = location.pathname !== "/";
+	// Show footer on all pages except landing page
+	const showFooter = location.pathname !== "/";
 
 	return (
 		<>
@@ -53,9 +54,12 @@ function RootComponent() {
 				disableTransitionOnChange
 				storageKey="vite-ui-theme"
 			>
-				<div className="min-h-screen">
-					{showHeader && <Header />}
-					{isFetching ? <Loader /> : <Outlet />}
+				<div className="min-h-screen flex flex-col">
+					<Header />
+					<div className="flex-1">
+						{isFetching ? <Loader /> : <Outlet />}
+					</div>
+					{showFooter && <Footer />}
 				</div>
 				<Toaster richColors />
 			</ThemeProvider>

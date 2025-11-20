@@ -16,7 +16,10 @@
     "dev:setup": "turbo -F @story-telling-v2/backend dev:setup",
     "dev:admin": "turbo -F admin dev"
   },
-  "dependencies": {},
+  "dependencies": {
+    "lucide-react": "^0.554.0",
+    "react-day-picker": "^9.11.1"
+  },
   "devDependencies": {
     "turbo": "^2.5.4"
   },

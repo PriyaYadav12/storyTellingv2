@@ -1,6 +1,5 @@
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
-import UserMenu from "@/components/user-menu";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import {
@@ -10,10 +9,11 @@ import {
 	useConvexAuth,
 } from "convex/react";
 import { useQuery } from "convex/react";
-import { useState } from "react";
-import StoryCreateForm from "@/components/story-create-form";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { QuickActions } from "@/components/dashboard/QuickActions";
+import { useState, useMemo } from "react";
+import StoryGenerationForm from "@/components/StoryGenerationForm";
+import HeroCarousel from "@/components/HeroCarousel";
+import StatisticsCard from "@/components/StatisticsCard";
+import StreakTracker from "@/components/StreakTracker";
 import { StoriesList } from "@/components/dashboard/StoriesList";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -27,7 +27,24 @@ function RouteComponent() {
 	const [activeTab, setActiveTab] = useState<"generate" | "view">("generate");
 	const { isAuthenticated } = useConvexAuth();
 	const hasProfile = useQuery(api.userProfiles.hasProfile,isAuthenticated ? {} : "skip");
+	const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
 	const stories = useQuery(api.stories.list,isAuthenticated ? {} : "skip");
+	
+	const userName = profile?.parentName || "Friend";
+	
+	// Calculate statistics
+	const stats = useMemo(() => {
+		const storiesList = stories || [];
+		const storiesCreated = storiesList.length;
+		const readingTime = Math.round(storiesCreated * 3); // Approximate 3 min per story
+		const favoriteTheme = storiesList.length > 0 
+			? (storiesList[0]?.params?.theme as string) || "Adventure"
+			: "Adventure";
+		const badgesEarned = Math.floor(storiesCreated / 3); // 1 badge per 3 stories
+		
+		return { storiesCreated, readingTime: readingTime.toString(), favoriteTheme, badgesEarned };
+	}, [stories]);
+	
 	const handleStoryGenerated = (storyId: string) => {
 		// Navigate directly to the story page
 		navigate({ to: "/story/$storyId", params: { storyId } });
@@ -48,45 +65,56 @@ function RouteComponent() {
 					<Navigate to="/onboarding" replace />
 				) : (
 					// Has profile, show dashboard
-					<div className="container mx-auto max-w-7xl px-4 py-8">
-						<DashboardHeader />
+					<div className="min-h-screen bg-background">
+						<main className="container mx-auto px-4 md:px-8 py-8 md:py-12 space-y-16 md:space-y-20">
+							<section data-testid="section-hero">
+								<HeroCarousel />
+							</section>
 
-						{/* Quick Actions */}
-						<QuickActions />
+							<section data-testid="section-welcome" className="text-center space-y-4">
+								<h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-chart-3 bg-clip-text text-transparent">
+									Welcome back, {userName}!
+								</h1>
+								<p className="text-xl md:text-2xl text-muted-foreground">
+									Ready for your next adventure?
+								</p>
+								<div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
+									<button
+										onClick={() => {
+											setActiveTab("generate");
+											document.getElementById("section-story-form")?.scrollIntoView({ behavior: "smooth" });
+										}}
+										className="px-8 py-3 rounded-full bg-primary text-white font-semibold text-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
+									>
+										Let's create story!
+									</button>
+									<button
+										onClick={() => {
+											navigate({ to: "/library" });
+										}}
+										className="px-8 py-3 rounded-full bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100 font-semibold text-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
+									>
+										View Stories
+									</button>
+								</div>
+							</section>
 
-						{/* Tabs */}
-						<div className="mb-6">
-							<div className="flex gap-2 border-b border-muted-foreground/20 overflow-x-auto">
-								<button
-									onClick={() => setActiveTab("generate")}
-									className={`px-4 py-2 text-sm whitespace-nowrap rounded-t-md ${
-										activeTab === "generate"
-											? "bg-background border-x border-t border-muted-foreground/20 font-medium"
-											: "text-muted-foreground hover:text-foreground"
-									}`}
-								>
-									Generate Story
-								</button>
-								<button
-									onClick={() => setActiveTab("view")}
-									className={`px-4 py-2 text-sm whitespace-nowrap rounded-t-md ${
-										activeTab === "view"
-											? "bg-background border-x border-t border-muted-foreground/20 font-medium"
-											: "text-muted-foreground hover:text-foreground"
-									}`}
-								>
-									View Stories
-								</button>
-							</div>
+							<section data-testid="section-stats">
+								<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+									<StatisticsCard
+										storiesCreated={stats.storiesCreated}
+										readingTime={stats.readingTime}
+										favoriteTheme={stats.favoriteTheme}
+										badgesEarned={stats.badgesEarned}
+									/>
+									<StreakTracker currentStreak={7} longestStreak={12} />
+								</div>
+							</section>
 
-							<div className="border border-muted-foreground/20 rounded-b-md rounded-tr-md p-4">
-								{activeTab === "generate" ? (
-									<StoryCreateForm onStoryGenerated={handleStoryGenerated} />
-								) : (
-									<StoriesList stories={stories} />
-								)}
-							</div>
-						</div>
+							<section id="section-story-form" data-testid="section-story-form">
+								<StoryGenerationForm onGenerate={handleStoryGenerated} />
+							</section>
+						</main>
 					</div>
 				)}
 			</Authenticated>

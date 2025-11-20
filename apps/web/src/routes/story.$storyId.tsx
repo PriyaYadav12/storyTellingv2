@@ -3,10 +3,11 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Share2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useState } from "react";
 import { StoryMediaPlayer } from "@/components/story-media-player";
 
 export const Route = createFileRoute("/story/$storyId")({
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/story/$storyId")({
 function StoryPageComponent() {
 	const { storyId } = Route.useParams();
 	const navigate = useNavigate();
+	const [isFavorite, setIsFavorite] = useState(false);
 
 	const hasStoryId = typeof storyId === "string" && storyId !== "undefined" && storyId.length > 0;
 
@@ -23,22 +25,58 @@ function StoryPageComponent() {
 	const sceneImages = useQuery(api.stories.getSceneImageUrls as any, hasStoryId ? { storyId: storyId as any } : "skip");
 	const narrationFile = useQuery(api.stories.getNarrationFileUrl as any, hasStoryId ? { storyId: storyId as any } : "skip");
 
-	useEffect(() => {}, []);
+	const handleBack = () => {
+		navigate({ to: "/dashboard" });
+	};
+
+	const handleShare = () => {
+		console.log("Share story");
+		// Implement share functionality
+	};
+
+	const handleToggleFavorite = () => {
+		setIsFavorite(!isFavorite);
+		console.log(isFavorite ? "Removed from favorites" : "Added to favorites");
+	};
 
 	return (
 		<>
 			<AuthLoading>{null}</AuthLoading>
 			<Authenticated>
-				<div className="container mx-auto max-w-4xl px-4 py-8">
-					{/* Back button */}
-					<Button
-						variant="ghost"
-						onClick={() => navigate({ to: "/dashboard" })}
-						className="mb-6"
-					>
-						<ArrowLeft className="h-4 w-4 mr-2" />
-						Back to Dashboard
-					</Button>
+				<div className="min-h-screen bg-background">
+					<main className="container mx-auto px-4 md:px-8 py-8 md:py-12">
+						<div className="max-w-5xl mx-auto space-y-8">
+							<div className="flex items-center justify-between">
+								<Button
+									variant="ghost"
+									onClick={handleBack}
+									className="gap-2"
+									data-testid="button-back"
+								>
+									<ArrowLeft className="w-5 h-5" />
+									Back to Library
+								</Button>
+								<div className="flex gap-2">
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={handleShare}
+										data-testid="button-share"
+									>
+										<Share2 className="w-5 h-5" />
+									</Button>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={handleToggleFavorite}
+										data-testid="button-favorite"
+									>
+										<Heart
+											className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`}
+										/>
+									</Button>
+								</div>
+							</div>
 
 					{story === undefined ? (
 						// Loading state
@@ -58,26 +96,37 @@ function StoryPageComponent() {
 						</div>
 					) : (
 						// Story content
-						<div className="space-y-6">
-							{/* Header */}
-							<div className="text-center space-y-4">
-								<h1 className="text-lg md:text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+						<>
+							<div className="space-y-4">
+								<h1 className="text-4xl md:text-5xl font-bold" data-testid="text-story-title">
 									{story.title}
 								</h1>
-								<div className="flex flex-wrap justify-center gap-2 text-sm text-muted-foreground">
-									<span>Theme: {story.params.theme}</span>
-									{story.params.lesson && <span>• Lesson: {story.params.lesson}</span>}
-									<span>• {story.params.length}</span>
+								<div className="flex flex-wrap gap-2">
+									<Badge variant="default" className="rounded-xl text-base px-4 py-1">
+										{story.params.theme as string}
+									</Badge>
+									{story.params.lesson && (
+										<Badge variant="secondary" className="rounded-xl text-base px-4 py-1">
+											Lesson: {story.params.lesson as string}
+										</Badge>
+									)}
+									<Badge variant="secondary" className="rounded-xl text-base px-4 py-1">
+										{story.params.language as string}
+									</Badge>
+									<Badge variant="secondary" className="rounded-xl text-base px-4 py-1">
+										{story.params.length as string}
+									</Badge>
 								</div>
 							</div>
 
-					{/* Synchronized media player */}
-					{Array.isArray(sceneImages) && sceneImages.length > 0 && (
-						<StoryMediaPlayer images={sceneImages as any} audioUrl={narrationFile?.url} />
-					)}
-						{story.content ? (
+							{/* Synchronized media player */}
+							{Array.isArray(sceneImages) && sceneImages.length > 0 && (
+								<StoryMediaPlayer images={sceneImages as any} audioUrl={narrationFile?.url} />
+							)}
+
+							{story.content ? (
 								<div className="prose prose-lg max-w-none dark:prose-invert">
-									<div className="text-base md:text-xl leading-relaxed whitespace-pre-wrap bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-8 rounded-2xl border border-purple-100 dark:border-purple-900 shadow-lg">
+									<div className="text-base md:text-xl leading-relaxed whitespace-pre-wrap bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-8 rounded-3xl border border-purple-100 dark:border-purple-900 shadow-lg">
 										{story.content}
 									</div>
 								</div>
@@ -99,9 +148,20 @@ function StoryPageComponent() {
 								</div>
 							) : null}
 
-					{/* Media player handles audio state; no separate audio block needed */}
-						</div>
+							<div className="text-center py-8">
+								<Button
+									size="lg"
+									onClick={() => navigate({ to: "/dashboard" })}
+									className="rounded-2xl px-8"
+									data-testid="button-create-another"
+								>
+									Create Another Story
+								</Button>
+							</div>
+						</>
 					)}
+						</div>
+					</main>
 				</div>
 			</Authenticated>
 			<Unauthenticated>

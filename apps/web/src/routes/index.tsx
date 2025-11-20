@@ -3,7 +3,6 @@ import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import Hero from "@/components/hero";
-import { LandingHeader } from "@/components/landing/LandingHeader";
 import { CharactersSection } from "@/components/landing/CharactersSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { ShopSection } from "@/components/landing/ShopSection";
@@ -49,16 +48,14 @@ function HomeComponent() {
 			{/* Otherwise show the landing page */}
 			<Unauthenticated>
 				<div className="min-h-screen bg-background">
-					<LandingHeader onGetStarted={handleGetStarted} />
-					
-				<main>
-					<Hero onGetStarted={handleGetStarted} isAuthenticated={false} />
-					<CharactersSection />
-					<FeaturesSection />
-					<ShopSection />
-					<TestimonialsSection />
-					<CTASection onGetStarted={handleGetStarted} />
-				</main>
+					<main>
+						<Hero onGetStarted={handleGetStarted} isAuthenticated={false} />
+						<CharactersSection />
+						<FeaturesSection />
+						<ShopSection />
+						<TestimonialsSection />
+						<CTASection onGetStarted={handleGetStarted} />
+					</main>
 
 					<LandingFooter />
 				</div>
