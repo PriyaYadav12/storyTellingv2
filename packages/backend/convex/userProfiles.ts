@@ -92,6 +92,59 @@ export const updateProfile = mutation({
 	},
 });
 
+export const updateChild2 = mutation({
+	args: {
+		child2Name: v.optional(v.string()),
+		child2Age: v.optional(v.number()),
+		child2Gender: v.optional(v.union(v.literal("male"), v.literal("female"), v.literal("other"))),
+		child2NickName: v.optional(v.string()),
+		child2FavoriteColor: v.optional(v.string()),
+		child2FavoriteAnimal: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) {
+			throw new Error("Not authenticated");
+		}
+
+		const userId = user._id as unknown as GenericId<"betterAuth:user">;
+
+		const profile = await ctx.db
+			.query("user_profiles")
+			.withIndex("by_user", (q) => q.eq("userId", userId))
+			.first();
+
+		if (!profile) {
+			throw new Error("Profile not found");
+		}
+
+		// If child2Name is empty or undefined, clear all child2 fields
+		const updateData: any = {
+			updatedAt: Date.now(),
+		};
+
+		if (!args.child2Name) {
+			// Clear child2 data
+			updateData.child2Name = undefined;
+			updateData.child2Age = undefined;
+			updateData.child2Gender = undefined;
+			updateData.child2NickName = undefined;
+			updateData.child2FavoriteColor = undefined;
+			updateData.child2FavoriteAnimal = undefined;
+		} else {
+			// Update with provided values
+			if (args.child2Name !== undefined) updateData.child2Name = args.child2Name;
+			if (args.child2Age !== undefined) updateData.child2Age = args.child2Age;
+			if (args.child2Gender !== undefined) updateData.child2Gender = args.child2Gender;
+			if (args.child2NickName !== undefined) updateData.child2NickName = args.child2NickName;
+			if (args.child2FavoriteColor !== undefined) updateData.child2FavoriteColor = args.child2FavoriteColor;
+			if (args.child2FavoriteAnimal !== undefined) updateData.child2FavoriteAnimal = args.child2FavoriteAnimal;
+		}
+
+		return await ctx.db.patch(profile._id, updateData);
+	},
+});
+
 export const hasProfile = query({
 	args: {},
 	handler: async (ctx) => {

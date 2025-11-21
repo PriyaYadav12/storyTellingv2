@@ -3,13 +3,13 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Castle, Rocket, Waves, Rainbow, Palette, Trees, Home, Cookie, Globe, UserCircle } from "lucide-react";
+import { Sparkles, Castle, Rocket, Waves, Rainbow, Palette, Trees, Home, Cookie, Globe, UserCircle, Zap, Book } from "lucide-react";
 import { Heart, Shield, Users, Smile, Brain, Target, Star, Lightbulb } from "lucide-react";
 import AdventureThemeCard from "./AdventureThemeCard";
 import MoralLessonCard from "./MoralLessonCard";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const adventures = [
 	{ id: "castle", icon: Castle, title: "Castle Adventure", color: "pink" as const },
@@ -41,14 +41,38 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 	const [selectedAdventure, setSelectedAdventure] = useState<string | null>(null);
 	const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 	const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
-	const [selectedLength, setSelectedLength] = useState<"short" | "medium" | "long">("short");
+	const [selectedLength, setSelectedLength] = useState<"short" | "medium" | "long">("medium");
+	const [selectedChild, setSelectedChild] = useState<"1" | "2">("1");
 	const [useFavorites, setUseFavorites] = useState(true);
 	const [isGenerating, setIsGenerating] = useState(false);
 
 	const generateNow = useAction(api.storiesActions.generateNow);
+	const profile = useQuery(api.userProfiles.getProfile);
 	const _apiAny = api as any;
 	const themeDocs = useQuery(_apiAny["migration/theme"]?.list);
 	const lessonDocs = useQuery(_apiAny["migration/lesson"]?.list);
+
+	// Check if user has multiple children
+	const hasMultipleChildren = useMemo(() => {
+		return !!(profile?.childName && profile?.child2Name);
+	}, [profile]);
+
+	const children = useMemo(() => {
+		const childrenList: Array<{ id: "1" | "2"; name: string }> = [];
+		if (profile?.childName) {
+			childrenList.push({
+				id: "1",
+				name: profile.childName,
+			});
+		}
+		if (profile?.child2Name) {
+			childrenList.push({
+				id: "2",
+				name: profile.child2Name,
+			});
+		}
+		return childrenList;
+	}, [profile]);
 
 	const themeOptions = useMemo(() => (themeDocs || []).map((t: any) => t.name as string), [themeDocs]);
 	const lessonOptions = useMemo(() => (lessonDocs || []).map((l: any) => l.name as string), [lessonDocs]);
@@ -111,6 +135,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 					length: selectedLength,
 					language: selectedLanguage,
 					useFavorites,
+					childId: hasMultipleChildren ? selectedChild : undefined,
 				},
 			});
 			toast.success("Story is being generated!");
@@ -144,38 +169,105 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 				</div>
 
 				<div className="space-y-6">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-						<div className="space-y-2">
-							<Label htmlFor="language" className="text-lg font-semibold flex items-center gap-2">
-								<Globe className="w-5 h-5" />
-								Language
+					{/* Child Selector - Only show if multiple children */}
+					{hasMultipleChildren && (
+						<div className="space-y-3">
+							<Label className="text-lg font-semibold flex items-center gap-2">
+								<UserCircle className="w-5 h-5" />
+								Select Adventurer
 							</Label>
-							<Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-								<SelectTrigger id="language" className="text-base rounded-xl h-12" data-testid="select-language">
-									<SelectValue placeholder="Select language" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="English">English</SelectItem>
-									<SelectItem value="Hindi">Hindi (हिंदी)</SelectItem>
-								</SelectContent>
-							</Select>
+							<div className="inline-flex rounded-xl bg-muted p-1 border border-border">
+								{children.map((child) => (
+									<button
+										key={child.id}
+										type="button"
+										onClick={() => setSelectedChild(child.id)}
+										className={cn(
+											"px-6 py-2.5 rounded-xl text-sm font-medium transition-all",
+											selectedChild === child.id
+												? "bg-primary text-primary-foreground shadow-sm"
+												: "text-muted-foreground hover:text-foreground"
+										)}
+									>
+										{child.name}
+									</button>
+								))}
+							</div>
 						</div>
+					)}
 
-						<div className="space-y-2">
-							<Label htmlFor="length" className="text-lg font-semibold flex items-center gap-2">
-								<Sparkles className="w-5 h-5" />
-								Story Length
-							</Label>
-							<Select value={selectedLength} onValueChange={(v) => setSelectedLength(v as "short" | "medium" | "long")}>
-								<SelectTrigger id="length" className="text-base rounded-xl h-12" data-testid="select-length">
-									<SelectValue placeholder="Select length" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="short">Quick Sparkle (~2mins)</SelectItem>
-									<SelectItem value="medium">Magical Journey (~3mins)</SelectItem>
-									<SelectItem value="long">Dreamland Adventure (~5mins)</SelectItem>
-								</SelectContent>
-							</Select>
+					{/* Story Length - Radio Buttons */}
+					<div className="space-y-3">
+						<Label className="text-lg font-semibold text-foreground/80">
+							Story Length:
+						</Label>
+						{[
+							{ value: "short" as const, label: "Quick Sparkle", time: "~2 min read", icon: Zap },
+							{ value: "medium" as const, label: "Adventure Time", time: "~3 min read", icon: Star },
+							{ value: "long" as const, label: "Epic Journey", time: "~5 min read", icon: Book },
+						].map((option) => {
+							const Icon = option.icon;
+							return (
+								<label
+									key={option.value}
+									className={cn(
+										"flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all",
+										selectedLength === option.value
+											? "border-primary bg-primary/5"
+											: "border-border hover:border-primary/50 bg-background"
+									)}
+								>
+									<input
+										type="radio"
+										name="storyLength"
+										value={option.value}
+										checked={selectedLength === option.value}
+										onChange={(e) => setSelectedLength(e.target.value as "short" | "medium" | "long")}
+										className="w-5 h-5 text-primary border-2 border-primary focus:ring-2 focus:ring-primary focus:ring-offset-2"
+									/>
+									<Icon className={cn(
+										"w-5 h-5",
+										selectedLength === option.value ? "text-primary" : "text-muted-foreground"
+									)} />
+									<div className="flex-1">
+										<div className="font-medium">{option.label}</div>
+										<div className="text-sm text-muted-foreground">{option.time}</div>
+									</div>
+								</label>
+							);
+						})}
+					</div>
+
+					{/* Language - Segmented Toggle */}
+					<div className="space-y-3">
+						<Label className="text-lg font-semibold text-foreground/80">
+							Language:
+						</Label>
+						<div className="inline-flex rounded-xl bg-muted p-1 border border-border">
+							<button
+								type="button"
+								onClick={() => setSelectedLanguage("English")}
+								className={cn(
+									"px-8 py-2.5 rounded-lg text-sm font-medium transition-all",
+									selectedLanguage === "English"
+										? "bg-primary text-primary-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground"
+								)}
+							>
+								English
+							</button>
+							<button
+								type="button"
+								onClick={() => setSelectedLanguage("Hindi")}
+								className={cn(
+									"px-8 py-2.5 rounded-lg text-sm font-medium transition-all",
+									selectedLanguage === "Hindi"
+										? "bg-primary text-primary-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground"
+								)}
+							>
+								Hindi
+							</button>
 						</div>
 					</div>
 

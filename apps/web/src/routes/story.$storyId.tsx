@@ -26,7 +26,7 @@ function StoryPageComponent() {
 	const narrationFile = useQuery(api.stories.getNarrationFileUrl as any, hasStoryId ? { storyId: storyId as any } : "skip");
 
 	const handleBack = () => {
-		navigate({ to: "/dashboard" });
+		navigate({ to: "/library" });
 	};
 
 	const handleShare = () => {

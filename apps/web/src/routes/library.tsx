@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Doc } from "@story-telling-v2/backend/convex/_generated/dataModel";
 
@@ -26,8 +26,10 @@ function LibraryComponent() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filterTheme, setFilterTheme] = useState<string>("all");
 	const [filterLanguage, setFilterLanguage] = useState<string>("all");
+	const [currentPage, setCurrentPage] = useState(1);
 
 	const childName = profile?.childName || "Child";
+	const STORIES_PER_PAGE = 6;
 
 	// Transform stories for display
 	const transformedStories = useMemo(() => {
@@ -52,6 +54,17 @@ function LibraryComponent() {
 
 		return matchesSearch && matchesTheme && matchesLanguage;
 	});
+
+	// Pagination calculations
+	const totalPages = Math.ceil(filteredStories.length / STORIES_PER_PAGE);
+	const startIndex = (currentPage - 1) * STORIES_PER_PAGE;
+	const endIndex = startIndex + STORIES_PER_PAGE;
+	const paginatedStories = filteredStories.slice(startIndex, endIndex);
+
+	// Reset to page 1 when filters change
+	const handleFilterChange = () => {
+		setCurrentPage(1);
+	};
 
 	const handlePlayStory = (id: string) => {
 		navigate({ to: "/story/$storyId", params: { storyId: id } });
@@ -99,16 +112,22 @@ function LibraryComponent() {
 									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 										<div className="relative">
 											<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-											<Input
-												placeholder="Search stories..."
-												value={searchQuery}
-												onChange={(e) => setSearchQuery(e.target.value)}
-												className="pl-10 rounded-xl h-12"
-												data-testid="input-search"
-											/>
+										<Input
+											placeholder="Search stories..."
+											value={searchQuery}
+											onChange={(e) => {
+												setSearchQuery(e.target.value);
+												handleFilterChange();
+											}}
+											className="pl-10 rounded-xl h-12"
+											data-testid="input-search"
+										/>
 										</div>
 
-										<Select value={filterTheme} onValueChange={setFilterTheme}>
+										<Select value={filterTheme} onValueChange={(value) => {
+											setFilterTheme(value);
+											handleFilterChange();
+										}}>
 											<SelectTrigger className="rounded-xl h-12" data-testid="select-filter-theme">
 												<SelectValue placeholder="All Themes" />
 											</SelectTrigger>
@@ -122,7 +141,10 @@ function LibraryComponent() {
 											</SelectContent>
 										</Select>
 
-										<Select value={filterLanguage} onValueChange={setFilterLanguage}>
+										<Select value={filterLanguage} onValueChange={(value) => {
+											setFilterLanguage(value);
+											handleFilterChange();
+										}}>
 											<SelectTrigger className="rounded-xl h-12" data-testid="select-filter-language">
 												<SelectValue placeholder="All Languages" />
 											</SelectTrigger>
@@ -144,6 +166,7 @@ function LibraryComponent() {
 												setSearchQuery("");
 												setFilterTheme("all");
 												setFilterLanguage("all");
+												setCurrentPage(1);
 											}}
 											data-testid="button-clear-filters"
 										>
@@ -154,13 +177,71 @@ function LibraryComponent() {
 
 								<div>
 									<p className="text-muted-foreground mb-4">
-										Showing {filteredStories.length} of {transformedStories.length} stories
+										Showing {startIndex + 1}-{Math.min(endIndex, filteredStories.length)} of {filteredStories.length} stories
 									</p>
 									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-										{filteredStories.map((story) => (
+										{paginatedStories.map((story) => (
 											<StoryCard key={story.id} {...story} onPlay={handlePlayStory} />
 										))}
 									</div>
+
+									{/* Pagination Controls */}
+									{totalPages > 1 && (
+										<div className="flex items-center justify-center gap-2 mt-8">
+											<Button
+												variant="outline"
+												size="icon"
+												onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+												disabled={currentPage === 1}
+												className="rounded-xl"
+											>
+												<ChevronLeft className="w-4 h-4" />
+											</Button>
+											
+											<div className="flex items-center gap-1">
+												{Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+													// Show first page, last page, current page, and pages around current
+													if (
+														page === 1 ||
+														page === totalPages ||
+														(page >= currentPage - 1 && page <= currentPage + 1)
+													) {
+														return (
+															<Button
+																key={page}
+																variant={currentPage === page ? "default" : "outline"}
+																size="sm"
+																onClick={() => setCurrentPage(page)}
+																className="rounded-xl min-w-[40px]"
+															>
+																{page}
+															</Button>
+														);
+													} else if (
+														page === currentPage - 2 ||
+														page === currentPage + 2
+													) {
+														return (
+															<span key={page} className="px-2">
+																...
+															</span>
+														);
+													}
+													return null;
+												})}
+											</div>
+
+											<Button
+												variant="outline"
+												size="icon"
+												onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+												disabled={currentPage === totalPages}
+												className="rounded-xl"
+											>
+												<ChevronRight className="w-4 h-4" />
+											</Button>
+										</div>
+									)}
 								</div>
 
 								{filteredStories.length === 0 && (

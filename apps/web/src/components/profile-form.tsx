@@ -3,25 +3,53 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { COLORS, ANIMALS } from "@/lib/constants";
 import { toast } from "sonner";
-import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { User, Mail, Calendar, Globe, Edit, Plus, Trash2 } from "lucide-react";
 
 type Gender = "male" | "female" | "other";
 
+interface Child {
+	id: string;
+	name: string;
+	age: number;
+	nickName?: string;
+	gender: Gender;
+	favoriteColor?: string;
+	favoriteAnimal?: string;
+}
+
 export default function ProfileForm() {
-	const navigate = useNavigate();
 	const profile = useQuery(api.userProfiles.getProfile);
 	const profilePhotoUrl = useQuery(api.userProfiles.getProfilePhotoUrl);
 	const updateProfile = useMutation(api.userProfiles.updateProfile);
-	const generateUploadUrl = useMutation(api.userProfiles.generateProfilePictureUploadUrl);
-	const setProfilePicture = useMutation(api.userProfiles.setProfilePicture);
-	const generateAndStoreAvatar = useAction(api.userProfiles.generateAndStoreAvatar);
-
-	const [formData, setFormData] = useState({
-		parentName: "",
+	const updateChild2 = useMutation(api.userProfiles.updateChild2);
+	const user = useQuery(api.auth.getCurrentUser);
+	const stories = useQuery(api.stories.list, {});
+	
+	const [isAddChildDialogOpen, setIsAddChildDialogOpen] = useState(false);
+	const [editingChildId, setEditingChildId] = useState<string | null>(null);
+	const [child2FormData, setChild2FormData] = useState({
+		child2Name: "",
+		child2Age: "",
+		child2NickName: "",
+		child2Gender: "male" as Gender,
+		child2FavoriteColor: "",
+		child2FavoriteAnimal: "",
+	});
+	const [child1FormData, setChild1FormData] = useState({
 		childName: "",
 		childAge: "",
 		childNickName: "",
@@ -29,37 +57,8 @@ export default function ProfileForm() {
 		favoriteColor: "",
 		favoriteAnimal: "",
 	});
-	const [childPhoto, setChildPhoto] = useState<File | null>(null);
-	const [isSaving, setIsSaving] = useState(false);
-	const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (!profile) return;
-		setFormData({
-			parentName: profile.parentName ?? "",
-			childName: profile.childName ?? "",
-			childAge: (profile.childAge ?? "").toString(),
-			childNickName: profile.childNickName ?? "",
-			childGender: (profile.childGender ?? "male") as Gender,
-			favoriteColor: profile.favoriteColor ?? "",
-			favoriteAnimal: profile.favoriteAnimal ?? "",
-		});
-	}, [profile]);
-
-	useEffect(() => {
-		if (!childPhoto) {
-			setPreviewUrl(null);
-			return;
-		}
-
-		const objectUrl = URL.createObjectURL(childPhoto);
-		setPreviewUrl(objectUrl);
-
-		return () => {
-			URL.revokeObjectURL(objectUrl);
-		};
-	}, [childPhoto]);
+	const [isSavingChild2, setIsSavingChild2] = useState(false);
+	const [isSavingChild1, setIsSavingChild1] = useState(false);
 
 	const genderOptions = useMemo(
 		() => [
@@ -70,54 +69,154 @@ export default function ProfileForm() {
 		[],
 	);
 
-	const handleSave = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setIsSaving(true);
+	// Build children array from profile
+	const children = useMemo(() => {
+		const childrenList: Child[] = [];
+		if (profile?.childName) {
+			childrenList.push({
+				id: "1",
+				name: profile.childName,
+				age: profile.childAge,
+				nickName: profile.childNickName,
+				gender: profile.childGender,
+				favoriteColor: profile.favoriteColor,
+				favoriteAnimal: profile.favoriteAnimal,
+			});
+		}
+		if (profile?.child2Name) {
+			childrenList.push({
+				id: "2",
+				name: profile.child2Name,
+				age: profile.child2Age ?? 0,
+				nickName: profile.child2NickName,
+				gender: profile.child2Gender ?? "male",
+				favoriteColor: profile.child2FavoriteColor,
+				favoriteAnimal: profile.child2FavoriteAnimal,
+			});
+		}
+		return childrenList;
+	}, [profile]);
+
+	const canAddChild = children.length < 2;
+
+	// Calculate statistics
+	const stats = useMemo(() => {
+		const storiesList = stories || [];
+		const storiesCreated = storiesList.length;
+		const readingTime = Math.round(storiesCreated * 3);
+		const currentStreak = 7; // TODO: Calculate from actual data
+		const achievements = Math.floor(storiesCreated / 3);
+		return { storiesCreated, readingTime, currentStreak, achievements };
+	}, [stories]);
+
+	const handleAddChild = () => {
+		setEditingChildId(null);
+		setChild2FormData({
+			child2Name: "",
+			child2Age: "",
+			child2NickName: "",
+			child2Gender: "male",
+			child2FavoriteColor: "",
+			child2FavoriteAnimal: "",
+		});
+		setIsAddChildDialogOpen(true);
+	};
+
+	const handleSaveChild2 = async () => {
+		if (!child2FormData.child2Name || !child2FormData.child2Age) {
+			toast.error("Please fill in all required fields");
+			return;
+		}
+
+		setIsSavingChild2(true);
+		try {
+			await updateChild2({
+				child2Name: child2FormData.child2Name,
+				child2Age: parseInt(child2FormData.child2Age),
+				child2Gender: child2FormData.child2Gender,
+				child2NickName: child2FormData.child2NickName || undefined,
+				child2FavoriteColor: child2FormData.child2FavoriteColor || undefined,
+				child2FavoriteAnimal: child2FormData.child2FavoriteAnimal || undefined,
+			});
+			toast.success("Child added successfully");
+			setIsAddChildDialogOpen(false);
+		} catch (err) {
+			toast.error("Failed to add child");
+		} finally {
+			setIsSavingChild2(false);
+		}
+	};
+
+	const handleEditChild = (id: string) => {
+		if (id === "2" && profile?.child2Name) {
+			setEditingChildId("2");
+			setChild2FormData({
+				child2Name: profile.child2Name,
+				child2Age: (profile.child2Age ?? 0).toString(),
+				child2NickName: profile.child2NickName ?? "",
+				child2Gender: profile.child2Gender ?? "male",
+				child2FavoriteColor: profile.child2FavoriteColor ?? "",
+				child2FavoriteAnimal: profile.child2FavoriteAnimal ?? "",
+			});
+			setIsAddChildDialogOpen(true);
+		} else if (id === "1" && profile?.childName) {
+			setEditingChildId("1");
+			setChild1FormData({
+				childName: profile.childName,
+				childAge: profile.childAge.toString(),
+				childNickName: profile.childNickName ?? "",
+				childGender: profile.childGender,
+				favoriteColor: profile.favoriteColor ?? "",
+				favoriteAnimal: profile.favoriteAnimal ?? "",
+			});
+			setIsAddChildDialogOpen(true);
+		}
+	};
+
+	const handleSaveChild1 = async () => {
+		if (!child1FormData.childName || !child1FormData.childAge) {
+			toast.error("Please fill in all required fields");
+			return;
+		}
+
+		setIsSavingChild1(true);
 		try {
 			await updateProfile({
-				parentName: formData.parentName,
-				childName: formData.childName,
-				childAge: parseInt(formData.childAge),
-				childGender: formData.childGender,
-				childNickName: formData.childNickName || undefined,
-				favoriteColor: formData.favoriteColor || undefined,
-				favoriteAnimal: formData.favoriteAnimal || undefined,
+				parentName: profile?.parentName || "",
+				childName: child1FormData.childName,
+				childAge: parseInt(child1FormData.childAge),
+				childGender: child1FormData.childGender,
+				childNickName: child1FormData.childNickName || undefined,
+				favoriteColor: child1FormData.favoriteColor || undefined,
+				favoriteAnimal: child1FormData.favoriteAnimal || undefined,
 			});
-
-			if (childPhoto) {
-				try {
-					setIsUploadingPhoto(true);
-					const uploadUrl = await generateUploadUrl({});
-					const res = await fetch(uploadUrl, {
-						method: "POST",
-						headers: { "Content-Type": childPhoto.type || "application/octet-stream" },
-						body: childPhoto,
-					});
-					if (!res.ok) {
-						throw new Error("Upload failed");
-					}
-					const json = (await res.json()) as { storageId?: string };
-					if (json?.storageId) {
-						await setProfilePicture({ storageId: json.storageId });
-						try {
-							await generateAndStoreAvatar({});
-						} catch {
-							// Non-blocking
-						}
-					}
-					setChildPhoto(null);
-				} catch (_err) {
-					toast.error("Photo upload failed. Please try again later.");
-				} finally {
-					setIsUploadingPhoto(false);
-				}
-			}
-
-			toast.success("Profile updated");
-		} catch (_err) {
-			toast.error("Failed to update profile");
+			toast.success("Child updated successfully");
+			setIsAddChildDialogOpen(false);
+		} catch (err) {
+			toast.error("Failed to update child");
 		} finally {
-			setIsSaving(false);
+			setIsSavingChild1(false);
+		}
+	};
+
+	const handleDeleteChild = async (id: string) => {
+		if (id === "2") {
+			try {
+				await updateChild2({
+					child2Name: undefined,
+					child2Age: undefined,
+					child2Gender: undefined,
+					child2NickName: undefined,
+					child2FavoriteColor: undefined,
+					child2FavoriteAnimal: undefined,
+				});
+				toast.success("Child removed");
+			} catch (err) {
+				toast.error("Failed to remove child");
+			}
+		} else if (id === "1") {
+			// Can't delete the first child (from onboarding) - show message
+			toast.error("The first child cannot be deleted. Please contact support if needed.");
 		}
 	};
 
@@ -130,8 +229,11 @@ export default function ProfileForm() {
 	}
 
 	const userName = profile?.parentName || "User";
-	const email = ""; // Email not available in profile
-	const preferredLanguage = "English"; // Default or from profile if available
+	const email = user?.email || "No email available";
+	const preferredLanguage = "English";
+	const memberSince = profile?.createdAt
+		? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+		: "Recently";
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -149,192 +251,371 @@ export default function ProfileForm() {
 					<Card className="p-8 rounded-3xl" data-testid="card-profile-info">
 						<div className="space-y-6">
 							<div className="flex items-center gap-6">
-								<div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20">
-									<img
-										src={previewUrl ?? profilePhotoUrl ?? ""}
-										alt="Profile"
-										className="w-full h-full object-cover"
-									/>
-								</div>
+								<Avatar className="w-24 h-24">
+									<AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-accent text-white">
+										{userName.charAt(0)}
+									</AvatarFallback>
+								</Avatar>
 								<div className="flex-1">
 									<h2 className="text-3xl font-bold">{userName}</h2>
 									<p className="text-muted-foreground">{email || "No email available"}</p>
 								</div>
-								<Button variant="outline" className="rounded-2xl" data-testid="button-edit-profile">
-									Edit Profile
-								</Button>
 							</div>
 
-							<form onSubmit={(e) => void handleSave(e)} className="space-y-6">
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-									<div className="space-y-2">
-										<label htmlFor="parentName" className="text-base font-semibold flex items-center gap-2">
-											Parent's Name
-										</label>
-										<Input
-											id="parentName"
-											value={formData.parentName}
-											onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
-											placeholder="Enter your name"
-											className="rounded-xl h-12"
-											data-testid="input-name"
-										/>
-									</div>
-									<div className="space-y-2">
-										<label htmlFor="childName" className="text-base font-semibold flex items-center gap-2">
-											Child's Name
-										</label>
-										<Input
-											id="childName"
-											value={formData.childName}
-											onChange={(e) => setFormData({ ...formData, childName: e.target.value })}
-											placeholder="Enter child's name"
-											className="rounded-xl h-12"
-											data-testid="input-child-name"
-										/>
-									</div>
-									<div className="space-y-2">
-										<label htmlFor="childNickName" className="text-base font-semibold flex items-center gap-2">
-											Nickname (Optional)
-										</label>
-										<Input
-											id="childNickName"
-											value={formData.childNickName}
-											onChange={(e) => setFormData({ ...formData, childNickName: e.target.value })}
-											placeholder="e.g., Teddy, Sunny"
-											className="rounded-xl h-12"
-										/>
-									</div>
-									<div className="space-y-2">
-										<label htmlFor="childAge" className="text-base font-semibold flex items-center gap-2">
-											Child's Age
-										</label>
-										<Input
-											id="childAge"
-											type="number"
-											min="1"
-											max="18"
-											value={formData.childAge}
-											onChange={(e) => setFormData({ ...formData, childAge: e.target.value })}
-											placeholder="Enter age"
-											className="rounded-xl h-12"
-										/>
-									</div>
-								</div>
-
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-									<div className="space-y-2">
-										<label className="text-base font-semibold flex items-center gap-2">Gender</label>
-										<div className="flex gap-2">
-											{genderOptions.map((g) => (
-												<button
-													type="button"
-													key={g.value}
-													onClick={() => setFormData({ ...formData, childGender: g.value })}
-													className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
-														formData.childGender === g.value
-															? "bg-primary text-primary-foreground border-primary"
-															: "bg-transparent hover:bg-muted border-muted-foreground/30"
-													}`}
-												>
-													{g.label}
-												</button>
-											))}
-										</div>
-									</div>
-									<div className="space-y-2">
-										<label htmlFor="favoriteColor" className="text-base font-semibold flex items-center gap-2">
-											Favorite Color
-										</label>
-										<select
-											id="favoriteColor"
-											value={formData.favoriteColor}
-											onChange={(e) => setFormData({ ...formData, favoriteColor: e.target.value })}
-											className="w-full p-3 border rounded-xl bg-background h-12"
-										>
-											<option value="">Choose a color</option>
-											{COLORS.map((color) => (
-												<option key={color} value={color}>
-													{color}
-												</option>
-											))}
-										</select>
-									</div>
-									<div className="space-y-2">
-										<label htmlFor="favoriteAnimal" className="text-base font-semibold flex items-center gap-2">
-											Favorite Animal
-										</label>
-										<select
-											id="favoriteAnimal"
-											value={formData.favoriteAnimal}
-											onChange={(e) => setFormData({ ...formData, favoriteAnimal: e.target.value })}
-											className="w-full p-3 border rounded-xl bg-background h-12"
-										>
-											<option value="">Choose an animal</option>
-											{ANIMALS.map((animal) => (
-												<option key={animal} value={animal}>
-													{animal}
-												</option>
-											))}
-										</select>
-									</div>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div className="space-y-2">
+									<Label htmlFor="name" className="text-base font-semibold flex items-center gap-2">
+										<User className="w-4 h-4" />
+										Name
+									</Label>
+									<Input
+										id="name"
+										value={userName}
+										className="rounded-xl h-12"
+										readOnly
+										data-testid="input-name"
+									/>
 								</div>
 
 								<div className="space-y-2">
-									<label htmlFor="childPhoto" className="text-base font-semibold flex items-center gap-2">
-										Child's Photo (Optional)
-									</label>
-									<input
-										id="childPhoto"
-										type="file"
-										accept="image/*"
-										onChange={(e) => {
-											const file = e.target.files?.[0] ?? null;
-											setChildPhoto(file ?? null);
-										}}
-										className="w-full p-3 border rounded-xl bg-background"
+									<Label htmlFor="email" className="text-base font-semibold flex items-center gap-2">
+										<Mail className="w-4 h-4" />
+										Email
+									</Label>
+									<Input
+										id="email"
+										value={email || "Not available"}
+										type="email"
+										className="rounded-xl h-12"
+										readOnly
+										data-testid="input-email"
 									/>
-									{childPhoto && (
-										<p className="text-sm text-muted-foreground mt-2">
-											Selected: {childPhoto.name} {isUploadingPhoto ? "(Uploading...)" : ""}
-										</p>
-									)}
 								</div>
 
-								<div className="flex justify-end gap-2 pt-4">
-									<Button type="submit" disabled={isSaving || isUploadingPhoto} className="rounded-2xl px-8">
-										{isSaving ? "Saving..." : "Save Changes"}
-									</Button>
+								<div className="space-y-2">
+									<Label htmlFor="language" className="text-base font-semibold flex items-center gap-2">
+										<Globe className="w-4 h-4" />
+										Preferred Language
+									</Label>
+									<Input
+										id="language"
+										value={preferredLanguage}
+										className="rounded-xl h-12"
+										readOnly
+										data-testid="input-language"
+									/>
 								</div>
-							</form>
+
+								<div className="space-y-2">
+									<Label className="text-base font-semibold flex items-center gap-2">
+										<Calendar className="w-4 h-4" />
+										Member Since
+									</Label>
+									<Input
+										value={memberSince}
+										className="rounded-xl h-12"
+										readOnly
+										data-testid="input-member-since"
+									/>
+								</div>
+							</div>
 						</div>
 					</Card>
 
-					<Card className="p-8 rounded-3xl bg-gradient-to-br from-chart-1/10 to-chart-2/10" data-testid="card-stats">
-						<h2 className="text-2xl font-bold mb-6">Account Statistics</h2>
-						<div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-							<div className="text-center">
-								<div className="text-4xl font-bold text-chart-1">0</div>
-								<div className="text-sm text-muted-foreground mt-1">Stories Created</div>
+					<Card className="p-8 rounded-3xl" data-testid="card-children">
+						<div className="space-y-6">
+							<div className="flex items-center justify-between">
+								<h2 className="text-2xl font-bold">Children</h2>
+								{canAddChild && (
+									<Button
+										className="rounded-2xl"
+										onClick={handleAddChild}
+										data-testid="button-add-child"
+									>
+										<Plus className="w-4 h-4 mr-2" />
+										Add Child
+									</Button>
+								)}
 							</div>
-							<div className="text-center">
-								<div className="text-4xl font-bold text-chart-2">0h</div>
-								<div className="text-sm text-muted-foreground mt-1">Total Reading Time</div>
-							</div>
-							<div className="text-center">
-								<div className="text-4xl font-bold text-chart-3">0</div>
-								<div className="text-sm text-muted-foreground mt-1">Day Streak</div>
-							</div>
-							<div className="text-center">
-								<div className="text-4xl font-bold text-chart-4">0</div>
-								<div className="text-sm text-muted-foreground mt-1">Achievements</div>
+
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								{children.map((child) => {
+									const favoriteDisplay = child.favoriteColor || child.favoriteAnimal;
+									const favoriteAnimalDisplay = child.favoriteAnimal || "No favorite animal";
+									const nicknameDisplay = child.nickName || "No nickname";
+									const showDelete = children.length === 2;
+									
+									return (
+										<Card
+											key={child.id}
+											className="p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5"
+											data-testid={`card-child-${child.id}`}
+										>
+											<div className="flex items-start justify-between">
+												<div className="space-y-2">
+													<h3 className="text-xl font-bold">{child.name}</h3>
+													<div className="space-y-1 text-sm text-muted-foreground">
+														<p>Age: {child.age} years</p>
+														{favoriteDisplay && (
+															<div className="flex items-center gap-2">
+																<span>Favorite:</span>
+																<Badge variant="secondary" className="rounded-xl">
+																	{favoriteDisplay}
+																</Badge>
+															</div>
+														)}
+														{nicknameDisplay && (
+															<div className="flex items-center gap-2">
+																<span>Nickname:</span>
+																<Badge variant="secondary" className="rounded-xl">
+																	{nicknameDisplay}
+																</Badge>
+															</div>
+														)}
+														{favoriteAnimalDisplay && (
+															<div className="flex items-center gap-2">
+																<span>Favorite Animal:</span>
+																<Badge variant="secondary" className="rounded-xl">
+																	{favoriteAnimalDisplay}
+																</Badge>
+															</div>
+														)}
+													</div>
+													
+												</div>
+												<div className="flex gap-2">
+													<Button
+														size="icon"
+														variant="ghost"
+														onClick={() => handleEditChild(child.id)}
+														data-testid={`button-edit-child-${child.id}`}
+													>
+														<Edit className="w-4 h-4" />
+													</Button>
+													{showDelete && (
+														<Button
+															size="icon"
+															variant="ghost"
+															onClick={() => handleDeleteChild(child.id)}
+															data-testid={`button-delete-child-${child.id}`}
+														>
+															<Trash2 className="w-4 h-4 text-destructive" />
+														</Button>
+													)}
+												</div>
+											</div>
+										</Card>
+									);
+								})}
 							</div>
 						</div>
 					</Card>
 				</div>
 			</main>
+
+			<Dialog open={isAddChildDialogOpen} onOpenChange={setIsAddChildDialogOpen}>
+				<DialogContent className="sm:max-w-[600px]">
+					<DialogHeader>
+						<DialogTitle>{editingChildId === "1" ? "Edit Child" : editingChildId === "2" ? "Edit Child" : "Add Child"}</DialogTitle>
+						<DialogDescription>
+							{editingChildId ? "Update child information." : "Add a second child to your profile. You can add up to 2 children."}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
+						{editingChildId === "1" ? (
+							<>
+								<div className="space-y-2">
+									<Label htmlFor="child1Name">Child's Name *</Label>
+									<Input
+										id="child1Name"
+										value={child1FormData.childName}
+										onChange={(e) => setChild1FormData({ ...child1FormData, childName: e.target.value })}
+										placeholder="Enter child's name"
+										className="rounded-xl h-12"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child1NickName">Nickname (Optional)</Label>
+									<Input
+										id="child1NickName"
+										value={child1FormData.childNickName}
+										onChange={(e) => setChild1FormData({ ...child1FormData, childNickName: e.target.value })}
+										placeholder="e.g., Teddy, Sunny"
+										className="rounded-xl h-12"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child1Age">Child's Age *</Label>
+									<Input
+										id="child1Age"
+										type="number"
+										min="1"
+										max="18"
+										value={child1FormData.childAge}
+										onChange={(e) => setChild1FormData({ ...child1FormData, childAge: e.target.value })}
+										placeholder="Enter age"
+										className="rounded-xl h-12"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label>Gender *</Label>
+									<div className="flex gap-2">
+										{genderOptions.map((g) => (
+											<button
+												type="button"
+												key={g.value}
+												onClick={() => setChild1FormData({ ...child1FormData, childGender: g.value })}
+												className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+													child1FormData.childGender === g.value
+														? "bg-primary text-primary-foreground border-primary"
+														: "bg-transparent hover:bg-muted border-muted-foreground/30"
+												}`}
+											>
+												{g.label}
+											</button>
+										))}
+									</div>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child1FavoriteColor">Favorite Color</Label>
+									<select
+										id="child1FavoriteColor"
+										value={child1FormData.favoriteColor}
+										onChange={(e) => setChild1FormData({ ...child1FormData, favoriteColor: e.target.value })}
+										className="w-full p-3 border rounded-xl bg-background h-12"
+									>
+										<option value="">Choose a color</option>
+										{COLORS.map((color) => (
+											<option key={color} value={color}>
+												{color}
+											</option>
+										))}
+									</select>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child1FavoriteAnimal">Favorite Animal</Label>
+									<select
+										id="child1FavoriteAnimal"
+										value={child1FormData.favoriteAnimal}
+										onChange={(e) => setChild1FormData({ ...child1FormData, favoriteAnimal: e.target.value })}
+										className="w-full p-3 border rounded-xl bg-background h-12"
+									>
+										<option value="">Choose an animal</option>
+										{ANIMALS.map((animal) => (
+											<option key={animal} value={animal}>
+												{animal}
+											</option>
+										))}
+									</select>
+								</div>
+							</>
+						) : (
+							<>
+								<div className="space-y-2">
+									<Label htmlFor="child2Name">Child's Name *</Label>
+									<Input
+										id="child2Name"
+										value={child2FormData.child2Name}
+										onChange={(e) => setChild2FormData({ ...child2FormData, child2Name: e.target.value })}
+										placeholder="Enter child's name"
+										className="rounded-xl h-12"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child2NickName">Nickname (Optional)</Label>
+									<Input
+										id="child2NickName"
+										value={child2FormData.child2NickName}
+										onChange={(e) => setChild2FormData({ ...child2FormData, child2NickName: e.target.value })}
+										placeholder="e.g., Teddy, Sunny"
+										className="rounded-xl h-12"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child2Age">Child's Age *</Label>
+									<Input
+										id="child2Age"
+										type="number"
+										min="1"
+										max="18"
+										value={child2FormData.child2Age}
+										onChange={(e) => setChild2FormData({ ...child2FormData, child2Age: e.target.value })}
+										placeholder="Enter age"
+										className="rounded-xl h-12"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label>Gender *</Label>
+									<div className="flex gap-2">
+										{genderOptions.map((g) => (
+											<button
+												type="button"
+												key={g.value}
+												onClick={() => setChild2FormData({ ...child2FormData, child2Gender: g.value })}
+												className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+													child2FormData.child2Gender === g.value
+														? "bg-primary text-primary-foreground border-primary"
+														: "bg-transparent hover:bg-muted border-muted-foreground/30"
+												}`}
+											>
+												{g.label}
+											</button>
+										))}
+									</div>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child2FavoriteColor">Favorite Color</Label>
+									<select
+										id="child2FavoriteColor"
+										value={child2FormData.child2FavoriteColor}
+										onChange={(e) => setChild2FormData({ ...child2FormData, child2FavoriteColor: e.target.value })}
+										className="w-full p-3 border rounded-xl bg-background h-12"
+									>
+										<option value="">Choose a color</option>
+										{COLORS.map((color) => (
+											<option key={color} value={color}>
+												{color}
+											</option>
+										))}
+									</select>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="child2FavoriteAnimal">Favorite Animal</Label>
+									<select
+										id="child2FavoriteAnimal"
+										value={child2FormData.child2FavoriteAnimal}
+										onChange={(e) => setChild2FormData({ ...child2FormData, child2FavoriteAnimal: e.target.value })}
+										className="w-full p-3 border rounded-xl bg-background h-12"
+									>
+										<option value="">Choose an animal</option>
+										{ANIMALS.map((animal) => (
+											<option key={animal} value={animal}>
+												{animal}
+											</option>
+										))}
+									</select>
+								</div>
+							</>
+						)}
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setIsAddChildDialogOpen(false)}
+							className="rounded-2xl"
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={editingChildId === "1" ? handleSaveChild1 : handleSaveChild2}
+							disabled={isSavingChild1 || isSavingChild2}
+							className="rounded-2xl"
+						>
+							{(isSavingChild1 || isSavingChild2) ? "Saving..." : "Save"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
-
-

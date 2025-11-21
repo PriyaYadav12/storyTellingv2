@@ -23,6 +23,14 @@ export default defineSchema({
 		childProfilePicture: v.optional(v.string()),
 		createdAt: v.number(),
 		updatedAt: v.number(),
+		child2Name: v.optional(v.string()),
+		child2Age: v.optional(v.number()),
+		child2Gender: v.optional(v.union(v.literal("male"), v.literal("female"), v.literal("other"))),
+		child2NickName: v.optional(v.string()),
+		child2FavoriteColor: v.optional(v.string()),
+		child2FavoriteAnimal: v.optional(v.string()),
+		child2AvatarStorageId: v.optional(v.string()),
+		child2ProfilePicture: v.optional(v.string()),
 	}).index("by_user", ["userId"]),
 
 	stories: defineTable({

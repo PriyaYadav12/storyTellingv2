@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { authComponent } from "./auth";
 
@@ -46,6 +46,20 @@ export const getSceneImageUrls = query({
         );
 
         return scenes;
+    },
+});
+
+export const getFirstSceneImageUrl = query({
+    args: { storyId: v.id("stories") },
+    handler: async (ctx, { storyId }) => {
+        const story = await ctx.db.get(storyId);
+        if (!story?.sceneMetadata || story.sceneMetadata.length === 0) return null;
+
+        const sorted = [...story.sceneMetadata].sort((a, b) => a.sceneNumber - b.sceneNumber);
+        const firstScene = sorted[0];
+        if (!firstScene?.filePath) return null;
+
+        return await ctx.storage.getUrl(firstScene.filePath as any);
     },
 });
 
@@ -212,5 +226,3 @@ export const getNarrationFileUrl = query({
 		return { url };
 	},
 });
-
-// generateNow action moved to storiesActions.ts to avoid circular type inference

@@ -1,3 +1,5 @@
+import { useQuery } from "convex/react";
+import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,25 +30,27 @@ export default function StoryCard({
 	coverImage,
 	onPlay,
 }: StoryCardProps) {
+	const firstSceneImageUrl = useQuery(api.stories.getFirstSceneImageUrl, { storyId: id as any });
+
+	const handleClick = () => {
+		onPlay?.(id);
+	};
+
 	return (
-		<Card className="p-6 rounded-3xl hover:shadow-lg active:scale-95 transition-all group" data-testid={`card-story-${id}`}>
+		<Card 
+			className="p-6 rounded-3xl hover:shadow-lg active:scale-95 transition-all group cursor-pointer" 
+			data-testid={`card-story-${id}`}
+			onClick={handleClick}
+		>
 			<div className="space-y-4">
 				<div className="aspect-video rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
-					{coverImage ? (
-						<img src={coverImage} alt={title} className="w-full h-full object-cover" />
-					) : (
+					{firstSceneImageUrl ? (
+						<img src={firstSceneImageUrl} alt={title} className="w-full h-full object-cover" />
+					) : firstSceneImageUrl === null ? (
 						<div className="text-6xl">📚</div>
+					) : (
+						<div className="animate-pulse bg-muted rounded-lg w-full h-full" />
 					)}
-					<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-						<Button
-							size="icon"
-							className="w-16 h-16 rounded-full"
-							onClick={() => onPlay?.(id)}
-							data-testid={`button-play-${id}`}
-						>
-							<Play className="w-8 h-8" fill="currentColor" />
-						</Button>
-					</div>
 				</div>
 
 				<div className="space-y-3">
