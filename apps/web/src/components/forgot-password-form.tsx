@@ -19,9 +19,10 @@ export default function ForgotPasswordForm() {
 			email: "",
 		},
 		onSubmit: async ({ value }) => {
-			await authClient.forgetPassword.emailOtp(
+			await authClient.emailOtp.sendVerificationOtp(
 				{
 					email: value.email,
+					type: "forget-password",
 				},
 				{
 					onSuccess: () => {
@@ -29,7 +30,7 @@ export default function ForgotPasswordForm() {
 						setStage("reset");
 						toast.success("OTP sent to your email.");
 					},
-					onError: (error) => {
+					onError: (error: any) => {
 						toast.error(error.error.message || error.error.statusText);
 					},
 				},
@@ -59,7 +60,7 @@ export default function ForgotPasswordForm() {
 						toast.success("Password reset successfully. Please sign in.");
 						navigate({ to: "/dashboard", replace: true });
 					},
-					onError: (error) => {
+					onError: (error: any) => {
 						toast.error(error.error.message || error.error.statusText);
 					},
 				},

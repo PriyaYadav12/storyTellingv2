@@ -15,6 +15,7 @@ export const generateNow: ReturnType<typeof action> = action({
 			length: v.union(v.literal("short"), v.literal("medium"), v.literal("long")),
 			language: v.optional(v.string()),
 			useFavorites: v.optional(v.boolean()),
+			childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
 		}),
 	},
 	handler: async (ctx, { params }) => {
@@ -23,6 +24,23 @@ export const generateNow: ReturnType<typeof action> = action({
 		// Get profile to personalize
 		const profile = await ctx.runQuery(api.userProfiles.getProfile, {});
 		if (!profile) throw new Error("Profile not found");
+		
+		// Determine which child to use (default to "1")
+		const childId = params.childId || "1";
+		
+		// Get child info based on childId
+		const name = childId === "1" 
+			? (profile.childName || profile.childNickName?.trim())
+			: (profile.child2Name || profile.child2NickName?.trim());
+		const age = childId === "1" ? profile.childAge : (profile.child2Age || 0);
+		const gender = childId === "1" ? profile.childGender : (profile.child2Gender || "male");
+		
+		// Store child name in params for searchability (remove childId from params before saving)
+		const { childId: _, ...paramsWithoutChildId } = params;
+		const paramsWithChildName = {
+			...paramsWithoutChildId,
+			childName: name || undefined,
+		};
 		
 		// Get selected story elements
 		const allowedFlavorElements = await ctx.runMutation(api.storyElementSelector.selectStoryElements, { themeName: params.theme });
@@ -34,15 +52,11 @@ export const generateNow: ReturnType<typeof action> = action({
 		if (!structure) throw new Error(`Structure "${allowedFlavorElements.structureCode}" not found`);
 		
 		// Create record and mark generating
-		const storyId = await ctx.runMutation(api.stories._create, {title: '', params });
+		const storyId = await ctx.runMutation(api.stories._create, {title: '', params: paramsWithChildName });
 		await ctx.runMutation(api.stories._markStatus, { storyId, status: "generating" });
 
 		try {
 			const client = new OpenAI({ apiKey: process.env.OPEN_AI_API! });
-
-			const name = profile.childName || profile.childNickName?.trim();
-			const age = profile.childAge;
-			const gender = profile.childGender;
 
 			// Format the story prompt using the utility function
 			const formattedPrompt = formatStoryPrompt(
@@ -104,12 +118,15 @@ export const generateNow: ReturnType<typeof action> = action({
 					gender,
 					age,
 				};
+				const avatarStorageId = childId === "1" 
+					? profile.childAvatarStorageId 
+					: profile.child2AvatarStorageId;
 				await generateAllSceneImages(
 					ctx,
 					story.sceneMetadata,
 					childInfo,
-					storyId
-					//profile.childAvatarStorageId
+					storyId,
+					avatarStorageId
 				);
 				//   return { ok: true };
 			}
@@ -117,8 +134,8 @@ export const generateNow: ReturnType<typeof action> = action({
 			await generateMergedNarration(ctx, {
 				storyId: storyId,
 				content: story.content || "",
-				childName: (profile.childName || profile.childNickName || "Child").trim(),
-				childGender: profile.childGender,
+				childName: (name || "Child").trim(),
+				childGender: gender,
 				language: params.language || "english",
 			  });
 			  console.log("Voice narration generated for story");

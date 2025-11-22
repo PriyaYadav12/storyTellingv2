@@ -44,6 +44,7 @@ export default defineSchema({
 			length: v.union(v.literal("short"), v.literal("medium"), v.literal("long")),
 			language: v.optional(v.string()),
 			useFavorites: v.optional(v.boolean()),
+			childName: v.optional(v.string()),
 		}),
 		sceneMetadata: v.optional(v.array(v.object({
 			sceneNumber: v.number(),

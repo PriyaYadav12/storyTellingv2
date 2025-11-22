@@ -41,7 +41,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 	const [selectedAdventure, setSelectedAdventure] = useState<string | null>(null);
 	const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 	const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
-	const [selectedLength, setSelectedLength] = useState<"short" | "medium" | "long">("medium");
+	const [selectedLength, setSelectedLength] = useState<"short" | "medium" | "long">("short");
 	const [selectedChild, setSelectedChild] = useState<"1" | "2">("1");
 	const [useFavorites, setUseFavorites] = useState(true);
 	const [isGenerating, setIsGenerating] = useState(false);

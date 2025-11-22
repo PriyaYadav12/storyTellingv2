@@ -72,6 +72,7 @@ export const _create = mutation({
 			length: v.union(v.literal("short"), v.literal("medium"), v.literal("long")),
 			language: v.optional(v.string()),
 			useFavorites: v.optional(v.boolean()),
+			childName: v.optional(v.string()),
 		}),
 	},
 	handler: async (ctx, { title, params }) => {

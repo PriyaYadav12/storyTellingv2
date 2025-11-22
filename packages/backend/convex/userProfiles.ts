@@ -168,8 +168,10 @@ export const hasProfile = query({
 });
 
 export const generateAndStoreAvatar: ReturnType<typeof action> = action({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
+  },
+  handler: async (ctx, { childId = "1" }) => {
     const user = await authComponent.getAuthUser(ctx);
     if (!user) {
       throw new Error("Not authenticated");
@@ -182,22 +184,35 @@ export const generateAndStoreAvatar: ReturnType<typeof action> = action({
     }
 
     // Check if avatar already exists
-    if (profile.childAvatarStorageId) {
-      return { avatarStorageId: profile.childAvatarStorageId, generated: false };
+    const existingAvatarId = childId === "1" 
+      ? profile.childAvatarStorageId 
+      : profile.child2AvatarStorageId;
+    
+    if (existingAvatarId) {
+      return { avatarStorageId: existingAvatarId, generated: false };
     }
 
-    // Generate avatar
-    const childInfo = {
+    // Get child info based on childId
+    const childInfo = childId === "1" ? {
       name: profile.childName || profile.childNickName || "Child",
       gender: profile.childGender,
       age: profile.childAge,
+    } : {
+      name: profile.child2Name || profile.child2NickName || "Child",
+      gender: profile.child2Gender || "male",
+      age: profile.child2Age || 0,
     };
+
+    // Get profile picture based on childId
+    const profilePicture = childId === "1" 
+      ? profile.childProfilePicture 
+      : profile.child2ProfilePicture;
 
     const result = await generateChildAvatar(
       ctx,
       childInfo,
       // Use the uploaded child profile picture as a reference if available
-      profile.childProfilePicture
+      profilePicture
     );
     
     if (result.error || !result.avatarStorageId) {
@@ -207,6 +222,7 @@ export const generateAndStoreAvatar: ReturnType<typeof action> = action({
     // Store avatar ID in profile
     await ctx.runMutation(api.userProfiles._updateAvatarStorageId, {
       avatarStorageId: result.avatarStorageId,
+      childId,
     });
 
     return { avatarStorageId: result.avatarStorageId, generated: true };
@@ -217,8 +233,9 @@ export const generateAndStoreAvatar: ReturnType<typeof action> = action({
 export const _updateAvatarStorageId = mutation({
   args: {
     avatarStorageId: v.string(),
+    childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, { avatarStorageId, childId = "1" }) => {
     const user = await authComponent.getAuthUser(ctx);
     if (!user) {
       throw new Error("Not authenticated");
@@ -235,10 +252,17 @@ export const _updateAvatarStorageId = mutation({
       throw new Error("Profile not found");
     }
 
-    return await ctx.db.patch(profile._id, {
-      childAvatarStorageId: args.avatarStorageId,
+    const updateData: any = {
       updatedAt: Date.now(),
-    });
+    };
+
+    if (childId === "1") {
+      updateData.childAvatarStorageId = avatarStorageId;
+    } else {
+      updateData.child2AvatarStorageId = avatarStorageId;
+    }
+
+    return await ctx.db.patch(profile._id, updateData);
   },
 });
 
@@ -256,8 +280,9 @@ export const generateProfilePictureUploadUrl = mutation({
 export const setProfilePicture = mutation({
 	args: {
 		storageId: v.string(),
+		childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
 	},
-	handler: async (ctx, { storageId }) => {
+	handler: async (ctx, { storageId, childId = "1" }) => {
 		const user = await authComponent.getAuthUser(ctx);
 		if (!user) {
 			throw new Error("Not authenticated");
@@ -272,16 +297,25 @@ export const setProfilePicture = mutation({
 			throw new Error("Profile not found");
 		}
 
-		return await ctx.db.patch(profile._id, {
-			childProfilePicture: storageId,
+		const updateData: any = {
 			updatedAt: Date.now(),
-		});
+		};
+
+		if (childId === "1") {
+			updateData.childProfilePicture = storageId;
+		} else {
+			updateData.child2ProfilePicture = storageId;
+		}
+
+		return await ctx.db.patch(profile._id, updateData);
 	},
 });
 
 export const getProfilePhotoUrl = query({
-	args: {},
-	handler: async (ctx) => {
+	args: {
+		childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
+	},
+	handler: async (ctx, { childId = "1" }) => {
 		const user = await authComponent.getAuthUser(ctx);
 		if (!user) {
 			return null;
@@ -293,10 +327,15 @@ export const getProfilePhotoUrl = query({
 			.withIndex("by_user", (q) => q.eq("userId", userId))
 			.first();
 
-		if (!profile?.childProfilePicture) {
+		if (!profile) {
 			return null;
 		}
 
-		return await ctx.storage.getUrl(profile.childProfilePicture);
+		const storageId = childId === "1" ? profile.childProfilePicture : profile.child2ProfilePicture;
+		if (!storageId) {
+			return null;
+		}
+
+		return await ctx.storage.getUrl(storageId);
 	},
 });
