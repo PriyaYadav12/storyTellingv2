@@ -29,6 +29,7 @@ function RouteComponent() {
 	const hasProfile = useQuery(api.userProfiles.hasProfile,isAuthenticated ? {} : "skip");
 	const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
 	const stories = useQuery(api.stories.list,isAuthenticated ? {} : "skip");
+	const achievementsData = useQuery(api.userProfiles.getAchievements, isAuthenticated ? {} : "skip");
 	
 	const userName = profile?.parentName || "Friend";
 	
@@ -40,10 +41,14 @@ function RouteComponent() {
 		const favoriteTheme = storiesList.length > 0 
 			? (storiesList[0]?.params?.theme as string) || "Adventure"
 			: "Adventure";
-		const badgesEarned = Math.floor(storiesCreated / 3); // 1 badge per 3 stories
 		
-		return { storiesCreated, readingTime: readingTime.toString(), favoriteTheme, badgesEarned };
-	}, [stories]);
+		// Get earned badge names from achievements
+		const earnedBadges = achievementsData?.achievements
+			?.filter(a => a.earned)
+			.map(a => a.name) || [];
+		
+		return { storiesCreated, readingTime: readingTime.toString(), favoriteTheme, earnedBadges };
+	}, [stories, achievementsData]);
 	
 	const handleStoryGenerated = (storyId: string) => {
 		// Navigate directly to the story page
@@ -101,13 +106,17 @@ function RouteComponent() {
 
 							<section data-testid="section-stats">
 								<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-									<StatisticsCard
-										storiesCreated={stats.storiesCreated}
-										readingTime={stats.readingTime}
-										favoriteTheme={stats.favoriteTheme}
-										badgesEarned={stats.badgesEarned}
-									/>
-									<StreakTracker currentStreak={7} longestStreak={12} />
+						<StatisticsCard
+							storiesCreated={stats.storiesCreated}
+							readingTime={stats.readingTime}
+							favoriteTheme={stats.favoriteTheme}
+							earnedBadges={stats.earnedBadges}
+						/>
+						<StreakTracker 
+							currentStreak={achievementsData?.currentStreak || 0} 
+							longestStreak={achievementsData?.longestStreak || 0}
+							achievements={achievementsData?.achievements || []}
+						/>
 								</div>
 							</section>
 

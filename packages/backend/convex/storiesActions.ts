@@ -4,10 +4,10 @@ import { authComponent } from "./auth";
 import OpenAI from "openai";
 import { api } from "./_generated/api";
 import { formatStoryPrompt } from "./storyPromptFormatter";
-import { generateAllSceneImages } from "./sceneImageGenerator";
+import { generateAllSceneImages } from "./sceneImageGenerator/index";
 import { generateMergedNarration } from "./narrationGenerator";
 
-export const generateNow: ReturnType<typeof action> = action({
+export const generateStory: ReturnType<typeof action> = action({
 	args: {
 		params: v.object({
 			theme: v.string(),
@@ -139,6 +139,10 @@ export const generateNow: ReturnType<typeof action> = action({
 				language: params.language || "english",
 			  });
 			  console.log("Voice narration generated for story");
+			
+			// Update streak tracking after successful story generation
+			await ctx.runMutation(api.userProfiles.updateStreak, {});
+			
 			return { storyId };
 		} catch (err: any) {
 			await ctx.runMutation(api.stories._markStatus, {

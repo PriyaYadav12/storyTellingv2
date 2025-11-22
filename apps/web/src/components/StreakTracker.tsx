@@ -17,16 +17,17 @@ const achievementIcons = {
 };
 
 export default function StreakTracker({ 
-	currentStreak = 7, 
-	longestStreak = 12,
-	achievements = [
-		{ icon: "star", name: "First Story", earned: true },
-		{ icon: "flame", name: "7 Day Streak", earned: true },
-		{ icon: "trophy", name: "10 Stories", earned: true },
-		{ icon: "crown", name: "Story Master", earned: false },
-	]
+	currentStreak = 0, 
+	longestStreak = 0,
+	achievements = []
 }: StreakTrackerProps) {
-	const progress = (currentStreak / longestStreak) * 100;
+	const progress = longestStreak > 0 ? (currentStreak / longestStreak) * 100 : 0;
+	
+	// Sort achievements: earned first, then unearned
+	const sortedAchievements = [...achievements].sort((a, b) => {
+		if (a.earned === b.earned) return 0;
+		return a.earned ? -1 : 1;
+	});
 
 	return (
 		<Card className="p-8 rounded-3xl bg-gradient-to-br from-chart-1/5 to-chart-2/5 h-full flex flex-col" data-testid="card-streak-tracker">
@@ -47,9 +48,9 @@ export default function StreakTracker({
 				<div className="space-y-2">
 					<div className="flex justify-between text-sm font-medium">
 						<span>Progress to next milestone</span>
-						<span>{currentStreak}/14 days</span>
+						<span>{currentStreak}/7 days</span>
 					</div>
-					<Progress value={(currentStreak / 14) * 100} className="h-3" data-testid="progress-streak" />
+					<Progress value={(currentStreak / 7) * 100} className="h-3" data-testid="progress-streak" />
 				</div>
 
 				<div>
@@ -58,7 +59,7 @@ export default function StreakTracker({
 						Achievements
 					</h4>
 					<div className="flex flex-wrap gap-3">
-						{achievements.map((achievement, index) => {
+						{sortedAchievements.map((achievement, index) => {
 							const IconComponent = achievementIcons[achievement.icon as keyof typeof achievementIcons] || Star;
 							return (
 								<Badge 

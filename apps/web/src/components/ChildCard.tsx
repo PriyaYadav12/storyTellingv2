@@ -21,9 +21,10 @@ export default function ChildCard({ child, totalChildren, onEdit, onDelete, prof
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+    // Validate file type - only PNG and JPEG allowed
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      toast.error("Please select a PNG or JPEG image file");
       return;
     }
 
@@ -50,13 +51,11 @@ export default function ChildCard({ child, totalChildren, onEdit, onDelete, prof
       if (json?.storageId) {
         await setProfilePicture({ storageId: json.storageId, childId: child.id });
         
-        // Generate avatar using the uploaded profile picture
-        try {
-          await generateAndStoreAvatar({ childId: child.id });
-        } catch (error) {
-          // Non-blocking: avatar generation can fail silently
+        // Generate avatar in background (non-blocking)
+        generateAndStoreAvatar({ childId: child.id }).catch((error) => {
+          // Avatar generation can fail silently
           console.error("Avatar generation failed:", error);
-        }
+        });
         
         toast.success("Profile picture updated!");
         onProfilePictureUpdate?.();
@@ -100,7 +99,7 @@ export default function ChildCard({ child, totalChildren, onEdit, onDelete, prof
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/jpg"
             className="hidden"
             onChange={handleFileChange}
           />

@@ -3,7 +3,7 @@ import { authComponent } from "./auth";
 import { v, GenericId } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
-import { generateChildAvatar } from "./sceneImageGenerator";
+import { generateChildAvatar } from "./sceneImageGenerator/index";
 
 export const getProfile = query({
 	args: {},
@@ -12,7 +12,6 @@ export const getProfile = query({
 		if (!user) return null;
 		const userId = user._id as unknown as GenericId<"betterAuth:user">;
 		if (!userId) return null;
-		console.log(userId);
 		return await ctx.db
 			.query("user_profiles")
 			.withIndex("by_user", (q) => q.eq("userId", userId))
@@ -35,7 +34,6 @@ export const createProfile = mutation({
 		if (!user) {
 			throw new Error("Not authenticated");
 		}
-		console.log(user);
 			const userId = user._id as unknown as GenericId<"betterAuth:user">;
 
 		// Check if profile already exists
@@ -182,15 +180,16 @@ export const generateAndStoreAvatar: ReturnType<typeof action> = action({
     if (!profile) {
       throw new Error("Profile not found");
     }
+	console.log('profile', profile);
 
-    // Check if avatar already exists
-    const existingAvatarId = childId === "1" 
-      ? profile.childAvatarStorageId 
-      : profile.child2AvatarStorageId;
+    // // Check if avatar already exists
+    // const existingAvatarId = childId === "1" 
+    //   ? profile.childAvatarStorageId 
+    //   : profile.child2AvatarStorageId;
     
-    if (existingAvatarId) {
-      return { avatarStorageId: existingAvatarId, generated: false };
-    }
+    // if (existingAvatarId) {
+    //   return { avatarStorageId: existingAvatarId, generated: false };
+    // }
 
     // Get child info based on childId
     const childInfo = childId === "1" ? {
@@ -337,5 +336,110 @@ export const getProfilePhotoUrl = query({
 		}
 
 		return await ctx.storage.getUrl(storageId);
+	},
+});
+
+// Update streak when a story is created
+export const updateStreak = mutation({
+	args: {},
+	handler: async (ctx) => {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) throw new Error("Not authenticated");
+		
+		const userId = user._id as unknown as GenericId<"betterAuth:user">;
+		const profile = await ctx.db
+			.query("user_profiles")
+			.withIndex("by_user", (q) => q.eq("userId", userId))
+			.first();
+
+		if (!profile) throw new Error("Profile not found");
+
+		const now = Date.now();
+		const oneDayMs = 24 * 60 * 60 * 1000;
+		
+		const currentStreak = profile.currentStreak || 0;
+		const longestStreak = profile.longestStreak || 0;
+		const lastStoryDate = profile.lastStoryDate;
+
+		let newStreak = 1;
+
+		if (lastStoryDate) {
+			const daysSinceLastStory = Math.floor((now - lastStoryDate) / oneDayMs);
+			
+			// If story was created today (same day), keep streak
+			if (daysSinceLastStory === 0) {
+				newStreak = currentStreak;
+			}
+			// If story was created yesterday, increment streak
+			else if (daysSinceLastStory === 1) {
+				newStreak = currentStreak + 1;
+			}
+			// If more than 1 day passed, reset streak to 1
+			else {
+				newStreak = 1;
+			}
+		}
+
+		const newLongestStreak = Math.max(newStreak, longestStreak);
+
+		await ctx.db.patch(profile._id, {
+			currentStreak: newStreak,
+			longestStreak: newLongestStreak,
+			lastStoryDate: now,
+			updatedAt: now,
+		});
+
+		return { currentStreak: newStreak, longestStreak: newLongestStreak };
+	},
+});
+
+// Get user achievements based on story count and streak
+export const getAchievements = query({
+	args: {},
+	handler: async (ctx) => {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) return null;
+		
+		const userId = user._id as unknown as GenericId<"betterAuth:user">;
+		const profile = await ctx.db
+			.query("user_profiles")
+			.withIndex("by_user", (q) => q.eq("userId", userId))
+			.first();
+
+		if (!profile) return null;
+
+		// Get total story count
+		const stories = await ctx.db
+			.query("stories")
+			.withIndex("by_user", (q) => q.eq("userId", userId as string))
+			.collect();
+
+		const storyCount = stories.length;
+		const currentStreak = profile.currentStreak || 0;
+		const longestStreak = profile.longestStreak || 0;
+
+		const achievements = [
+			{
+				icon: "star",
+				name: "First Story",
+				earned: storyCount >= 1,
+			},
+			{
+				icon: "flame",
+				name: "7 Days in a Row",
+				earned: longestStreak >= 7,
+			},
+			{
+				icon: "trophy",
+				name: "10 Stories",
+				earned: storyCount >= 10,
+			},
+		];
+
+		return {
+			currentStreak,
+			longestStreak,
+			achievements,
+		};
 	},
 });

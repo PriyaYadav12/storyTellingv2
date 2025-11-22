@@ -18,7 +18,7 @@ function pickVoiceForSpeaker(speaker: string, childName: string, gender: Gender,
   if (s === "lalli") return language === "Hindi" ? VOICE_MAP.HindiLalli : VOICE_MAP.Lalli;
   if (s === "fafa") return language === "Hindi" ? VOICE_MAP.HindiFafa : VOICE_MAP.Fafa;
   if (s === "child" || s === "girl child" || s === "boy child" || s === childName.trim().toLowerCase()) {
-    resolveChildVoice(gender, language);
+    return resolveChildVoice(gender, language);
   }
   return language === "Hindi" ? VOICE_MAP.HindiNarrator : VOICE_MAP.Narrator;
 }
@@ -128,7 +128,7 @@ export async function generateMergedNarration(
   console.log("Parsed Lines:", lines);
 
   // Limit concurrency to 3 TTS calls at a time
-  const results = await mapWithConcurrencyLimit(lines, 1, async (l) => {
+  const results = await mapWithConcurrencyLimit(lines, 2, async (l) => {
     const voiceId = pickVoiceForSpeaker(l.speaker, childName, childGender, language);
     const ab = await ttsArrayBuffer(voiceId, l.text);
     return { order: l.order, ab };

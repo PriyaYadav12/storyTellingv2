@@ -51,9 +51,9 @@ type StoryParams = {
  */
 function getDurationText(length: "short" | "medium" | "long"): string {
   const durationMap = {
-    short: "Quick Sparkle",
-    medium: "Medium Sparkle",
-    long: "Long Sparkle",
+    short: "short ~ 400 words",
+    medium: "medium ~ 600 words",
+    long: "long ~ 800 words",
   };
   return durationMap[length];
 }

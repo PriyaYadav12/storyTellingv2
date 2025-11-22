@@ -19,7 +19,6 @@ export default function AudioPlayer({ audioUrl, onPlayPause }: AudioPlayerProps)
 		const newState = !isPlaying;
 		setIsPlaying(newState);
 		onPlayPause?.(newState);
-		console.log(newState ? "Playing audio" : "Paused audio");
 	};
 
 	const handleSkipBack = () => {

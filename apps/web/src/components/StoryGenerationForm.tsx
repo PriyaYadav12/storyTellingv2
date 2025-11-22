@@ -1,53 +1,38 @@
 import { useState, useEffect, useMemo } from "react";
-import { useAction, useQuery } from "convex/react";
+import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Castle, Rocket, Waves, Rainbow, Palette, Trees, Home, Cookie, Globe, UserCircle, Zap, Book } from "lucide-react";
-import { Heart, Shield, Users, Smile, Brain, Target, Star, Lightbulb } from "lucide-react";
+import { Sparkles, UserCircle, Zap, Book, Star, Plus } from "lucide-react";
 import AdventureThemeCard from "./AdventureThemeCard";
 import MoralLessonCard from "./MoralLessonCard";
+import ChildForm from "./childForm";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getThemeMetadata, getLessonMetadata } from "@/lib/formConstant";
 
-const adventures = [
-	{ id: "castle", icon: Castle, title: "Castle Adventure", color: "pink" as const },
-	{ id: "space", icon: Rocket, title: "Space Adventure", color: "blue" as const },
-	{ id: "ocean", icon: Waves, title: "Ocean Quest", color: "blue" as const },
-	{ id: "rainbow", icon: Rainbow, title: "Rainbow Valley", color: "purple" as const },
-	{ id: "art", icon: Palette, title: "Art Studio", color: "yellow" as const },
-	{ id: "nature", icon: Trees, title: "Nature Garden", color: "green" as const },
-	{ id: "building", icon: Home, title: "Building Workshop", color: "purple" as const },
-	{ id: "bakery", icon: Cookie, title: "Bakery Magic", color: "pink" as const },
-];
-
-const lessons = [
-	{ id: "kindness", icon: Heart, title: "Kindness" },
-	{ id: "courage", icon: Shield, title: "Courage" },
-	{ id: "teamwork", icon: Users, title: "Teamwork" },
-	{ id: "honesty", icon: Smile, title: "Honesty" },
-	{ id: "problem-solving", icon: Brain, title: "Problem Solving" },
-	{ id: "perseverance", icon: Target, title: "Perseverance" },
-	{ id: "creativity", icon: Star, title: "Creativity" },
-	{ id: "empathy", icon: Lightbulb, title: "Empathy" },
-];
 
 interface StoryGenerationFormProps {
 	onGenerate?: (storyId: string) => void;
 }
 
+
 export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormProps) {
-	const [selectedAdventure, setSelectedAdventure] = useState<string | null>(null);
+	const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 	const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 	const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
 	const [selectedLength, setSelectedLength] = useState<"short" | "medium" | "long">("short");
 	const [selectedChild, setSelectedChild] = useState<"1" | "2">("1");
 	const [useFavorites, setUseFavorites] = useState(true);
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [isChildFormOpen, setIsChildFormOpen] = useState(false);
+	const [editingChild, setEditingChild] = useState<"1" | "2" | null>(null);
 
-	const generateNow = useAction(api.storiesActions.generateNow);
+	const generateStory = useAction(api.storiesActions.generateStory);
 	const profile = useQuery(api.userProfiles.getProfile);
+	const updateProfile = useMutation(api.userProfiles.updateProfile);
+	const updateChild2 = useMutation(api.userProfiles.updateChild2);
 	const _apiAny = api as any;
 	const themeDocs = useQuery(_apiAny["migration/theme"]?.list);
 	const lessonDocs = useQuery(_apiAny["migration/lesson"]?.list);
@@ -55,6 +40,11 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 	// Check if user has multiple children
 	const hasMultipleChildren = useMemo(() => {
 		return !!(profile?.childName && profile?.child2Name);
+	}, [profile]);
+
+	// Check if user has at least one child
+	const hasChildren = useMemo(() => {
+		return !!profile?.childName;
 	}, [profile]);
 
 	const children = useMemo(() => {
@@ -77,61 +67,28 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 	const themeOptions = useMemo(() => (themeDocs || []).map((t: any) => t.name as string), [themeDocs]);
 	const lessonOptions = useMemo(() => (lessonDocs || []).map((l: any) => l.name as string), [lessonDocs]);
 
-	// Map adventure IDs to theme names from backend
-	const getThemeName = (adventureId: string | null) => {
-		if (!adventureId) return null;
-		const adventure = adventures.find(a => a.id === adventureId);
-		if (!adventure) return null;
-		// Try to match with backend theme names
-		const themeName = adventure.title.replace(" Adventure", "").replace(" Quest", "").replace(" Valley", "").replace(" Studio", "").replace(" Garden", "").replace(" Workshop", "").replace(" Magic", "");
-		return themeOptions.find((t: string) => t.toLowerCase().includes(themeName.toLowerCase())) || themeOptions[0] || null;
-	};
-
-	// Map lesson IDs to lesson names from backend
-	const getLessonName = (lessonId: string | null) => {
-		if (!lessonId) return null;
-		const lesson = lessons.find(l => l.id === lessonId);
-		if (!lesson) return null;
-		return lessonOptions.find((l: string) => l.toLowerCase().includes(lesson.title.toLowerCase())) || lessonOptions[0] || null;
-	};
-
 	useEffect(() => {
 		// Auto-select first options once loaded
-		if (!selectedAdventure && themeOptions.length > 0) {
-			const firstTheme = themeOptions[0];
-			const matchingAdventure = adventures.find(a => 
-				firstTheme.toLowerCase().includes(a.title.toLowerCase().split(" ")[0])
-			);
-			if (matchingAdventure) {
-				setSelectedAdventure(matchingAdventure.id);
-			}
+		if (!selectedTheme && themeOptions.length > 0) {
+			setSelectedTheme(themeOptions[0]);
 		}
 		if (!selectedLesson && lessonOptions.length > 0) {
-			const firstLesson = lessonOptions[0];
-			const matchingLesson = lessons.find(l => 
-				firstLesson.toLowerCase().includes(l.title.toLowerCase())
-			);
-			if (matchingLesson) {
-				setSelectedLesson(matchingLesson.id);
-			}
+			setSelectedLesson(lessonOptions[0]);
 		}
 	}, [themeOptions, lessonOptions]);
 
 	const handleGenerate = async () => {
-		const theme = getThemeName(selectedAdventure);
-		const lesson = getLessonName(selectedLesson);
-
-		if (!theme || !lesson || !selectedLanguage) {
+		if (!selectedTheme || !selectedLesson || !selectedLanguage) {
 			toast.error("Please select all required fields");
 			return;
 		}
 
 		try {
 			setIsGenerating(true);
-			const { storyId } = await generateNow({
+			const { storyId } = await generateStory({
 				params: {
-					theme: theme.trim(),
-					lesson: lesson.trim(),
+					theme: selectedTheme.trim(),
+					lesson: selectedLesson.trim(),
 					length: selectedLength,
 					language: selectedLanguage,
 					useFavorites,
@@ -169,8 +126,8 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 				</div>
 
 				<div className="space-y-6">
-					{/* Child Selector - Only show if multiple children */}
-					{hasMultipleChildren && (
+					{/* Child Selector - Show if at least one child */}
+					{hasChildren && (
 						<div className="space-y-3">
 							<Label className="text-lg font-semibold flex items-center gap-2">
 								<UserCircle className="w-5 h-5" />
@@ -192,6 +149,19 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 										{child.name}
 									</button>
 								))}
+								{!hasMultipleChildren && (
+									<button
+										type="button"
+										onClick={() => {
+											setEditingChild("2");
+											setIsChildFormOpen(true);
+										}}
+										className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all text-muted-foreground hover:text-foreground flex items-center gap-2"
+									>
+										<Plus className="w-4 h-4" />
+										Add Child
+									</button>
+								)}
 							</div>
 						</div>
 					)}
@@ -276,16 +246,19 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 							What kind of adventure today?
 						</h3>
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-							{adventures.map((adventure) => (
-								<AdventureThemeCard
-									key={adventure.id}
-									icon={adventure.icon}
-									title={adventure.title}
-									color={adventure.color}
-									isSelected={selectedAdventure === adventure.id}
-									onClick={() => setSelectedAdventure(adventure.id)}
-								/>
-							))}
+							{themeOptions.map((themeName: string) => {
+								const { icon, color } = getThemeMetadata(themeName);
+								return (
+									<AdventureThemeCard
+										key={themeName}
+										icon={icon}
+										title={themeName}
+										color={color}
+										isSelected={selectedTheme === themeName}
+										onClick={() => setSelectedTheme(themeName)}
+									/>
+								);
+							})}
 						</div>
 					</div>
 
@@ -294,15 +267,18 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 							What lesson should we learn?
 						</h3>
 						<div className="flex flex-wrap gap-3 justify-center md:justify-start">
-							{lessons.map((lesson) => (
-								<MoralLessonCard
-									key={lesson.id}
-									icon={lesson.icon}
-									title={lesson.title}
-									isSelected={selectedLesson === lesson.id}
-									onClick={() => setSelectedLesson(lesson.id)}
-								/>
-							))}
+							{lessonOptions.map((lessonName: string) => {
+								const { icon } = getLessonMetadata(lessonName);
+								return (
+									<MoralLessonCard
+										key={lessonName}
+										icon={icon}
+										title={lessonName}
+										isSelected={selectedLesson === lessonName}
+										onClick={() => setSelectedLesson(lessonName)}
+									/>
+								);
+							})}
 						</div>
 					</div>
 
@@ -325,7 +301,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 						size="lg"
 						className="px-12 py-6 text-xl rounded-2xl font-semibold"
 						onClick={handleGenerate}
-						disabled={!selectedAdventure || !selectedLesson || !selectedLanguage || isGenerating}
+						disabled={!selectedTheme || !selectedLesson || !selectedLanguage || isGenerating}
 						data-testid="button-generate-story"
 					>
 						<Sparkles className="w-6 h-6 mr-3" />
@@ -333,6 +309,19 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 					</Button>
 				</div>
 			</div>
+
+			{/* Child Form Dialog */}
+			<ChildForm
+				isOpen={isChildFormOpen}
+				onClose={() => {
+					setIsChildFormOpen(false);
+					setEditingChild(null);
+				}}
+				editingChild={editingChild}
+				profile={profile}
+				updateProfile={updateProfile}
+				updateChild2={updateChild2}
+			/>
 		</Card>
 	);
 }

@@ -31,6 +31,10 @@ export default defineSchema({
 		child2FavoriteAnimal: v.optional(v.string()),
 		child2AvatarStorageId: v.optional(v.string()),
 		child2ProfilePicture: v.optional(v.string()),
+		// Streak tracking
+		currentStreak: v.optional(v.number()),
+		longestStreak: v.optional(v.number()),
+		lastStoryDate: v.optional(v.number()), // Timestamp of last story creation (for streak calculation)
 	}).index("by_user", ["userId"]),
 
 	stories: defineTable({

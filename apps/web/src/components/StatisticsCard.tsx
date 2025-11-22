@@ -5,15 +5,17 @@ interface StatisticsCardProps {
 	storiesCreated: number;
 	readingTime: string;
 	favoriteTheme: string;
-	badgesEarned: number;
+	earnedBadges: string[];
 }
 
 export default function StatisticsCard({
 	storiesCreated,
 	readingTime,
 	favoriteTheme,
-	badgesEarned,
+	earnedBadges,
 }: StatisticsCardProps) {
+	const badgeCount = earnedBadges.length;
+	const badgeText = earnedBadges.length > 0 ? earnedBadges.join(", ") : "None yet";
 	return (
 		<Card className="p-8 rounded-3xl h-full flex flex-col" data-testid="card-statistics">
 			<h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -44,7 +46,7 @@ export default function StatisticsCard({
 					<div className="w-12 h-12 bg-blue-200 dark:bg-blue-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
 						<Star className="w-6 h-6 text-blue-600 dark:text-blue-400" />
 					</div>
-					<div className="text-3xl font-bold break-words">{favoriteTheme}</div>
+					<div className="text-xl font-bold break-words">{favoriteTheme}</div>
 					<div className="text-sm text-muted-foreground">Favorite Theme</div>
 				</div>
 
@@ -52,8 +54,11 @@ export default function StatisticsCard({
 					<div className="w-12 h-12 bg-green-200 dark:bg-green-900/50 rounded-xl flex items-center justify-center flex-shrink-0">
 						<Award className="w-6 h-6 text-green-600 dark:text-green-400" />
 					</div>
-					<div className="text-3xl font-bold">{badgesEarned}</div>
+					<div className="text-3xl font-bold">{badgeCount}</div>
 					<div className="text-sm text-muted-foreground">Badges Earned</div>
+					{earnedBadges.length > 0 && (
+						<div className="text-xs text-muted-foreground/80 italic mt-1">{badgeText}</div>
+					)}
 				</div>
 			</div>
 		</Card>
