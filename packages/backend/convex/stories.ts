@@ -103,7 +103,7 @@ export const _create = mutation({
 export const _markStatus = mutation({
 	args: {
 		storyId: v.id("stories"),
-		status: v.union(v.literal("generating"), v.literal("ready"), v.literal("error")),
+		status: v.union(v.literal("generating"), v.literal("ready"), v.literal("error"), v.literal("text_ready"), v.literal("images_ready"), v.literal("voice_ready")),
 		error: v.optional(v.string()),
 	},
 	handler: async (ctx, { storyId, status, error }) => {
@@ -225,5 +225,28 @@ export const getNarrationFileUrl = query({
 		if (!story?.narrationFilePath) return null;
 		const url = await ctx.storage.getUrl(story.narrationFilePath as any);
 		return { url };
+	},
+});
+export const getLightMetadata = query({
+	args: { storyId: v.id("stories") },
+	handler: async (ctx, { storyId }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		return {
+			title: story.title,
+			sceneMetadata: story.sceneMetadata,
+			params: story.params
+		};
+	},
+});
+export const getContentOnly = query({
+	args: { storyId: v.id("stories") },
+	handler: async (ctx, { storyId }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		return {
+			content: story.content,
+			params: story.params
+		};
 	},
 });

@@ -28,7 +28,6 @@ function LibraryComponent() {
 	const [filterLanguage, setFilterLanguage] = useState<string>("all");
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const childName = profile?.childName || "Child";
 	const STORIES_PER_PAGE = 6;
 
 	// Transform stories for display
@@ -38,13 +37,13 @@ function LibraryComponent() {
 			id: story._id,
 			title: story.title || "Untitled Story",
 			theme: (story.params?.theme as string) || "Adventure",
-			childName: childName,
+			childName: story.params?.childName || "Child",
 			adventure: (story.params?.theme as string) || "Adventure",
 			language: (story.params?.language as string) || "English",
 			createdAt: story._creationTime ? new Date(story._creationTime).toLocaleDateString() : "Unknown",
 			readingTime: "5 min", // Approximate
 		}));
-	}, [stories, childName]);
+	}, [stories]);
 
 	const filteredStories = transformedStories.filter((story) => {
 		const matchesSearch = story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,7 +53,7 @@ function LibraryComponent() {
 
 		return matchesSearch && matchesTheme && matchesLanguage;
 	});
-
+	console.log("Filtered stories: ", filteredStories);
 	// Pagination calculations
 	const totalPages = Math.ceil(filteredStories.length / STORIES_PER_PAGE);
 	const startIndex = (currentPage - 1) * STORIES_PER_PAGE;

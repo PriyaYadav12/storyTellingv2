@@ -59,7 +59,10 @@ export default defineSchema({
 			v.literal("queued"),
 			v.literal("generating"),
 			v.literal("ready"),
-			v.literal("error")
+			v.literal("error"),
+			v.literal("text_ready"),
+			v.literal("images_ready"),
+			v.literal("voice_ready")
 		),
 		error: v.optional(v.string()),
 		content: v.optional(v.string()),

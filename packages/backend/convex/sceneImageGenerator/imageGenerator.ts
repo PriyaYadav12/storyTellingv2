@@ -144,10 +144,11 @@ async function processSceneImage(
 }
 
 /**
- * Generates and stores all scene images with hybrid approach:
+ * Generates and stores all scene images with batched approach:
  * - Scene 1 generated first
- * - Remaining scenes generated in parallel, all using Scene 1 as reference
- * This balances speed (parallel processing) with consistency (shared reference)
+ * - Remaining scenes generated in small batches (2 at a time) to avoid memory issues
+ * - All scenes use Scene 1 as reference for consistency
+ * This balances speed with memory efficiency
  */
 export async function generateAllSceneImages(
   ctx: ActionCtx,
@@ -207,25 +208,34 @@ export async function generateAllSceneImages(
     });
   }
 
-  // STEP 2: Generate remaining scenes in parallel
+  // STEP 2: Generate remaining scenes in small batches to avoid memory issues
   const remainingScenes = sortedScenes.slice(1);
+  const BATCH_SIZE = 2; // Process 2 scenes at a time to avoid memory overflow
 
   if (remainingScenes.length > 0) {
+    console.log(`[generateAllSceneImages] Processing ${remainingScenes.length} remaining scenes in batches of ${BATCH_SIZE}`);
+    
+    for (let i = 0; i < remainingScenes.length; i += BATCH_SIZE) {
+      const batch = remainingScenes.slice(i, i + BATCH_SIZE);
+      console.log(`[generateAllSceneImages] Processing batch ${Math.floor(i / BATCH_SIZE) + 1}: scenes ${batch.map(s => s.sceneNumber).join(', ')}`);
+      
+      const batchPromises = batch.map((scene) =>
+        processSceneImage(
+          ctx,
+          scene,
+          child,
+          storyId,
+          characterRefBase64,
+          firstSceneBase64,
+          childAvatarBase64
+        )
+      );
 
-    const parallelPromises = remainingScenes.map((scene) =>
-      processSceneImage(
-        ctx,
-        scene,
-        child,
-        storyId,
-        characterRefBase64,
-        firstSceneBase64,
-        childAvatarBase64
-      )
-    );
-
-    const parallelResults = await Promise.all(parallelPromises);
-    results.push(...parallelResults);
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+      
+      console.log(`[generateAllSceneImages] Completed batch ${Math.floor(i / BATCH_SIZE) + 1}`);
+    }
   }
 
   const failed = results.filter((r) => !r.success);

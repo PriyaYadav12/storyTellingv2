@@ -121,7 +121,11 @@ function StoryPageComponent() {
 
 							{/* Synchronized media player */}
 							{Array.isArray(sceneImages) && sceneImages.length > 0 && (
-								<StoryMediaPlayer images={sceneImages as any} audioUrl={narrationFile?.url} />
+								<StoryMediaPlayer
+									images={sceneImages as any}
+									audioUrl={narrationFile?.url}
+									canPlay={sceneImages.every((scene: any) => !!scene?.filePath)}
+								/>
 							)}
 
 							{story.content ? (

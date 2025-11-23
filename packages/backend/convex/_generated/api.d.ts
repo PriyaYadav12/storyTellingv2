@@ -10,8 +10,11 @@
 
 import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
+import type * as generateStory from "../generateStory.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
+import type * as internal_generateNarration from "../internal/generateNarration.js";
+import type * as internal_generateSceneImage from "../internal/generateSceneImage.js";
 import type * as migration_flavor_endings from "../migration/flavor_endings.js";
 import type * as migration_flavor_magical_triggers from "../migration/flavor_magical_triggers.js";
 import type * as migration_flavor_obstacles from "../migration/flavor_obstacles.js";
@@ -54,8 +57,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   crons: typeof crons;
+  generateStory: typeof generateStory;
   healthCheck: typeof healthCheck;
   http: typeof http;
+  "internal/generateNarration": typeof internal_generateNarration;
+  "internal/generateSceneImage": typeof internal_generateSceneImage;
   "migration/flavor_endings": typeof migration_flavor_endings;
   "migration/flavor_magical_triggers": typeof migration_flavor_magical_triggers;
   "migration/flavor_obstacles": typeof migration_flavor_obstacles;

@@ -11,11 +11,13 @@ type SceneImage = {
 interface StoryMediaPlayerProps {
   images: SceneImage[] | undefined | null;
   audioUrl?: string | null;
+  canPlay?: boolean;
 }
 
 export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
-  const images = useMemo(() => (Array.isArray(props.images) ? props.images.filter((i) => !!i?.url) : []), [props.images]);
+  const images = useMemo(() => (Array.isArray(props.images) ? props.images.filter((image) => !!image?.url) : []), [props.images]);
   const audioUrl = props.audioUrl ?? undefined;
+  const canPlay = props.canPlay ?? true;
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -61,6 +63,8 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
   }, [audioUrl, images.length]);
 
   const togglePlay = async () => {
+    if (!canPlay) return;
+
     const audio = audioRef.current;
     if (!audio) return;
     if (isPlaying) {
@@ -131,7 +135,7 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
       {/* Bottom bar: play/pause & index */}
       <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-2 p-3 bg-gradient-to-t from-black/50 to-transparent text-white">
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="icon" onClick={togglePlay} className="rounded-full" disabled={!audioUrl}>
+          <Button variant="secondary" size="icon" onClick={togglePlay} className="rounded-full" disabled={!audioUrl || !canPlay}>
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
           <div className="text-xs opacity-80">

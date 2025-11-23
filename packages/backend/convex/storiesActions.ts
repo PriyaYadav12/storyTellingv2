@@ -107,11 +107,11 @@ export const generateStory: ReturnType<typeof action> = action({
 			
 			await ctx.runMutation(api.stories._setContent, { storyId, content });
 
-			// Get the updated story with sceneMetadata
+			// Update streak tracking immediately after story text generation
+			await ctx.runMutation(api.userProfiles.updateStreak, {});
 			const story = await ctx.runQuery(api.stories.get, { storyId });
 			if (!story) throw new Error("Story not found after content set");
 
-			// Generate images for each scene in parallel if sceneMetadata exists
 			if (story.sceneMetadata && story.sceneMetadata.length > 0) {
 				const childInfo = {
 					name: name || "",
@@ -144,6 +144,7 @@ export const generateStory: ReturnType<typeof action> = action({
 			await ctx.runMutation(api.userProfiles.updateStreak, {});
 			
 			return { storyId };
+
 		} catch (err: any) {
 			await ctx.runMutation(api.stories._markStatus, {
 				storyId,
@@ -154,5 +155,3 @@ export const generateStory: ReturnType<typeof action> = action({
 		}
 	},
 });
-
-

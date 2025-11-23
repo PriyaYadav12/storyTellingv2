@@ -29,7 +29,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 	const [isChildFormOpen, setIsChildFormOpen] = useState(false);
 	const [editingChild, setEditingChild] = useState<"1" | "2" | null>(null);
 
-	const generateStory = useAction(api.storiesActions.generateStory);
+	const generateStoryText = useAction(api.generateStory.generateStoryText);
 	const profile = useQuery(api.userProfiles.getProfile);
 	const updateProfile = useMutation(api.userProfiles.updateProfile);
 	const updateChild2 = useMutation(api.userProfiles.updateChild2);
@@ -85,7 +85,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 
 		try {
 			setIsGenerating(true);
-			const { storyId } = await generateStory({
+			const { storyId } = await generateStoryText({
 				params: {
 					theme: selectedTheme.trim(),
 					lesson: selectedLesson.trim(),

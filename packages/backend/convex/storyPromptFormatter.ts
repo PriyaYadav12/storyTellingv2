@@ -51,9 +51,9 @@ type StoryParams = {
  */
 function getDurationText(length: "short" | "medium" | "long"): string {
   const durationMap = {
-    short: "short ~ 400 words",
-    medium: "medium ~ 600 words",
-    long: "long ~ 800 words",
+    short: "short ~ 350 words",
+    medium: "medium ~ 400 words",
+    long: "long ~ 450 words",
   };
   return durationMap[length];
 }
@@ -92,7 +92,8 @@ function formatPattern(pattern: string[]): string {
 }
 
 /**
- * Main function to format the complete story prompt
+ * Main function to format the complete story prompt.
+ * Returns a JSON string containing structured prompt data.
  */
 export function formatStoryPrompt(
   selectedElements: SelectedStoryElements,
@@ -103,49 +104,46 @@ export function formatStoryPrompt(
   const { structureCode, openings, triggers, obstacles, payoffs, endings, personalityTraits } =
     selectedElements;
 
-  const genderText =
+  const genderLabel =
     childInfo.gender === "male" ? "boy" : childInfo.gender === "female" ? "girl" : "child";
   const duration = getDurationText(params.length);
   const language = params.language || "English";
 
-  // Format structure: "SQ_03 – Everyday Wonder"
   const structureLine = `${structureCode} – ${structureInfo.name}`;
-
-  // Format pattern: "familiar place → gentle discovery → cozy close"
   const patternLine = formatPattern(structureInfo.pattern);
 
-  // Format each section
-  const sections = [
-    "STORY DIRECTIVES",
-    "",
-    `Child: ${childInfo.name} (${genderText}, age ${childInfo.age})`,
-    `Theme: ${params.theme}`,
-    `Lesson: ${params.lesson || "N/A"}`,
-    `Language: ${language}`,
-    `Duration: ${duration}`,
-    "",
-    `STORY BACKBONE (${structureLine})`,
-    "",
-    patternLine,
-    "",
-    "CREATIVE MENUS",
-    "",
-    `CHARACTER DYNAMIC: ${formatPersonalityTraits(personalityTraits, childInfo.name)}`,
-    "",
-    `OPENING: ${formatElements(openings)}`,
-    "",
-    `MAGICAL TRIGGER: ${formatElements(triggers)}`,
-    "",
-    `OBSTACLE: ${formatElements(obstacles)}`,
-    "",
-    `PAYOFF: ${formatElements(payoffs)}`,
-    "",
-    `ENDING: ${formatElements(endings)}`,
-    "",
-    "BEGIN STORY NOW.",
-  ];
+  const payload = {
+    child: {
+      name: childInfo.name,
+      gender: childInfo.gender,
+      genderLabel,
+      age: childInfo.age,
+    },
+    story: {
+      theme: params.theme,
+      lesson: params.lesson || null,
+      language,
+      duration,
+    },
+    structure: {
+      code: structureCode,
+      name: structureInfo.name,
+      pattern: structureInfo.pattern,
+      patternLine,
+      display: structureLine,
+    },
+    creativeMenus: {
+      characterDynamic: formatPersonalityTraits(personalityTraits, childInfo.name),
+      opening: formatElements(openings),
+      magicalTrigger: formatElements(triggers),
+      obstacle: formatElements(obstacles),
+      payoff: formatElements(payoffs),
+      ending: formatElements(endings),
+    },
+    instructions: "BEGIN STORY NOW.",
+  };
 
-  return sections.join("\n");
+  return JSON.stringify(payload, null, 2);
 }
 
 /**
