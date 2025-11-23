@@ -38,9 +38,23 @@ function RouteComponent() {
 		const storiesList = stories || [];
 		const storiesCreated = storiesList.length;
 		const readingTime = Math.round(storiesCreated * 3); // Approximate 3 min per story
-		const favoriteTheme = storiesList.length > 0 
-			? (storiesList[0]?.params?.theme as string) || "Adventure"
-			: "Adventure";
+
+		let favoriteTheme = "Adventure";
+		if (storiesList.length > 0) {
+			const themeCounts = new Map<string, number>();
+			for (const story of storiesList) {
+				const theme = (story?.params?.theme as string) || "Adventure";
+				themeCounts.set(theme, (themeCounts.get(theme) || 0) + 1);
+			}
+
+			let maxCount = 0;
+			for (const [theme, count] of themeCounts.entries()) {
+				if (count > maxCount) {
+					maxCount = count;
+					favoriteTheme = theme;
+				}
+			}
+		}
 		
 		// Get earned badge names from achievements
 		const earnedBadges = achievementsData?.achievements

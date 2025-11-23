@@ -62,6 +62,23 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
     setIsPlaying(false);
   }, [audioUrl, images.length]);
 
+  useEffect(() => {
+    if (!canPlay || !audioUrl) return;
+    if (isPlaying) return;
+
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio
+      .play()
+      .then(() => {
+        setIsPlaying(true);
+      })
+      .catch(() => {
+        // ignore autoplay failures
+      });
+  }, [canPlay, audioUrl, isPlaying]);
+
   const togglePlay = async () => {
     if (!canPlay) return;
 
