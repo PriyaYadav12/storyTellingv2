@@ -55,7 +55,7 @@ async function ttsArrayBuffer(voiceId: string, text: string): Promise<ArrayBuffe
 
   const resp = await client.textToSpeech.convert(voiceId, {
     text,
-    modelId: "eleven_multilingual_v2",
+    modelId: "eleven_turbo_v2_5",
     outputFormat: "mp3_22050_32", 
     voiceSettings: { stability: 0.5, speed: 0.8 },
   });

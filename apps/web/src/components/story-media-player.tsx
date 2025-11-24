@@ -20,6 +20,7 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
   const canPlay = props.canPlay ?? true;
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasAutoStartedRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -36,48 +37,32 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
   }, [currentTime, segmentDuration, images.length]);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const onLoaded = () => setDuration(audio.duration || 0);
-    const onTime = () => setCurrentTime(audio.currentTime || 0);
-    const onEnded = () => setIsPlaying(false);
-
-    audio.addEventListener("loadedmetadata", onLoaded);
-    audio.addEventListener("timeupdate", onTime);
-    audio.addEventListener("ended", onEnded);
-    return () => {
-      audio.removeEventListener("loadedmetadata", onLoaded);
-      audio.removeEventListener("timeupdate", onTime);
-      audio.removeEventListener("ended", onEnded);
-    };
-  }, [audioUrl]);
-
-  useEffect(() => {
     // Reset playback when inputs change
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = 0;
     setCurrentTime(0);
     setIsPlaying(false);
+    hasAutoStartedRef.current = false;
   }, [audioUrl, images.length]);
 
   useEffect(() => {
     if (!canPlay || !audioUrl) return;
-    if (isPlaying) return;
 
     const audio = audioRef.current;
     if (!audio) return;
+    if (hasAutoStartedRef.current) return;
 
     audio
       .play()
       .then(() => {
+        hasAutoStartedRef.current = true;
         setIsPlaying(true);
       })
       .catch(() => {
         // ignore autoplay failures
       });
-  }, [canPlay, audioUrl, isPlaying]);
+  }, [canPlay, audioUrl]);
 
   const togglePlay = async () => {
     if (!canPlay) return;
@@ -170,7 +155,28 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
 
       {/* Hidden audio element synchronized with slideshow */}
       {audioUrl ? (
-        <audio ref={audioRef} src={audioUrl} preload="metadata" />
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          preload="metadata"
+          onLoadedMetadata={(event) => {
+            const audio = event.currentTarget;
+            const audioDuration = audio.duration;
+            if (Number.isFinite(audioDuration) && audioDuration > 0) {
+              setDuration(audioDuration);
+            }
+          }}
+          onTimeUpdate={(event) => {
+            const audio = event.currentTarget;
+            setCurrentTime(audio.currentTime || 0);
+
+            const audioDuration = audio.duration;
+            if ((!duration || !Number.isFinite(duration)) && Number.isFinite(audioDuration) && audioDuration > 0) {
+              setDuration(audioDuration);
+            }
+          }}
+          onEnded={() => setIsPlaying(false)}
+        />
       ) : null}
     </div>
   );
