@@ -37,24 +37,6 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
   }, [currentTime, segmentDuration, images.length]);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const onLoaded = () => setDuration(audio.duration || 0);
-    const onTime = () => setCurrentTime(audio.currentTime || 0);
-    const onEnded = () => setIsPlaying(false);
-
-    audio.addEventListener("loadedmetadata", onLoaded);
-    audio.addEventListener("timeupdate", onTime);
-    audio.addEventListener("ended", onEnded);
-    return () => {
-      audio.removeEventListener("loadedmetadata", onLoaded);
-      audio.removeEventListener("timeupdate", onTime);
-      audio.removeEventListener("ended", onEnded);
-    };
-  }, [audioUrl]);
-
-  useEffect(() => {
     // Reset playback when inputs change
     const audio = audioRef.current;
     if (!audio) return;
@@ -173,7 +155,28 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
 
       {/* Hidden audio element synchronized with slideshow */}
       {audioUrl ? (
-        <audio ref={audioRef} src={audioUrl} preload="metadata" />
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          preload="metadata"
+          onLoadedMetadata={(event) => {
+            const audio = event.currentTarget;
+            const audioDuration = audio.duration;
+            if (Number.isFinite(audioDuration) && audioDuration > 0) {
+              setDuration(audioDuration);
+            }
+          }}
+          onTimeUpdate={(event) => {
+            const audio = event.currentTarget;
+            setCurrentTime(audio.currentTime || 0);
+
+            const audioDuration = audio.duration;
+            if ((!duration || !Number.isFinite(duration)) && Number.isFinite(audioDuration) && audioDuration > 0) {
+              setDuration(audioDuration);
+            }
+          }}
+          onEnded={() => setIsPlaying(false)}
+        />
       ) : null}
     </div>
   );
