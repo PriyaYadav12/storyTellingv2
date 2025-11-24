@@ -20,6 +20,7 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
   const canPlay = props.canPlay ?? true;
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasAutoStartedRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -60,24 +61,26 @@ export function StoryMediaPlayer(props: StoryMediaPlayerProps) {
     audio.currentTime = 0;
     setCurrentTime(0);
     setIsPlaying(false);
+    hasAutoStartedRef.current = false;
   }, [audioUrl, images.length]);
 
   useEffect(() => {
     if (!canPlay || !audioUrl) return;
-    if (isPlaying) return;
 
     const audio = audioRef.current;
     if (!audio) return;
+    if (hasAutoStartedRef.current) return;
 
     audio
       .play()
       .then(() => {
+        hasAutoStartedRef.current = true;
         setIsPlaying(true);
       })
       .catch(() => {
         // ignore autoplay failures
       });
-  }, [canPlay, audioUrl, isPlaying]);
+  }, [canPlay, audioUrl]);
 
   const togglePlay = async () => {
     if (!canPlay) return;

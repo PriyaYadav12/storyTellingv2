@@ -13,12 +13,6 @@ interface HeaderProps {
 // Landing page nav items (for unauthenticated users)
 const landingNavItems = [
 	{
-		label: "Home",
-		icon: null,
-		style: { backgroundColor: "#309898", color: "#fff" },
-		action: () => window.scrollTo({ top: 0, behavior: "smooth" }),
-	},
-	{
 		label: "Shop",
 		icon: <ShoppingBag className="w-4 h-4 mr-2" />,
 		style: { backgroundColor: "#FF9F00", color: "#fff" },
