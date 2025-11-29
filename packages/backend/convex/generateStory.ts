@@ -76,7 +76,7 @@ export const generateStoryText: ReturnType<typeof action> = action({
       { name: name || "", gender, age },
       {
         theme: params.theme,
-        lesson: params.lesson,
+        lesson: params.lesson || undefined,
         language: params.language,
         length: params.length,
       }
@@ -89,7 +89,7 @@ export const generateStoryText: ReturnType<typeof action> = action({
     const userPrompt = formattedPrompt;
     const resp = await client.chat.completions.create({
       model: "gpt-4.1",
-      temperature: 0.5,
+      temperature: 0.4,
       messages: [
         { role: "system", content: system },
         { role: "user", content: userPrompt },
@@ -121,7 +121,6 @@ export const generateStoryText: ReturnType<typeof action> = action({
     });
 
     const childNameForBackground = name || "Child";
-
     await ctx.scheduler.runAfter(
       0,
       internal.internal.generateSceneImage.generateImages,

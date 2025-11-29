@@ -30,7 +30,7 @@ export default function StreakTracker({
 	});
 
 	return (
-		<Card className="p-8 rounded-3xl bg-gradient-to-br from-chart-1/5 to-chart-2/5 h-full flex flex-col" data-testid="card-streak-tracker">
+		<Card className="p-8 rounded-3xl from-chart-1/5 to-chart-2/5 h-full flex flex-col" data-testid="card-streak-tracker">
 			<div className="space-y-6 flex-1 flex flex-col">
 				<div className="text-center">
 					<div className="flex items-center justify-center gap-2 mb-2">

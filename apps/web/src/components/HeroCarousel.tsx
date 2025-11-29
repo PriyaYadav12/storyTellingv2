@@ -47,12 +47,14 @@ export default function HeroCarousel({
 					video.currentTime = 0;
 					// Try to play with audio first
 					video.muted = false;
+					video.volume = 0.1;
 					video.play().then(() => {
 						// Successfully started playing, keep unmuted
 						video.muted = false;
 					}).catch(() => {
 						// If autoplay with sound fails, try muted autoplay
 						video.muted = true;
+						video.volume = 0;
 						video.play().catch((err) => {
 							console.log("Video autoplay failed:", err);
 						});

@@ -78,7 +78,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 	}, [themeOptions, lessonOptions]);
 
 	const handleGenerate = async () => {
-		if (!selectedTheme || !selectedLesson || !selectedLanguage) {
+		if (!selectedTheme || !selectedLanguage) {
 			toast.error("Please select all required fields");
 			return;
 		}
@@ -88,7 +88,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 			const { storyId } = await generateStoryText({
 				params: {
 					theme: selectedTheme.trim(),
-					lesson: selectedLesson.trim(),
+					lesson: selectedLesson?.trim() || undefined,
 					length: selectedLength,
 					language: selectedLanguage,
 					useFavorites,
@@ -245,7 +245,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 						<h3 className="text-2xl md:text-3xl font-bold mb-6 text-center md:text-left">
 							What kind of adventure today?
 						</h3>
-						<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+						<div className="grid grid-cols-3 md:grid-cols-5 gap-3">
 							{themeOptions.map((themeName: string) => {
 								const { icon, color } = getThemeMetadata(themeName);
 								return (

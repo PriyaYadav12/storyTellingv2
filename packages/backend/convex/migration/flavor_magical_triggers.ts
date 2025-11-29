@@ -20,7 +20,8 @@ export const seedDefaults = mutation({
             { code: "MT_05", description: "Everyday Surprises", keywords: ["button", "key", "whistle", "map", "hat", "ribbon"] },
             { code: "MT_06", description: "Musical Echoes", keywords: ["drumbeat pebble", "humming shell", "flute twig", "jingling bell", "tapping stick", "echo stone"] },
             { code: "MT_07", description: "Food & Treat Magic", keywords: ["cookie crumb", "glowing fruit slice", "bouncing jelly", "cinnamon swirl", "sugar-dust trail", "humming teacup"] },
-            { code: "MT_08", description: "Dream & Imagination", keywords: ["glowing doodle", "floating cloud", "whispering book page", "giggling shadow", "bouncing pillow", "dancing sticker"] },		];
+            { code: "MT_08", description: "Dream & Imagination", keywords: ["glowing doodle", "floating cloud", "whispering book page", "giggling shadow", "bouncing pillow", "dancing sticker"] },		
+		];
 
 		let inserted = 0;
 		for (const item of defaults) {
