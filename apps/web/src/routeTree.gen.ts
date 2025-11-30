@@ -17,6 +17,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as StoryStoryIdRouteImport } from './routes/story.$storyId'
+import { Route as SharedSetupRouteImport } from './routes/shared/setup'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 
@@ -60,6 +61,11 @@ const StoryStoryIdRoute = StoryStoryIdRouteImport.update({
   path: '/story/$storyId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SharedSetupRoute = SharedSetupRouteImport.update({
+  id: '/shared/setup',
+  path: '/shared/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminForgotPasswordRoute = AdminForgotPasswordRouteImport.update({
   id: '/admin/forgot-password',
   path: '/admin/forgot-password',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/shared/setup': typeof SharedSetupRoute
   '/story/$storyId': typeof StoryStoryIdRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/shared/setup': typeof SharedSetupRoute
   '/story/$storyId': typeof StoryStoryIdRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/shared/setup': typeof SharedSetupRoute
   '/story/$storyId': typeof StoryStoryIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/admin/dashboard'
     | '/admin/forgot-password'
+    | '/shared/setup'
     | '/story/$storyId'
     | '/admin'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/admin/dashboard'
     | '/admin/forgot-password'
+    | '/shared/setup'
     | '/story/$storyId'
     | '/admin'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/admin/dashboard'
     | '/admin/forgot-password'
+    | '/shared/setup'
     | '/story/$storyId'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
+  SharedSetupRoute: typeof SharedSetupRoute
   StoryStoryIdRoute: typeof StoryStoryIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoryStoryIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shared/setup': {
+      id: '/shared/setup'
+      path: '/shared/setup'
+      fullPath: '/shared/setup'
+      preLoaderRoute: typeof SharedSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/forgot-password': {
       id: '/admin/forgot-password'
       path: '/admin/forgot-password'
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
+  SharedSetupRoute: SharedSetupRoute,
   StoryStoryIdRoute: StoryStoryIdRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

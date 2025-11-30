@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
@@ -14,24 +14,25 @@ import {
 	Shield
 } from "lucide-react";
 import AdminHeader from "@/components/admin/admin-header";
-
+import { AdminStories } from "@/components/stories/adminStories";
 export const Route = createFileRoute("/admin/dashboard")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const userRole = useQuery(api.auth.getUserRole);
+	const getUserRole = useQuery(api.auth.getUserRole);
+	console.log("getUserRole:", getUserRole);
 
 	return (
 		<>
 			<AuthLoading>{null}</AuthLoading>
 			<Authenticated>
-				{userRole === undefined ? (
+				{getUserRole === undefined ? (
 					// Loading state
 					<div className="flex items-center justify-center min-h-screen">
 						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
 					</div>
-				) : userRole === "admin" ? (
+				) : getUserRole === "admin" ? (
 					// Admin user, show dashboard
 					<DashboardContent />
 				) : (
@@ -60,6 +61,14 @@ function RouteComponent() {
 }
 
 function DashboardContent() {
+	const navigate = useNavigate();
+	const stories = useQuery(api.stories.listAll);
+
+
+	const handlePlayStory = (id: string) => {
+		navigate({ to: "/story/$storyId", params: { storyId: id } });
+	};
+
 	return (
 		<div className="min-h-screen bg-background">
 			<AdminHeader />
@@ -109,11 +118,14 @@ function DashboardContent() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Stories management interface coming soon...
-									</p>
-									{/* Add stories table/list here */}
+								<div className="space-y-8">
+									{stories === undefined ? (
+										<div className="flex items-center justify-center py-20">
+											<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+										</div>
+									) : (
+										<AdminStories handlePlayStory={handlePlayStory} />
+									)}
 								</div>
 							</CardContent>
 						</Card>

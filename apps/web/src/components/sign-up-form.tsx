@@ -7,6 +7,9 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { BookOpen } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@story-telling-v2/backend/convex/_generated/api";
+import { useEffect, useState } from "react";
 
 export default function SignUpForm({
 	onSwitchToSignIn,
@@ -16,6 +19,9 @@ export default function SignUpForm({
 	const navigate = useNavigate({
 		from: "/",
 	});
+
+	// After signup, initialize user role when user becomes available
+	const user = useQuery(api.auth.getCurrentUser);
 
 	const form = useForm({
 		defaultValues: {
@@ -32,8 +38,11 @@ export default function SignUpForm({
 				},
 				{
 					onSuccess: () => {
+						// Wait for session to establish, then initialize role
+						// Navigation will happen in useEffect after role is set
 						navigate({
-							to: "/dashboard",
+							to: "/shared/setup",
+							search: { role: "user" },
 							replace: true,
 						});
 						toast.success("Welcome to Story World! 🎉");

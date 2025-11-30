@@ -44,6 +44,9 @@ function RootComponent() {
 	
 	// Show footer on all pages except landing page
 	const showFooter = location.pathname !== "/";
+	
+	// Don't show header on admin routes
+	const isAdminRoute = location.pathname.startsWith("/admin");
 
 	return (
 		<>
@@ -55,7 +58,7 @@ function RootComponent() {
 				storageKey="vite-ui-theme"
 			>
 				<div className="min-h-screen flex flex-col">
-					<Header />
+					{!isAdminRoute && <Header />}
 					<div className="flex-1">
 						{isFetching ? <Loader /> : <Outlet />}
 					</div>

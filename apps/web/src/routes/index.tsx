@@ -36,7 +36,7 @@ function HomeComponent() {
 				) : userRole === "admin" ? (
 					// Admin user, redirect to admin dashboard
 					<Navigate to="/admin/dashboard" replace />
-				) : hasProfile === false ? (
+					) : (hasProfile === false && userRole === "user") ? (
 					// Regular user without profile, redirect to onboarding
 					<Navigate to="/onboarding" replace />
 				) : (
