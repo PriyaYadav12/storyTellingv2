@@ -1,9 +1,55 @@
 import { mutation, query } from "../_generated/server";
+import { v } from "convex/values";
 
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
 		return await ctx.db.query("themes").collect();
+	},
+});
+
+export const create = mutation({
+	args: { name: v.string() },
+	handler: async (ctx, { name }) => {
+		const existing = await ctx.db
+			.query("themes")
+			.withIndex("by_name", (q) => q.eq("name", name))
+			.first();
+		
+		if (existing) {
+			throw new Error("Theme with this name already exists");
+		}
+
+		const now = Date.now();
+		return await ctx.db.insert("themes", {
+			name,
+			createdAt: now,
+		});
+	},
+});
+
+export const update = mutation({
+	args: { id: v.id("themes"), name: v.string() },
+	handler: async (ctx, { id, name }) => {
+		const existing = await ctx.db
+			.query("themes")
+			.withIndex("by_name", (q) => q.eq("name", name))
+			.first();
+		
+		if (existing && existing._id !== id) {
+			throw new Error("Theme with this name already exists");
+		}
+
+		await ctx.db.patch(id, { name });
+		return id;
+	},
+});
+
+export const remove = mutation({
+	args: { id: v.id("themes") },
+	handler: async (ctx, { id }) => {
+		await ctx.db.delete(id);
+		return id;
 	},
 });
 

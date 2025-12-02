@@ -2,7 +2,7 @@ import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { crossDomain } from "@convex-dev/better-auth/plugins";
 import { components } from "./_generated/api";
-import { DataModel } from "./_generated/dataModel";
+import { DataModel, Id } from "./_generated/dataModel";
 import { query, mutation } from "./_generated/server";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins/email-otp";
@@ -113,81 +113,13 @@ export const getUserRole = query({
   },
 });
 
-// Create or update a user's role (admin only or for initial setup)
-export const setUserRole = mutation({
-  args: {
-    userId: v.string(),
-    role: v.union(v.literal("user"), v.literal("admin")),
-  },
-  handler: async function (ctx, args) {
-    console.log("Setting user role for user:", args.userId, "with role:", args.role);
-    // Check if role already exists
-    const existingRole = await ctx.db
-      .query("user_roles")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .first();
-
-    const now = Date.now();
-
-    if (existingRole) {
-      // Update existing role
-      await ctx.db.patch(existingRole._id, {
-        role: args.role,
-        updatedAt: now,
-      });
-    } else {
-      // Create new role entry
-      await ctx.db.insert("user_roles", {
-        userId: args.userId,
-        role: args.role,
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
-
-    return { success: true };
-  },
-});
-
-// Initialize role for new users (call this after user signup)
-export const initializeUserRole = mutation({
-  args: {},
-  handler: async function (ctx, args) {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) {
-      throw new Error("User not authenticated");
-    }
-
-    // Use userId or _id as the identifier
-    const userIdentifier = (user as any).userId || (user as any)._id;
-
-    // Check if role already exists
-    const existingRole = await ctx.db
-      .query("user_roles")
-      .withIndex("by_user", (q) => q.eq("userId", userIdentifier))
-      .first();
-
-    if (!existingRole) {
-      const now = Date.now();
-      await ctx.db.insert("user_roles", {
-        userId: userIdentifier,
-        role: "user",
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
-
-    return { success: true };
-  },
-});
-
 // Set the current authenticated user's role to admin
-export const setCurrentUserAdmin = mutation({
+export const setCurrentUserRole = mutation({
   args: {
     role: v.union(v.literal("admin"), v.literal("user")),
   },
   handler: async function (ctx, args) {
-	console.log("Setting current user admin");
+	console.log("Setting current user role");
     const user = await authComponent.getAuthUser(ctx);
 	console.log("User:", user);
     if (!user) {
@@ -209,13 +141,115 @@ export const setCurrentUserAdmin = mutation({
 	console.log("Existing role:", existingRole);
     const now = Date.now();
 
+    if (existingRole) {
+      // Update existing role
+      await ctx.db.patch(existingRole._id, {
+        role: args.role,
+        updatedAt: now,
+      });
+    } else {
+      // Create new role entry
       await ctx.db.insert("user_roles", {
         userId: userIdentifier,
         role: args.role,
+        email: user.email,
         createdAt: now,
         updatedAt: now,
       });
+    }
 
     return { success: true };
+  },
+});
+
+// List all users with their profiles and roles (admin only)
+export const listAllUsers = query({
+  args: {},
+  returns: v.array(v.any()),
+  handler: async function (ctx, args) {
+    // Check if user is admin
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+    const userIdentifier = (user as any).userId || (user as any)._id;
+    const userRole = await ctx.db
+      .query("user_roles")
+      .withIndex("by_user", (q) => q.eq("userId", userIdentifier))
+      .first();
+    
+    if (userRole?.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    // Start with user_roles as the base
+    const allRoles = await ctx.db
+      .query("user_roles")
+      .collect();
+    const nonAdmins = allRoles.filter(r => r.role !== "admin");
+    // Get all profiles
+    const allProfiles = await ctx.db
+      .query("user_profiles")
+      .collect();
+
+    // Create a map of profiles by userId for quick lookup
+    const profilesMap = new Map(allProfiles.map(p => [p.userId, p]));
+    console.log('profilesMap:',profilesMap);
+    // Build user details starting from user_roles
+    const usersWithDetails = await Promise.all(nonAdmins.map(async (role) => {
+      const profile = profilesMap.get(role.userId);
+      console.log('profile:',profile);
+      
+      // Get image URLs if storage IDs exist
+      const childProfilePictureUrl = profile?.childProfilePicture 
+        ? await ctx.storage.getUrl(profile.childProfilePicture as Id<"_storage">)
+        : null;
+      const childAvatarUrl = profile?.childAvatarStorageId 
+        ? await ctx.storage.getUrl(profile.childAvatarStorageId as Id<"_storage">)
+        : null;
+      const child2ProfilePictureUrl = profile?.child2ProfilePicture 
+        ? await ctx.storage.getUrl(profile.child2ProfilePicture as Id<"_storage">)
+        : null;
+      const child2AvatarUrl = profile?.child2AvatarStorageId 
+        ? await ctx.storage.getUrl(profile.child2AvatarStorageId as Id<"_storage">)
+        : null;
+      
+      return {
+        id: role.userId,
+        email: role.email,
+        name: profile?.parentName,
+        createdAt: role.createdAt,
+        profile: profile ? {
+          childName: profile.childName,
+          childNickName: profile.childNickName,
+          childAge: profile.childAge,
+          childGender: profile.childGender,
+          favoriteColor: profile.favoriteColor,
+          favoriteAnimal: profile.favoriteAnimal,
+          childAvatarStorageId: profile.childAvatarStorageId,
+          childProfilePicture: profile.childProfilePicture,
+          childProfilePictureUrl,
+          childAvatarUrl,
+          child2Name: profile.child2Name,
+          child2Age: profile.child2Age,
+          child2Gender: profile.child2Gender,
+          child2NickName: profile.child2NickName,
+          child2FavoriteColor: profile.child2FavoriteColor,
+          child2FavoriteAnimal: profile.child2FavoriteAnimal,
+          child2AvatarStorageId: profile.child2AvatarStorageId,
+          child2ProfilePicture: profile.child2ProfilePicture,
+          child2ProfilePictureUrl,
+          child2AvatarUrl,
+          currentStreak: profile.currentStreak,
+          longestStreak: profile.longestStreak,
+        } : null,
+      };
+    }));
+    
+    console.log("Users with details:", usersWithDetails);
+    // Sort by creation date (newest first)
+    usersWithDetails.sort((a, b) => b.createdAt - a.createdAt);
+
+    return usersWithDetails;
   },
 });

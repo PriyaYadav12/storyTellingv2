@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import AdminHeader from "@/components/admin/admin-header";
 import { AdminStories } from "@/components/stories/adminStories";
+import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminAssets } from "@/components/admin/AdminAssets";
+import { AdminSettings } from "@/components/admin/AdminSettings";
 export const Route = createFileRoute("/admin/dashboard")({
 	component: RouteComponent,
 });
@@ -62,8 +65,6 @@ function RouteComponent() {
 
 function DashboardContent() {
 	const navigate = useNavigate();
-	const stories = useQuery(api.stories.listAll);
-
 
 	const handlePlayStory = (id: string) => {
 		navigate({ to: "/story/$storyId", params: { storyId: id } });
@@ -118,15 +119,7 @@ function DashboardContent() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-8">
-									{stories === undefined ? (
-										<div className="flex items-center justify-center py-20">
-											<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-										</div>
-									) : (
-										<AdminStories handlePlayStory={handlePlayStory} />
-									)}
-								</div>
+								<AdminStories handlePlayStory={handlePlayStory} />
 							</CardContent>
 						</Card>
 					</TabsContent>
@@ -140,12 +133,7 @@ function DashboardContent() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Users management interface coming soon...
-									</p>
-									{/* Add users table/list here */}
-								</div>
+								<AdminUsers />
 							</CardContent>
 						</Card>
 					</TabsContent>
@@ -174,37 +162,17 @@ function DashboardContent() {
 							<CardHeader>
 								<CardTitle>Assets Management</CardTitle>
 								<CardDescription>
-									Manage images, videos, and other media files
+									Manage images, videos, and other media files from all stories
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Assets management interface coming soon...
-									</p>
-									{/* Add asset manager here */}
-								</div>
+								<AdminAssets />
 							</CardContent>
 						</Card>
 					</TabsContent>
 
 					<TabsContent value="settings">
-						<Card>
-							<CardHeader>
-								<CardTitle>Application Settings</CardTitle>
-								<CardDescription>
-									Configure application settings and preferences
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Settings interface coming soon...
-									</p>
-									{/* Add settings form here */}
-								</div>
-							</CardContent>
-						</Card>
+						<AdminSettings />
 					</TabsContent>
 				</Tabs>
 			</div>

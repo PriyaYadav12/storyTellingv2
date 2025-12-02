@@ -2,10 +2,10 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-	
 	user_roles: defineTable({
 		userId: v.string(),
 		role: v.union(v.literal("user"), v.literal("admin")),
+		email: v.string(),
 		createdAt: v.number(),
 		updatedAt: v.number(),
 	}).index("by_user", ["userId"]),
