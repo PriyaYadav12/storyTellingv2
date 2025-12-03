@@ -40,7 +40,18 @@ export const update = mutation({
 			throw new Error("Theme with this name already exists");
 		}
 
+		// Get the current theme to check if name changed
+		const currentTheme = await ctx.db.get(id);
+		if (!currentTheme) {
+			throw new Error("Theme not found");
+		}
+
 		await ctx.db.patch(id, { name });
+
+		// Note: Compatibility records are linked by themeId, not name
+		// So we don't need to update them when name changes
+		// The compatibility is managed separately via theme_compatibility mutations
+
 		return id;
 	},
 });
@@ -48,6 +59,15 @@ export const update = mutation({
 export const remove = mutation({
 	args: { id: v.id("themes") },
 	handler: async (ctx, { id }) => {
+		// Delete all compatibility records for this theme
+		// Query all compatibility records and filter by themeId
+		const allCompatibility = await ctx.db.query("theme_flavor_compatibility").collect();
+		const compatibilityRecords = allCompatibility.filter((record) => record.themeId === id);
+		
+		for (const record of compatibilityRecords) {
+			await ctx.db.delete(record._id);
+		}
+
 		await ctx.db.delete(id);
 		return id;
 	},

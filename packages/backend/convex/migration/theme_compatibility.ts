@@ -1,9 +1,102 @@
 import { mutation, query } from "../_generated/server";
+import { v } from "convex/values";
 
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
 		return await ctx.db.query("theme_flavor_compatibility").collect();
+	},
+});
+
+export const getByTheme = query({
+	args: { themeId: v.id("themes") },
+	handler: async (ctx, { themeId }) => {
+		return await ctx.db
+			.query("theme_flavor_compatibility")
+			.withIndex("by_theme_category", (q) => q.eq("themeId", themeId))
+			.collect();
+	},
+});
+
+export const upsert = mutation({
+	args: {
+		themeId: v.id("themes"),
+		category: v.union(v.literal("OP"), v.literal("MT"), v.literal("OB"), v.literal("PY"), v.literal("EN")),
+		allowedCodes: v.array(v.string()),
+	},
+	handler: async (ctx, { themeId, category, allowedCodes }) => {
+		const existing = await ctx.db
+			.query("theme_flavor_compatibility")
+			.withIndex("by_theme_category", (q) => q.eq("themeId", themeId).eq("category", category))
+			.first();
+
+		const now = Date.now();
+
+		if (existing) {
+			await ctx.db.patch(existing._id, {
+				allowedCodes,
+			});
+			return existing._id;
+		} else {
+			return await ctx.db.insert("theme_flavor_compatibility", {
+				themeId,
+				category,
+				allowedCodes,
+				createdAt: now,
+			});
+		}
+	},
+});
+
+export const updateForTheme = mutation({
+	args: {
+		themeId: v.id("themes"),
+		openings: v.array(v.string()),
+		triggers: v.array(v.string()),
+		obstacles: v.array(v.string()),
+	},
+	handler: async (ctx, { themeId, openings, triggers, obstacles }) => {
+		const now = Date.now();
+		
+		// Get all payoffs and endings (they remain the same across themes)
+		const allPayoffs = await ctx.db.query("flavor_payoffs").collect();
+		const allEndings = await ctx.db.query("flavor_endings").collect();
+		const payoffsCodes = allPayoffs.map((p) => p.code);
+		const endingsCodes = allEndings.map((e) => e.code);
+
+		const categories = [
+			{ category: "OP" as const, codes: openings },
+			{ category: "MT" as const, codes: triggers },
+			{ category: "OB" as const, codes: obstacles },
+			{ category: "PY" as const, codes: payoffsCodes },
+			{ category: "EN" as const, codes: endingsCodes },
+		];
+
+		const results = [];
+
+		for (const { category, codes } of categories) {
+			const existing = await ctx.db
+				.query("theme_flavor_compatibility")
+				.withIndex("by_theme_category", (q) => q.eq("themeId", themeId).eq("category", category))
+				.first();
+
+			if (existing) {
+				await ctx.db.patch(existing._id, {
+					allowedCodes: codes,
+				});
+				results.push(existing._id);
+			} else {
+				const id = await ctx.db.insert("theme_flavor_compatibility", {
+					themeId,
+					category,
+					allowedCodes: codes,
+					createdAt: now,
+				});
+				results.push(id);
+			}
+		}
+
+		return results;
 	},
 });
 

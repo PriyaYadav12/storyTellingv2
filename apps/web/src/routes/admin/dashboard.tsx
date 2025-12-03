@@ -73,10 +73,10 @@ function DashboardContent() {
 	return (
 		<div className="min-h-screen bg-background">
 			<AdminHeader />
-			<div className="container mx-auto max-w-7xl px-4 py-8">
+			<div className="container mx-auto max-w-5xl px-4 py-8">
 				{/* Dashboard Header */}
 				<div className="mb-8">
-					<div className="flex items-center gap-3 mb-2">
+					<div className="flex items-center gap-2 mb-2">
 						<LayoutDashboard className="h-8 w-8 text-primary" />
 						<h1 className="text-3xl font-bold">Admin Dashboard</h1>
 					</div>
@@ -87,7 +87,7 @@ function DashboardContent() {
 
 				{/* Tabs */}
 				<Tabs defaultValue="stories" className="w-full">
-					<TabsList className="grid w-full grid-cols-5 mb-8">
+					<TabsList className="grid w-full grid-cols-4 mb-8">
 						<TabsTrigger value="stories" className="flex items-center gap-2">
 							<BookOpen className="h-4 w-4" />
 							<span className="hidden sm:inline">Stories</span>
@@ -95,10 +95,6 @@ function DashboardContent() {
 						<TabsTrigger value="users" className="flex items-center gap-2">
 							<Users className="h-4 w-4" />
 							<span className="hidden sm:inline">Users</span>
-						</TabsTrigger>
-						<TabsTrigger value="blog" className="flex items-center gap-2">
-							<FileText className="h-4 w-4" />
-							<span className="hidden sm:inline">Blog</span>
 						</TabsTrigger>
 						<TabsTrigger value="assets" className="flex items-center gap-2">
 							<FolderOpen className="h-4 w-4" />
@@ -134,25 +130,6 @@ function DashboardContent() {
 							</CardHeader>
 							<CardContent>
 								<AdminUsers />
-							</CardContent>
-						</Card>
-					</TabsContent>
-
-					<TabsContent value="blog">
-						<Card>
-							<CardHeader>
-								<CardTitle>Blog Management</CardTitle>
-								<CardDescription>
-									Create and manage blog posts
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Blog management interface coming soon...
-									</p>
-									{/* Add blog editor here */}
-								</div>
 							</CardContent>
 						</Card>
 					</TabsContent>
