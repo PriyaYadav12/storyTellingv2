@@ -3,7 +3,7 @@ import { useConvexAuth } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ShoppingBag, Star, Menu, X, UserCircle, HelpCircle } from "lucide-react";
+import { BookOpen, ShoppingBag, Star, Menu, X, UserCircle, HelpCircle, CreditCard } from "lucide-react";
 import { useState } from "react";
 
 interface HeaderProps {
@@ -84,6 +84,17 @@ export default function Header({ onGetStarted }: HeaderProps) {
 			style: { backgroundColor: "#F4631E", color: "#fff" },
 			action: () => {
 				navigate({ to: "/blog" });
+			},
+		},
+		{
+			label: "Pricing",
+			icon: <CreditCard className="w-4 h-4 mr-2" />,
+			style: { backgroundColor: "#F875AA", color: "#fff" },
+			action: () => {
+				const pricingSection = document.getElementById("pricing-section");
+				if (pricingSection) {
+					pricingSection.scrollIntoView({ behavior: "smooth" });
+				}
 			},
 		},
 	];
