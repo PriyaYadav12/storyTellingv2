@@ -3,36 +3,13 @@ import { useConvexAuth } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ShoppingBag, Star, Menu, X, UserCircle } from "lucide-react";
+import { BookOpen, ShoppingBag, Star, Menu, X, UserCircle, HelpCircle } from "lucide-react";
 import { useState } from "react";
 
 interface HeaderProps {
 	onGetStarted?: () => void;
 }
 
-// Landing page nav items (for unauthenticated users)
-const landingNavItems = [
-	{
-		label: "Shop",
-		icon: <ShoppingBag className="w-4 h-4 mr-2" />,
-		style: { backgroundColor: "#FF9F00", color: "#fff" },
-		action: () => {
-			const shopSection = document.getElementById("shop");
-			if (shopSection) {
-				shopSection.scrollIntoView({ behavior: "smooth" });
-			}
-		},
-	},
-	{
-		label: "Blog",
-		icon: <BookOpen className="w-4 h-4 mr-2" />,
-		style: { backgroundColor: "#F4631E", color: "#fff" },
-		action: () => {
-			// TODO: Add blog link or scroll to blog section
-			console.log("Blog clicked");
-		},
-	},
-];
 
 function NavButton({
 	label,
@@ -88,6 +65,29 @@ export default function Header({ onGetStarted }: HeaderProps) {
 		}
 	};
 
+	// Landing page nav items (for unauthenticated users)
+	const landingNavItems = [
+		{
+			label: "Shop",
+			icon: <ShoppingBag className="w-4 h-4 mr-2" />,
+			style: { backgroundColor: "#FF9F00", color: "#fff" },
+			action: () => {
+				const shopSection = document.getElementById("shop");
+				if (shopSection) {
+					shopSection.scrollIntoView({ behavior: "smooth" });
+				}
+			},
+		},
+		{
+			label: "Blog",
+			icon: <BookOpen className="w-4 h-4 mr-2" />,
+			style: { backgroundColor: "#F4631E", color: "#fff" },
+			action: () => {
+				navigate({ to: "/blog" });
+			},
+		},
+	];
+
 	// App navigation items (for authenticated users)
 	const appNavItems = [
 		{
@@ -99,6 +99,11 @@ export default function Header({ onGetStarted }: HeaderProps) {
 			label: "Library",
 			path: "/library",
 			isActive: currentPath === "/library",
+		},
+		{
+			label: "FAQ",
+			path: "/faq",
+			isActive: currentPath === "/faq",
 		}
 	];
 
@@ -165,6 +170,18 @@ export default function Header({ onGetStarted }: HeaderProps) {
 										onClick={item.action}
 									/>
 								))}
+
+								<Link to="/faq">
+									<Button
+										variant="ghost"
+										size="default"
+										className="rounded-[25px] hover:scale-105 transition-all duration-300"
+										style={{ backgroundColor: "#6366F1", color: "#fff" }}
+									>
+										<HelpCircle className="w-4 h-4 mr-2" />
+										FAQ
+									</Button>
+								</Link>
 
 								<Button
 									onClick={handleGetStarted}
@@ -242,6 +259,20 @@ export default function Header({ onGetStarted }: HeaderProps) {
 										onClick={() => handleNavClick(item.action)}
 									/>
 								))}
+
+								<Link
+									to="/faq"
+									onClick={() => handleNavClick()}
+								>
+									<Button
+										variant="ghost"
+										className="w-full justify-center gap-2 rounded-[25px]"
+										style={{ backgroundColor: "#6366F1", color: "#fff" }}
+									>
+										<HelpCircle className="w-4 h-4" />
+										FAQ
+									</Button>
+								</Link>
 
 								<NavButton
 									label="Log In / Sign Up"

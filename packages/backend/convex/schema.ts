@@ -169,6 +169,20 @@ flavor_openings: defineTable({
 	createdAt: v.number(),
 	updatedAt: v.number(),
   }).index("by_user", ["userId"]),
+
+  // Blogs
+  blogs: defineTable({
+	title: v.string(),
+	slug: v.string(),
+	content: v.any(), // Editor.js output format (JSON)
+	excerpt: v.optional(v.string()),
+	status: v.union(v.literal("draft"), v.literal("published")),
+	publishedAt: v.optional(v.number()),
+	createdAt: v.number(),
+	updatedAt: v.number(),
+  })
+	.index("by_slug", ["slug"])
+	.index("by_status", ["status"])
 });
 
 

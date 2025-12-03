@@ -16,8 +16,8 @@ interface HeroCarouselProps {
 
 export default function HeroCarousel({ 
 	slides = [
-		{ type: "image", src: "/LalliFafadashboard1.jpeg", alt: "Lalli and Fafa", caption: "Meet Lalli & Fafa!" },
-		{ type: "image", src: "/LalliFafadashboard2.jpeg", alt: "Lalli", caption: "Adventure Awaits!" },
+		{ type: "image", src: "/Hero-carousel1.png", alt: "Lalli and Fafa", caption: "Meet Lalli & Fafa!" },
+		{ type: "image", src: "/Hero-carousel2.png", alt: "Lalli", caption: "Adventure Awaits!" },
 		{ type: "video", src: "/LalliVideo.mp4", caption:"Lalli,6" },
 		{ type: "video", src: "/FafaVideo.mp4", caption: "Fafa,3" },
 	],

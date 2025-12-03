@@ -88,25 +88,25 @@ export const seedDefaults = mutation({
 				name: "Space Journey",
 			},
 			{
-				name: "Castle Adventure",
+				name: "Jungle Safari",
 			},
 			{
-				name: "Beach Day",
+				name: "Mountain Quest",
 			},
 			{
-				name: "Art Studio",
+				name: "Dinosaurs Park",
 			},
 			{
-				name: "Science Lab",
+				name: "Birthday Party",
 			},
 			{
 				name: "Circus Fun",
 			},
 			{
-				name: "Cooking Class",
+				name: "Desert Trek",
 			},
 			{
-				name: "Nature Garden",
+				name: "Treasure Hunt",
 			},
 		];
 

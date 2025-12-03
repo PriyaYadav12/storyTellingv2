@@ -6,18 +6,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
 	Settings, 
-	FileText, 
 	BookOpen, 
 	Users, 
 	FolderOpen,
 	LayoutDashboard,
-	Shield
+	Shield,
+	ScrollText,
 } from "lucide-react";
 import AdminHeader from "@/components/admin/admin-header";
 import { AdminStories } from "@/components/stories/adminStories";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminAssets } from "@/components/admin/AdminAssets";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { AdminBlog } from "@/components/admin/AdminBlog";
 export const Route = createFileRoute("/admin/dashboard")({
 	component: RouteComponent,
 });
@@ -87,7 +88,7 @@ function DashboardContent() {
 
 				{/* Tabs */}
 				<Tabs defaultValue="stories" className="w-full">
-					<TabsList className="grid w-full grid-cols-4 mb-8">
+					<TabsList className="grid w-full grid-cols-5 mb-8">
 						<TabsTrigger value="stories" className="flex items-center gap-2">
 							<BookOpen className="h-4 w-4" />
 							<span className="hidden sm:inline">Stories</span>
@@ -103,6 +104,10 @@ function DashboardContent() {
 						<TabsTrigger value="settings" className="flex items-center gap-2">
 							<Settings className="h-4 w-4" />
 							<span className="hidden sm:inline">Settings</span>
+						</TabsTrigger>
+						<TabsTrigger value="blog" className="flex items-center gap-2">
+							<ScrollText className="h-4 w-4" />
+							<span className="hidden sm:inline">Blog</span>
 						</TabsTrigger>
 					</TabsList>
 
@@ -134,19 +139,33 @@ function DashboardContent() {
 						</Card>
 					</TabsContent>
 
-					<TabsContent value="assets">
+					<TabsContent value="blog">
 						<Card>
 							<CardHeader>
-								<CardTitle>Assets Management</CardTitle>
+								<CardTitle>Blog Management</CardTitle>
 								<CardDescription>
-									Manage images, videos, and other media files from all stories
+									View and manage all blog posts
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<AdminAssets />
+								<AdminBlog />
 							</CardContent>
 						</Card>
 					</TabsContent>
+
+						<TabsContent value="assets">
+							<Card>
+								<CardHeader>
+									<CardTitle>Assets Management</CardTitle>
+									<CardDescription>
+										Manage images, videos, and other media files from all stories
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<AdminAssets />
+								</CardContent>
+							</Card>
+						</TabsContent>
 
 					<TabsContent value="settings">
 						<AdminSettings />
