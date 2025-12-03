@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as blogs from "../blogs.js";
 import type * as crons from "../crons.js";
 import type * as generateStory from "../generateStory.js";
 import type * as healthCheck from "../healthCheck.js";
@@ -34,7 +35,6 @@ import type * as sceneImageGenerator_promptBuilder from "../sceneImageGenerator/
 import type * as sceneImageGenerator_types from "../sceneImageGenerator/types.js";
 import type * as sceneImageGenerator_utils from "../sceneImageGenerator/utils.js";
 import type * as stories from "../stories.js";
-import type * as storiesActions from "../storiesActions.js";
 import type * as storyElementSelector from "../storyElementSelector.js";
 import type * as storyPromptFormatter from "../storyPromptFormatter.js";
 import type * as userProfiles from "../userProfiles.js";
@@ -56,6 +56,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  blogs: typeof blogs;
   crons: typeof crons;
   generateStory: typeof generateStory;
   healthCheck: typeof healthCheck;
@@ -81,7 +82,6 @@ declare const fullApi: ApiFromModules<{
   "sceneImageGenerator/types": typeof sceneImageGenerator_types;
   "sceneImageGenerator/utils": typeof sceneImageGenerator_utils;
   stories: typeof stories;
-  storiesActions: typeof storiesActions;
   storyElementSelector: typeof storyElementSelector;
   storyPromptFormatter: typeof storyPromptFormatter;
   userProfiles: typeof userProfiles;

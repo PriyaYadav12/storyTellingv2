@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
@@ -6,32 +6,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
 	Settings, 
-	FileText, 
 	BookOpen, 
 	Users, 
 	FolderOpen,
 	LayoutDashboard,
-	Shield
+	Shield,
+	ScrollText,
 } from "lucide-react";
 import AdminHeader from "@/components/admin/admin-header";
-
+import { AdminStories } from "@/components/stories/adminStories";
+import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminAssets } from "@/components/admin/AdminAssets";
+import { AdminSettings } from "@/components/admin/AdminSettings";
+import { AdminBlog } from "@/components/admin/AdminBlog";
 export const Route = createFileRoute("/admin/dashboard")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const userRole = useQuery(api.auth.getUserRole);
+	const getUserRole = useQuery(api.auth.getUserRole);
+	console.log("getUserRole:", getUserRole);
 
 	return (
 		<>
 			<AuthLoading>{null}</AuthLoading>
 			<Authenticated>
-				{userRole === undefined ? (
+				{getUserRole === undefined ? (
 					// Loading state
 					<div className="flex items-center justify-center min-h-screen">
 						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
 					</div>
-				) : userRole === "admin" ? (
+				) : getUserRole === "admin" ? (
 					// Admin user, show dashboard
 					<DashboardContent />
 				) : (
@@ -60,13 +65,19 @@ function RouteComponent() {
 }
 
 function DashboardContent() {
+	const navigate = useNavigate();
+
+	const handlePlayStory = (id: string) => {
+		navigate({ to: "/story/$storyId", params: { storyId: id } });
+	};
+
 	return (
 		<div className="min-h-screen bg-background">
 			<AdminHeader />
-			<div className="container mx-auto max-w-7xl px-4 py-8">
+			<div className="container mx-auto max-w-5xl px-4 py-8">
 				{/* Dashboard Header */}
 				<div className="mb-8">
-					<div className="flex items-center gap-3 mb-2">
+					<div className="flex items-center gap-2 mb-2">
 						<LayoutDashboard className="h-8 w-8 text-primary" />
 						<h1 className="text-3xl font-bold">Admin Dashboard</h1>
 					</div>
@@ -86,10 +97,6 @@ function DashboardContent() {
 							<Users className="h-4 w-4" />
 							<span className="hidden sm:inline">Users</span>
 						</TabsTrigger>
-						<TabsTrigger value="blog" className="flex items-center gap-2">
-							<FileText className="h-4 w-4" />
-							<span className="hidden sm:inline">Blog</span>
-						</TabsTrigger>
 						<TabsTrigger value="assets" className="flex items-center gap-2">
 							<FolderOpen className="h-4 w-4" />
 							<span className="hidden sm:inline">Assets</span>
@@ -97,6 +104,10 @@ function DashboardContent() {
 						<TabsTrigger value="settings" className="flex items-center gap-2">
 							<Settings className="h-4 w-4" />
 							<span className="hidden sm:inline">Settings</span>
+						</TabsTrigger>
+						<TabsTrigger value="blog" className="flex items-center gap-2">
+							<ScrollText className="h-4 w-4" />
+							<span className="hidden sm:inline">Blog</span>
 						</TabsTrigger>
 					</TabsList>
 
@@ -109,12 +120,7 @@ function DashboardContent() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Stories management interface coming soon...
-									</p>
-									{/* Add stories table/list here */}
-								</div>
+								<AdminStories handlePlayStory={handlePlayStory} />
 							</CardContent>
 						</Card>
 					</TabsContent>
@@ -128,12 +134,7 @@ function DashboardContent() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Users management interface coming soon...
-									</p>
-									{/* Add users table/list here */}
-								</div>
+								<AdminUsers />
 							</CardContent>
 						</Card>
 					</TabsContent>
@@ -143,56 +144,31 @@ function DashboardContent() {
 							<CardHeader>
 								<CardTitle>Blog Management</CardTitle>
 								<CardDescription>
-									Create and manage blog posts
+									View and manage all blog posts
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Blog management interface coming soon...
-									</p>
-									{/* Add blog editor here */}
-								</div>
+								<AdminBlog />
 							</CardContent>
 						</Card>
 					</TabsContent>
 
-					<TabsContent value="assets">
-						<Card>
-							<CardHeader>
-								<CardTitle>Assets Management</CardTitle>
-								<CardDescription>
-									Manage images, videos, and other media files
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Assets management interface coming soon...
-									</p>
-									{/* Add asset manager here */}
-								</div>
-							</CardContent>
-						</Card>
-					</TabsContent>
+						<TabsContent value="assets">
+							<Card>
+								<CardHeader>
+									<CardTitle>Assets Management</CardTitle>
+									<CardDescription>
+										Manage images, videos, and other media files from all stories
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<AdminAssets />
+								</CardContent>
+							</Card>
+						</TabsContent>
 
 					<TabsContent value="settings">
-						<Card>
-							<CardHeader>
-								<CardTitle>Application Settings</CardTitle>
-								<CardDescription>
-									Configure application settings and preferences
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									<p className="text-muted-foreground">
-										Settings interface coming soon...
-									</p>
-									{/* Add settings form here */}
-								</div>
-							</CardContent>
-						</Card>
+						<AdminSettings />
 					</TabsContent>
 				</Tabs>
 			</div>

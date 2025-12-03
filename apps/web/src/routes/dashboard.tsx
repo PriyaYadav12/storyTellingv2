@@ -14,7 +14,6 @@ import StoryGenerationForm from "@/components/StoryGenerationForm";
 import HeroCarousel from "@/components/HeroCarousel";
 import StatisticsCard from "@/components/StatisticsCard";
 import StreakTracker from "@/components/StreakTracker";
-import { StoriesList } from "@/components/dashboard/StoriesList";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({

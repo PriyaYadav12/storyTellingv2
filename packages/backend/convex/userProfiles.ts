@@ -47,6 +47,7 @@ export const createProfile = mutation({
 		}
 
 		const now = Date.now();
+		await ctx.runMutation(api.auth.setCurrentUserRole, { role: "user" });
 		return await ctx.db.insert("user_profiles", {
 			userId,
 			...args,

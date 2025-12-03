@@ -7,7 +7,6 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { BookOpen } from "lucide-react";
-
 export default function SignUpForm({
 	onSwitchToSignIn,
 }: {
@@ -32,6 +31,8 @@ export default function SignUpForm({
 				},
 				{
 					onSuccess: () => {
+						// Wait for session to establish, then initialize role
+						// Navigation will happen in useEffect after role is set
 						navigate({
 							to: "/dashboard",
 							replace: true,

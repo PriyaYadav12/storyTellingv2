@@ -7,6 +7,7 @@ import { CharactersSection } from "@/components/landing/CharactersSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { ShopSection } from "@/components/landing/ShopSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
+import { PricingSection } from "@/components/landing/PricingSection";
 import { CTASection } from "@/components/landing/CTASection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
@@ -36,7 +37,7 @@ function HomeComponent() {
 				) : userRole === "admin" ? (
 					// Admin user, redirect to admin dashboard
 					<Navigate to="/admin/dashboard" replace />
-				) : hasProfile === false ? (
+					) : (hasProfile === false && userRole === "user") ? (
 					// Regular user without profile, redirect to onboarding
 					<Navigate to="/onboarding" replace />
 				) : (
@@ -54,6 +55,7 @@ function HomeComponent() {
 						<FeaturesSection />
 						<ShopSection />
 						<TestimonialsSection />
+						<PricingSection />
 						<CTASection onGetStarted={handleGetStarted} />
 					</main>
 

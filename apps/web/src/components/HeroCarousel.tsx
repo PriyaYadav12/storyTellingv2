@@ -16,8 +16,8 @@ interface HeroCarouselProps {
 
 export default function HeroCarousel({ 
 	slides = [
-		{ type: "image", src: "/LalliFafadashboard1.jpeg", alt: "Lalli and Fafa", caption: "Meet Lalli & Fafa!" },
-		{ type: "image", src: "/LalliFafadashboard2.jpeg", alt: "Lalli", caption: "Adventure Awaits!" },
+		{ type: "image", src: "/Hero-carousel1.png", alt: "Lalli and Fafa", caption: "Meet Lalli & Fafa!" },
+		{ type: "image", src: "/Hero-carousel2.png", alt: "Lalli", caption: "Adventure Awaits!" },
 		{ type: "video", src: "/LalliVideo.mp4", caption:"Lalli,6" },
 		{ type: "video", src: "/FafaVideo.mp4", caption: "Fafa,3" },
 	],
@@ -47,12 +47,14 @@ export default function HeroCarousel({
 					video.currentTime = 0;
 					// Try to play with audio first
 					video.muted = false;
+					video.volume = 0.1;
 					video.play().then(() => {
 						// Successfully started playing, keep unmuted
 						video.muted = false;
 					}).catch(() => {
 						// If autoplay with sound fails, try muted autoplay
 						video.muted = true;
+						video.volume = 0;
 						video.play().catch((err) => {
 							console.log("Video autoplay failed:", err);
 						});

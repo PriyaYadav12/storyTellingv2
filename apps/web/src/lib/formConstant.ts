@@ -1,38 +1,52 @@
-import { Castle, Rocket, Waves, Rainbow, Palette, Trees, Home, Cookie, type LucideIcon} from "lucide-react";
-import { Heart, Shield, Users, Smile, Brain, Target, Star, Lightbulb, HandHeart, Handshake, Sparkles } from "lucide-react";
+import { Castle, Rocket, Waves, Rainbow, Palette, Trees, Home, Cookie, type LucideIcon, FlaskConical,Tent} from "lucide-react";
+import { Heart, Shield, Users, Smile, Brain, Target, Star, Lightbulb, HandHeart, Handshake, Sparkles,TreePalm,Flower2,ChefHat } from "lucide-react";
 
 // Map theme names to icons and colors
-export const getThemeMetadata = (themeName: string): { icon: LucideIcon; color: "pink" | "blue" | "yellow" | "purple" | "green" } => {
+export const getThemeMetadata = (themeName: string): { icon: LucideIcon; color: "pink" | "blue" | "pink" | "pink" | "green" } => {
 	const lowerName = themeName.toLowerCase();
 	
 	// Map based on keywords in theme name
-	if (lowerName.includes("forest") || lowerName.includes("nature") || lowerName.includes("jungle")) {
-		return { icon: Trees, color: "green" };
+	if (lowerName.includes("forest") || lowerName.includes("jungle")) {
+		return { icon: Trees, color: "pink" };
 	}
-	if (lowerName.includes("ocean") || lowerName.includes("sea") || lowerName.includes("water")) {
-		return { icon: Waves, color: "blue" };
+	if (lowerName.includes("ocean")) {
+		return { icon: Waves, color: "pink" };
 	}
 	if (lowerName.includes("space") || lowerName.includes("galaxy") || lowerName.includes("planet")) {
-		return { icon: Rocket, color: "blue" };
+		return { icon: Rocket, color: "pink" };
 	}
 	if (lowerName.includes("castle") || lowerName.includes("kingdom") || lowerName.includes("princess")) {
 		return { icon: Castle, color: "pink" };
 	}
 	if (lowerName.includes("rainbow") || lowerName.includes("magic") || lowerName.includes("wonder")) {
-		return { icon: Rainbow, color: "purple" };
+		return { icon: Rainbow, color: "pink" };
 	}
 	if (lowerName.includes("art") || lowerName.includes("paint") || lowerName.includes("creative")) {
-		return { icon: Palette, color: "yellow" };
+		return { icon: Palette, color: "pink" };
 	}
 	if (lowerName.includes("bakery") || lowerName.includes("cookie") || lowerName.includes("cake")) {
 		return { icon: Cookie, color: "pink" };
 	}
 	if (lowerName.includes("building") || lowerName.includes("workshop") || lowerName.includes("home")) {
-		return { icon: Home, color: "purple" };
+		return { icon: Home, color: "pink" };
 	}
-	
+	if(lowerName.includes("beach")) {
+		return { icon: TreePalm, color: "pink" };
+	}
+	if(lowerName.includes("science")) {
+		return { icon: FlaskConical, color: "pink" };
+	}
+	if(lowerName.includes("circus")) {
+		return { icon: Tent, color: "pink" };
+	}
+	if(lowerName.includes("cooking")) {
+		return { icon: ChefHat, color: "pink" };
+	}
+	if(lowerName.includes("garden")) {
+		return { icon: Flower2, color: "pink" };
+	}
 	// Default fallback
-	return { icon: Trees, color: "green" };
+	return { icon: Trees, color: "pink" };
 };
 
 // Map lesson names to icons

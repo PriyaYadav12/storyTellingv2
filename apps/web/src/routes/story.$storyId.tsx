@@ -16,6 +16,7 @@ export const Route = createFileRoute("/story/$storyId")({
 
 function StoryPageComponent() {
 	const { storyId } = Route.useParams();
+	const userRole = useQuery(api.auth.getUserRole);
 	const navigate = useNavigate();
 	const [isFavorite, setIsFavorite] = useState(false);
 
@@ -26,7 +27,11 @@ function StoryPageComponent() {
 	const narrationFile = useQuery(api.stories.getNarrationFileUrl as any, hasStoryId ? { storyId: storyId as any } : "skip");
 
 	const handleBack = () => {
-		navigate({ to: "/library" });
+		if (userRole === "admin") {
+			navigate({ to: "/admin/dashboard" });
+		} else {
+			navigate({ to: "/library" });
+		}
 	};
 
 	const handleShare = () => {
@@ -54,7 +59,7 @@ function StoryPageComponent() {
 									data-testid="button-back"
 								>
 									<ArrowLeft className="w-5 h-5" />
-									Back to Library
+									{userRole === "admin" ? "Back to Dashboard" : "Back to Library"}
 								</Button>
 								<div className="flex gap-2">
 									<Button

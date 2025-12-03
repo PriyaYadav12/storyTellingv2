@@ -17,7 +17,6 @@ export default function AdminHeader() {
 					<span className="font-semibold text-lg">Admin Panel</span>
 				</Link>
 				<div className="flex items-center gap-2">
-					<ModeToggle />
 					{isAuthenticated && <AdminUserMenu />}
 				</div>
 			</div>

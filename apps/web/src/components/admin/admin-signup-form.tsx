@@ -15,6 +15,8 @@ export default function AdminSignUpForm({
 }) {
 	const navigate = useNavigate();
 
+	// After signup, we'll wait for the Convex user and then set admin role
+
 	const form = useForm({
 		defaultValues: {
 			name: "",
@@ -36,11 +38,8 @@ export default function AdminSignUpForm({
 				},
 				{
 					onSuccess: () => {
-						navigate({
-							to: "/admin/dashboard",
-							replace: true,
-						});
-						toast.success("Admin account created successfully! 🎉");
+						toast.success("Account created!");
+  						navigate({ to: "/shared/setup",search: { role: "admin" }, replace: true });
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
@@ -198,7 +197,9 @@ export default function AdminSignUpForm({
 									className="w-full rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-950 text-white shadow-lg mt-6"
 									disabled={!state.canSubmit || state.isSubmitting}
 								>
-									{state.isSubmitting ? "Creating Account..." : "Create Admin Account"}
+									{state.isSubmitting
+											? "Creating Admin Account..."
+											: "Create Admin Account"}
 								</Button>
 							)}
 						</form.Subscribe>
@@ -218,4 +219,3 @@ export default function AdminSignUpForm({
 		</div>
 	);
 }
-

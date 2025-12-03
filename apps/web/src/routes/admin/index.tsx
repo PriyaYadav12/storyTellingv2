@@ -2,6 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import AdminLoginForm from "@/components/admin/admin-login-form";
 import { useState } from "react";
+import AdminSignUpForm from "@/components/admin/admin-signup-form";
 
 export const Route = createFileRoute("/admin/")({
 	component: RouteComponent,
@@ -17,7 +18,11 @@ function RouteComponent() {
 				<Navigate to="/admin/dashboard" replace />
 			</Authenticated>
 			<Unauthenticated>
-				<AdminLoginForm />
+			{mode === "signin" ? (
+				<AdminLoginForm onSwitchToSignUp={() => setMode("signup")} />
+			) : (
+				<AdminSignUpForm onSwitchToSignIn={() => setMode("signin")} />
+			)}
 			</Unauthenticated>
 		</>
 	);
