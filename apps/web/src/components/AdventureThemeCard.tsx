@@ -34,12 +34,12 @@ export default function AdventureThemeCard({
 			onClick={onClick}
 			data-testid={`card-theme-${title.toLowerCase().replace(/\s+/g, '-')}`}
 		>
-			<div className="flex flex-col items-center text-center space-y-2 aspect-square justify-center">
-				<div className={`${colorClasses[color]} p-3 rounded-xl`}>
-					<Icon className="w-8 h-8" />
-				</div>
-				<h3 className="text-sm font-semibold">{title}</h3>
+		<div className="flex flex-col items-center text-center space-y-2 sm:aspect-square justify-center min-h-[100px]">
+			<div className={`${colorClasses[color]} p-3 rounded-xl flex-shrink-0`}>
+				<Icon className="w-8 h-8" />
 			</div>
+			<h3 className="text-xs sm:text-sm font-semibold break-words hyphens-auto leading-tight px-1 w-full">{title}</h3>
+		</div>
 		</Card>
 	);
 }
