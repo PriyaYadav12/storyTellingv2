@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as blogs from "../blogs.js";
+import type * as credit from "../credit.js";
 import type * as crons from "../crons.js";
 import type * as generateStory from "../generateStory.js";
 import type * as healthCheck from "../healthCheck.js";
@@ -57,6 +58,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   blogs: typeof blogs;
+  credit: typeof credit;
   crons: typeof crons;
   generateStory: typeof generateStory;
   healthCheck: typeof healthCheck;

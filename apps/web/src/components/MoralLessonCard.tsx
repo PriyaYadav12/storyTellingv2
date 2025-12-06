@@ -20,6 +20,7 @@ export default function MoralLessonCard({
 			className={`
 				px-6 py-3 text-base rounded-2xl cursor-pointer 
 				hover:shadow-lg active:scale-95 transition-all
+				w-full sm:w-auto
 				${isSelected ? "scale-105" : ""}
 			`}
 			onClick={onClick}

@@ -49,6 +49,7 @@ export default defineSchema({
 			language: v.optional(v.string()),
 			useFavorites: v.optional(v.boolean()),
 			childName: v.optional(v.string()),
+			textOnly: v.optional(v.boolean()),
 		}),
 		sceneMetadata: v.optional(v.array(v.object({
 			sceneNumber: v.number(),
@@ -182,7 +183,17 @@ flavor_openings: defineTable({
 	updatedAt: v.number(),
   })
 	.index("by_slug", ["slug"])
-	.index("by_status", ["status"])
+	.index("by_status", ["status"]),
+	//credit 
+	user_credits: defineTable({
+		userId: v.string(),
+		totalCredits: v.number(),
+		usedCredits: v.number(),
+		availableCredits: v.number(),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	}).index("by_user", ["userId"])
+
 });
 
 
