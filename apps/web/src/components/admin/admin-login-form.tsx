@@ -7,12 +7,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Shield } from "lucide-react";
-import { useQuery } from "convex/react";
-import { api } from "@story-telling-v2/backend/convex/_generated/api";
-interface SignInFormProps {
-	onSwitchToSignUp?: () => void;
-}
-export default function AdminLoginForm({ onSwitchToSignUp }: SignInFormProps) {
+export default function AdminLoginForm() {
 	const navigate = useNavigate();
 
 	const form = useForm({
@@ -150,19 +145,6 @@ export default function AdminLoginForm({ onSwitchToSignUp }: SignInFormProps) {
 								</Button>
 							)}
 						</form.Subscribe>
-						{onSwitchToSignUp && (
-							<div className="text-center text-sm">
-								<span className="text-muted-foreground">Don't have an account? </span>
-								<Button
-									type="button"
-									variant="link"
-									onClick={onSwitchToSignUp}
-									className="text-purple-600 hover:text-purple-800 px-0"
-								>
-									Sign up
-								</Button>
-							</div>
-						)}
 					</form>
 				</div>
 			</div>
