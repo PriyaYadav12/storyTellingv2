@@ -3,39 +3,14 @@ import { useConvexAuth } from "convex/react";
 import { useQuery } from "convex/react";
 import { api } from "@story-telling-v2/backend/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ShoppingBag, Star, Menu, X, UserCircle, HelpCircle, CreditCard } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { DesktopNavigation } from "./header/DesktopNavigation";
+import { MobileNavigation } from "./header/MobileNavigation";
+import { getLandingNavItems, getAppNavItems } from "./header/navigationConfig";
 
 interface HeaderProps {
 	onGetStarted?: () => void;
-}
-
-
-function NavButton({
-	label,
-	icon,
-	style,
-	className = "",
-	onClick,
-}: {
-	label: string;
-	icon?: React.ReactNode;
-	style?: React.CSSProperties;
-	className?: string;
-	onClick?: () => void;
-}) {
-	return (
-		<Button
-			variant="ghost"
-			size="default"
-			onClick={onClick}
-			style={style}
-			className={`rounded-[25px] hover:scale-105 transition-all duration-300 ${className}`}
-		>
-			{icon}
-			{label}
-		</Button>
-	);
 }
 
 export default function Header({ onGetStarted }: HeaderProps) {
@@ -46,14 +21,14 @@ export default function Header({ onGetStarted }: HeaderProps) {
 	
 	const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
 	const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
+	const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
 	
 	const userName = profile?.parentName || (user?.name as string | undefined) || "Friend";
+	const availableCredits = credits?.[0]?.availableCredits || 0;
 	const currentPath = location.pathname;
-	const isLandingPage = currentPath === "/";
 
-	const handleNavClick = (action?: () => void) => {
+	const handleNavClick = () => {
 		if (isMobileMenuOpen) setIsMobileMenuOpen(false);
-		action?.();
 	};
 
 	const handleGetStarted = () => {
@@ -65,58 +40,8 @@ export default function Header({ onGetStarted }: HeaderProps) {
 		}
 	};
 
-	// Landing page nav items (for unauthenticated users)
-	const landingNavItems = [
-		{
-			label: "Shop",
-			icon: <ShoppingBag className="w-4 h-4 mr-2" />,
-			style: { backgroundColor: "#FF9F00", color: "#fff" },
-			action: () => {
-				const shopSection = document.getElementById("shop");
-				if (shopSection) {
-					shopSection.scrollIntoView({ behavior: "smooth" });
-				}
-			},
-		},
-		{
-			label: "Blog",
-			icon: <BookOpen className="w-4 h-4 mr-2" />,
-			style: { backgroundColor: "#F4631E", color: "#fff" },
-			action: () => {
-				navigate({ to: "/blog" });
-			},
-		},
-		{
-			label: "Pricing",
-			icon: <CreditCard className="w-4 h-4 mr-2" />,
-			style: { backgroundColor: "#F875AA", color: "#fff" },
-			action: () => {
-				const pricingSection = document.getElementById("pricing-section");
-				if (pricingSection) {
-					pricingSection.scrollIntoView({ behavior: "smooth" });
-				}
-			},
-		},
-	];
-
-	// App navigation items (for authenticated users)
-	const appNavItems = [
-		{
-			label: "Home",
-			path: "/dashboard",
-			isActive: currentPath === "/dashboard",
-		},
-		{
-			label: "Library",
-			path: "/library",
-			isActive: currentPath === "/library",
-		},
-		{
-			label: "FAQ",
-			path: "/faq",
-			isActive: currentPath === "/faq",
-		}
-	];
+	const landingNavItems = getLandingNavItems(navigate);
+	const appNavItems = getAppNavItems(currentPath);
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -138,75 +63,16 @@ export default function Header({ onGetStarted }: HeaderProps) {
 
 				{/* Navigation */}
 				<div className="flex items-center gap-2 md:gap-3">
-					{/* Desktop Navigation */}
-					<div className="hidden sm:flex gap-2">
-						{isAuthenticated ? (
-							// Authenticated: App navigation
-							<>
-								{appNavItems.map((item) => (
-									<Link key={item.label} to={item.path as any}>
-										<Button
-											variant="ghost"
-											className={`text-base font-semibold rounded-full px-6 ${
-												item.isActive
-													? "bg-primary/10 text-primary"
-													: "hover:bg-primary/10"
-											}`}
-										>
-											{item.label}
-										</Button>
-									</Link>
-								))}
-								
-								<Link to="/profile">
-									<Button
-										variant="ghost"
-										className="gap-2 text-base font-semibold rounded-full px-6"
-									>
-										<UserCircle className="w-5 h-5" />
-										<span className="hidden md:inline">{userName}</span>
-									</Button>
-								</Link>
-								
-							</>
-						) : (
-							// Unauthenticated: Landing page navigation
-							<>
-								{landingNavItems.map((item) => (
-									<NavButton
-										key={item.label}
-										label={item.label}
-										icon={item.icon}
-										style={item.style}
-										onClick={item.action}
-									/>
-								))}
-
-								<Link to="/faq">
-									<Button
-										variant="ghost"
-										size="default"
-										className="rounded-[25px] hover:scale-105 transition-all duration-300"
-										style={{ backgroundColor: "#6366F1", color: "#fff" }}
-									>
-										<HelpCircle className="w-4 h-4 mr-2" />
-										FAQ
-									</Button>
-								</Link>
-
-								<Button
-									onClick={handleGetStarted}
-									size="sm"
-									className="rounded-[30px] shadow-lg shadow-primary/30 hover:scale-105 transition-all duration-300"
-									style={{ backgroundColor: "#CB0404", color: "#fff" }}
-								>
-									<Star className="w-3 md:w-4 h-3 md:h-4 mr-2 fill-current" />
-									Log In / Sign Up
-								</Button>
-							</>
-						)}
-						
-					</div>
+					<DesktopNavigation
+						isAuthenticated={isAuthenticated}
+						currentPath={currentPath}
+						availableCredits={availableCredits}
+						userName={userName}
+						userEmail={user?.email}
+						landingNavItems={landingNavItems}
+						appNavItems={appNavItems}
+						onGetStarted={handleGetStarted}
+					/>
 
 					{/* Mobile Menu Toggle */}
 					<Button
@@ -222,80 +88,16 @@ export default function Header({ onGetStarted }: HeaderProps) {
 
 			{/* Mobile Dropdown */}
 			{isMobileMenuOpen && (
-				<div className="sm:hidden border-t border-border bg-background/95 backdrop-blur-xl">
-					<div className="container mx-auto px-4 py-4 flex flex-col gap-3">
-						{isAuthenticated ? (
-							// Authenticated: App navigation mobile
-							<>
-								{appNavItems.map((item) => (
-									<Link
-										key={item.label}
-										to={item.path as any}
-										onClick={() => handleNavClick()}
-									>
-										<Button
-											variant="ghost"
-											className={`w-full justify-center rounded-full ${
-												item.isActive ? "bg-primary/10 text-primary" : ""
-											}`}
-										>
-											{item.label}
-										</Button>
-									</Link>
-								))}
-								
-								<Link
-									to="/profile"
-									onClick={() => handleNavClick()}
-								>
-									<Button
-										variant="ghost"
-										className="w-full justify-center gap-2 rounded-full"
-									>
-										<UserCircle className="w-5 h-5" />
-										Profile
-									</Button>
-								</Link>
-							</>
-						) : (
-							// Unauthenticated: Landing navigation mobile
-							<>
-								{landingNavItems.map((item) => (
-									<NavButton
-										key={item.label}
-										label={item.label}
-										icon={item.icon}
-										style={item.style}
-										className="w-full justify-center"
-										onClick={() => handleNavClick(item.action)}
-									/>
-								))}
-
-								<Link
-									to="/faq"
-									onClick={() => handleNavClick()}
-								>
-									<Button
-										variant="ghost"
-										className="w-full justify-center gap-2 rounded-[25px]"
-										style={{ backgroundColor: "#6366F1", color: "#fff" }}
-									>
-										<HelpCircle className="w-4 h-4" />
-										FAQ
-									</Button>
-								</Link>
-
-								<NavButton
-									label="Log In / Sign Up"
-									icon={<Star className="w-4 h-4 mr-2 fill-current" />}
-									style={{ backgroundColor: "#CB0404", color: "#fff" }}
-									className="rounded-[30px] w-full justify-center shadow-lg shadow-primary/30"
-									onClick={() => handleNavClick(handleGetStarted)}
-								/>
-							</>
-						)}
-					</div>
-				</div>
+				<MobileNavigation
+					isAuthenticated={isAuthenticated}
+					availableCredits={availableCredits}
+					userName={userName}
+					userEmail={user?.email}
+					landingNavItems={landingNavItems}
+					appNavItems={appNavItems}
+					onGetStarted={handleGetStarted}
+					onNavClick={handleNavClick}
+				/>
 			)}
 		</header>
 	);

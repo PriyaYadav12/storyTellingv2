@@ -14,6 +14,7 @@ export const generateStoryText: ReturnType<typeof action> = action({
       language: v.optional(v.string()),
       useFavorites: v.optional(v.boolean()),
       childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
+      textOnly: v.optional(v.boolean()),
     }),
   },
 
@@ -97,8 +98,7 @@ export const generateStoryText: ReturnType<typeof action> = action({
     });
 
     const content = resp.choices?.[0]?.message?.content?.toString().trim() || "";
-    console.log(content);
-    if (!content.includes("SCENE METADATA") && !/Scene \d+:/i.test(content)) {
+    if (!content.includes("SCENE METADATA") && !/Scene \d+:/i.test(content) && !params.textOnly) {
       await ctx.runMutation(api.stories._markStatus, {
         storyId,
         status: "error",
@@ -121,6 +121,18 @@ export const generateStoryText: ReturnType<typeof action> = action({
     });
 
     const childNameForBackground = name || "Child";
+    const creditCost = params.textOnly ? 20 : params.length === "short" ? 60 : params.length === "medium" ? 80 : 0;
+    const userCredit = await ctx.runQuery(api.credit.list, {});
+    if (!userCredit || userCredit.length === 0) {
+      throw new Error("User doesn't have enough credits");
+    }
+    await ctx.runMutation(api.credit._updateCredit, {
+      creditId: userCredit[0]._id,
+      usedCredits: creditCost,
+    });
+    console.log(content);
+    if (params.textOnly) { return { storyId, content }; }
+    
     await ctx.scheduler.runAfter(
       0,
       internal.internal.generateSceneImage.generateImages,

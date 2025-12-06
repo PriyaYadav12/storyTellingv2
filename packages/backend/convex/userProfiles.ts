@@ -48,6 +48,7 @@ export const createProfile = mutation({
 
 		const now = Date.now();
 		await ctx.runMutation(api.auth.setCurrentUserRole, { role: "user" });
+		await ctx.runMutation(api.credit._createCredit, {});
 		return await ctx.db.insert("user_profiles", {
 			userId,
 			...args,
@@ -182,15 +183,6 @@ export const generateAndStoreAvatar: ReturnType<typeof action> = action({
       throw new Error("Profile not found");
     }
 	console.log('profile', profile);
-
-    // // Check if avatar already exists
-    // const existingAvatarId = childId === "1" 
-    //   ? profile.childAvatarStorageId 
-    //   : profile.child2AvatarStorageId;
-    
-    // if (existingAvatarId) {
-    //   return { avatarStorageId: existingAvatarId, generated: false };
-    // }
 
     // Get child info based on childId
     const childInfo = childId === "1" ? {

@@ -97,6 +97,7 @@ export const _create = mutation({
 			language: v.optional(v.string()),
 			useFavorites: v.optional(v.boolean()),
 			childName: v.optional(v.string()),
+			textOnly: v.optional(v.boolean()),
 		}),
 	},
 	handler: async (ctx, { title, params }) => {
