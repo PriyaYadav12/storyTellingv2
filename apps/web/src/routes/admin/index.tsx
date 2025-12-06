@@ -18,11 +18,7 @@ function RouteComponent() {
 				<Navigate to="/admin/dashboard" replace />
 			</Authenticated>
 			<Unauthenticated>
-			{mode === "signin" ? (
 				<AdminLoginForm onSwitchToSignUp={() => setMode("signup")} />
-			) : (
-				<AdminSignUpForm onSwitchToSignIn={() => setMode("signin")} />
-			)}
 			</Unauthenticated>
 		</>
 	);
