@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Star, Crown } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
 interface PricingPlan {
 	id: string;
@@ -72,6 +73,14 @@ const pricingPlans: PricingPlan[] = [
 ];
 
 function PricingCard({ plan }: { plan: PricingPlan }) {
+	const navigate = useNavigate();
+
+	const handleClick = () => {
+		if (!plan.isSelected) {
+			navigate({ to: "/dashboard" });
+		}
+	};
+
 	return (
 		<Card
 			className={`group relative overflow-hidden bg-card/80 backdrop-blur-sm border-2 rounded-[20px] transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
@@ -134,6 +143,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
 				<Button
 					variant={plan.buttonVariant || "default"}
 					disabled={plan.isSelected}
+					onClick={handleClick}
 					className={`w-full rounded-[25px] font-semibold transition-all duration-300 ${
 						plan.isSelected
 							? "cursor-default"

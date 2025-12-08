@@ -17,7 +17,7 @@ export function ShopSection() {
       description: "New adventures + activities delivered monthly",
       price: "₹999/month",
       image: "/subscriptionBox.jpg",
-      status: "waitlist",
+      status: "coming-soon",
       featured: true,
       testId: "subscription-box"
     },
