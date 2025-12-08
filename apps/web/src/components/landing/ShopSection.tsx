@@ -1,15 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ShoppingBag } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
 export function ShopSection() {
+  const navigate = useNavigate();
   const products = [
     {
       title: "Lalli's Creative Adventure Kit",
       description: "Coloring books, stickers, and activity sheets",
       price: "₹499",
       image: "/LalliKit.jpg",
-      status: "coming-soon",
+      status: "notify me",
       testId: "lalli-kit"
     },
     {
@@ -17,7 +19,7 @@ export function ShopSection() {
       description: "New adventures + activities delivered monthly",
       price: "₹999/month",
       image: "/subscriptionBox.jpg",
-      status: "coming-soon",
+      status: "notify me",
       featured: true,
       testId: "subscription-box"
     },
@@ -26,11 +28,13 @@ export function ShopSection() {
       description: "STEM activities and building challenges",
       price: "₹599",
       image: "/FafaKit.jpg",
-      status: "coming-soon",
+      status: "notify me",
       testId: "fafa-kit"
     }
   ];
-
+  const handleClick = () => {
+			navigate({ to: "/dashboard" });
+	};
   return (
     <section 
       id="shop" 
@@ -71,14 +75,14 @@ export function ShopSection() {
                 <div className="text-2xl font-black" style={{ color: '#C77DFF' }}>
                   {product.price}
                 </div>
-                {product.status === 'coming-soon' ? (
+                {product.status === 'notify me' ? (
                   <Button 
-                    disabled
                     className="w-full rounded-[30px] hover:scale-105 transition-all duration-300"
-                    style={{ backgroundColor: '#A0AEC0', color: '#FFFFFF', cursor: 'not-allowed' }}
-                    data-testid={`button-${product.testId}-coming-soon`}
+                    style={{ backgroundColor: '#A0AEC0', color: '#FFFFFF'}}
+                    data-testid={`button-${product.testId}-notify me`}
+                    onClick={handleClick}
                   >
-                    Coming Soon
+                    Notify Me
                   </Button>
                 ) : (
                   <Button 
