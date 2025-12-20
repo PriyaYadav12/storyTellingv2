@@ -12,6 +12,9 @@ import ThemeSelector from "./story-generation/ThemeSelector";
 import LessonSelector from "./story-generation/LessonSelector";
 import StoryOptions from "./story-generation/StoryOptions";
 import GenerateButton from "./story-generation/GenerateButton";
+import { Button } from "@/components/ui/button";
+import { Crown } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
 interface StoryGenerationFormProps {
 	onGenerate?: (storyId: string) => void;
@@ -34,6 +37,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 	const updateProfile = useMutation(api.userProfiles.updateProfile);
 	const updateChild2 = useMutation(api.userProfiles.updateChild2);
 	const credits = useQuery(api.credit.list);
+	const navigate = useNavigate();
 	const _apiAny = api as any;
 	const themeDocs = useQuery(_apiAny["migration/theme"]?.list);
 	const lessonDocs = useQuery(_apiAny["migration/lesson"]?.list);
@@ -195,18 +199,32 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 					/>
 				</div>
 
-				<GenerateButton
-					isGenerating={isGenerating}
-					creditCost={creditCost}
-					onClick={handleGenerate}
-					disabled={
-						!selectedTheme ||
-						!selectedLesson ||
-						!selectedLanguage ||
-						isGenerating ||
-						availableCredits < creditCost
-					}
-				/>
+				{availableCredits <= 20 ? (
+					<div className="flex justify-center pt-6">
+						<Button
+							size="lg"
+							className="px-12 py-6 text-xl rounded-2xl font-semibold bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600"
+							onClick={() => navigate({ to: "/pricing" })}
+							data-testid="button-subscribe"
+						>
+							<Crown className="w-6 h-6 mr-3" />
+							Subscribe to Generate Stories
+						</Button>
+					</div>
+				) : (
+					<GenerateButton
+						isGenerating={isGenerating}
+						creditCost={creditCost}
+						onClick={handleGenerate}
+						disabled={
+							!selectedTheme ||
+							!selectedLesson ||
+							!selectedLanguage ||
+							isGenerating ||
+							availableCredits < creditCost
+						}
+					/>
+				)}
 			</div>
 
 			<ChildForm

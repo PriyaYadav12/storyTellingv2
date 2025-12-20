@@ -14,7 +14,7 @@ export default function Footer() {
 							</div>
 						</div>
 						<p className="text-muted-foreground text-sm leading-relaxed">
-							Creating magical, personalized stories for children aged 2-8 with Lalli and Fafa.
+							Creating magical, personalized stories for children aged 3+ with Lalli and Fafa.
 						</p>
 					</div>
 
@@ -53,23 +53,8 @@ export default function Footer() {
 						<h3 className="font-bold text-lg mb-4">Resources</h3>
 						<ul className="space-y-2 text-sm text-muted-foreground">
 							<li>
-								<a href="#" className="hover:text-primary transition-colors" data-testid="link-footer-blog">
+								<a href="/blog" className="hover:text-primary transition-colors" data-testid="link-footer-blog">
 									Blog
-								</a>
-							</li>
-							<li>
-								<a href="#" className="hover:text-primary transition-colors" data-testid="link-footer-help">
-									Help Center
-								</a>
-							</li>
-							<li>
-								<a href="#" className="hover:text-primary transition-colors" data-testid="link-footer-contact">
-									Contact Us
-								</a>
-							</li>
-							<li>
-								<a href="#" className="hover:text-primary transition-colors" data-testid="link-footer-privacy">
-									Privacy Policy
 								</a>
 							</li>
 						</ul>

@@ -9,7 +9,7 @@ const characters = [
     emoji: "💖",
     title: "The Dreamer",
     quote: "I love: Art, colors, rainbows, making new friends!",
-    image: "/Lalli_2.png",
+    image: "/Lalli-new.png",
     gradientFrom: "#FFB6D9",
     gradientTo: "#C77DFF",
     borderColor: "pink-500",
@@ -55,24 +55,24 @@ export function CharactersSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-5 md:gap-5 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-4 max-w-4xl mx-auto">
           {characters.map((character) => (
             <Card 
               key={character.id}
               className={`group relative overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-gradient-to-br from-[${character.gradientFrom}]/20 to-[${character.gradientTo}]/20 dark:from-${character.id === "lalli" ? "pink" : "blue"}-950/20 dark:to-${character.id === "lalli" ? "purple" : "cyan"}-950/20 border-2 hover:border-${character.borderColor}/50 cursor-pointer rounded-[20px]`}
             >
-              <div className="p-5 md:p-5 flex flex-col items-center text-center space-y-4 md:space-y-6">
+              <div className="p-4 md:p-4 flex flex-col items-center text-center space-y-3 md:space-y-4">
                 <div className="text-4xl mb-2">{character.emoji}</div>
                 <div className="relative">
                   <div className={`absolute inset-0 bg-${character.id === "lalli" ? "pink" : "blue"}-400/20 blur-3xl rounded-full`}></div>
                   <img 
                     src={character.image} 
                     alt={character.name} 
-                    className="relative w-48 md:w-60 h-48 md:h-60 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500" 
+                    className="relative w-56 md:w-72 h-56 md:h-72 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500" 
                     style={{mixBlendMode: 'multiply'}}
                   />
                 </div>
-                <div className="space-y-3 md:space-y-4 w-full">
+                <div className="space-y-2 md:space-y-3 w-full">
                   <h3 className={`text-2xl md:text-3xl font-black bg-gradient-to-r from-${character.id === "lalli" ? "pink" : "blue"}-500 to-${character.id === "lalli" ? "purple" : "cyan"}-500 bg-clip-text text-transparent flex items-center justify-center gap-2`}>
                     {character.id === "lalli" && <Sparkles className="w-5 md:w-6 h-5 md:h-6 text-pink-500" />}
                     {character.name}
@@ -83,7 +83,7 @@ export function CharactersSection() {
                   <p className="text-sm md:text-base text-muted-foreground leading-relaxed italic">
                     "{character.quote}"
                   </p>
-                  <div className="bg-white/50 dark:bg-background/50 rounded-[20px] p-4 space-y-2">
+                  <div className="bg-white/50 dark:bg-background/50 rounded-[20px] p-3 space-y-2">
                     <p className="text-xs font-bold text-foreground mb-2">Favorite Adventures:</p>
                     <div className="space-y-1.5 text-xs md:text-sm text-muted-foreground">
                       {character.adventures.map((adventure, idx) => (

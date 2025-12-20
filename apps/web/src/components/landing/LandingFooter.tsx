@@ -13,7 +13,7 @@ export function LandingFooter() {
               LalliFafa
             </h3>
             <p className="text-muted-foreground leading-relaxed">
-              Creating magical, personalized stories for children aged 2-8 with Lalli and Fafa.
+              Creating magical, personalized stories for children aged 3+ with Lalli and Fafa.
             </p>
           </div>
           
@@ -32,9 +32,6 @@ export function LandingFooter() {
             <h3 className="font-bold text-lg mb-4">Resources</h3>
             <ul className="space-y-3 text-muted-foreground">
               <li className="hover:text-foreground transition-colors cursor-pointer">Blog</li>
-              <li className="hover:text-foreground transition-colors cursor-pointer">Help Center</li>
-              <li className="hover:text-foreground transition-colors cursor-pointer">Contact Us</li>
-              <li className="hover:text-foreground transition-colors cursor-pointer">Privacy Policy</li>
             </ul>
           </div>
           

@@ -246,7 +246,7 @@ export default function OnboardingForm() {
 				>
 					<div className="aspect-square relative">
 						<img
-							src="/Lalli_2.png"
+							src="/Lalli-new.png"
 							alt="Girl character - Lalli"
 							className="w-full h-full object-cover"
 						/>

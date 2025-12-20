@@ -29,12 +29,26 @@ export default function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
 					password: value.password,
 				},
 				{
-					onSuccess: () => {
-						navigate({
-							to: "/dashboard",
-							replace: true,
-						});
-						toast.success("Welcome back! 🎉");
+					onSuccess: async () => {
+						// Check for pending plan
+						const pendingPlanId = localStorage.getItem("pendingPlanId");
+						if (pendingPlanId) {
+							localStorage.removeItem("pendingPlanId");
+							
+							// Redirect to pricing page which will handle subscription creation
+							navigate({
+								to: "/pricing",
+								replace: true,
+								search: { plan: pendingPlanId },
+							});
+							toast.success("Welcome back! 🎉");
+						} else {
+							navigate({
+								to: "/dashboard",
+								replace: true,
+							});
+							toast.success("Welcome back! 🎉");
+						}
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);

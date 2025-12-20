@@ -61,26 +61,7 @@ function StoryPageComponent() {
 									<ArrowLeft className="w-5 h-5" />
 									{userRole === "admin" ? "Back to Dashboard" : "Back to Library"}
 								</Button>
-								<div className="flex gap-2">
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={handleShare}
-										data-testid="button-share"
-									>
-										<Share2 className="w-5 h-5" />
-									</Button>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={handleToggleFavorite}
-										data-testid="button-favorite"
-									>
-										<Heart
-											className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`}
-										/>
-									</Button>
-								</div>
+								
 							</div>
 
 					{story === undefined ? (

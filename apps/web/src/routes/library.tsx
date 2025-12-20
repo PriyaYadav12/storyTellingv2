@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Doc } from "@story-telling-v2/backend/convex/_generated/dataModel";
 
@@ -69,6 +69,10 @@ function LibraryComponent() {
 		navigate({ to: "/story/$storyId", params: { storyId: id } });
 	};
 
+	const handleBack = () => {
+		navigate({ to: "/dashboard" });
+	};
+
 	const themes = useMemo(() => {
 		const uniqueThemes = new Set(transformedStories.map(s => s.theme));
 		return Array.from(uniqueThemes);
@@ -93,6 +97,15 @@ function LibraryComponent() {
 					<div className="min-h-screen bg-background">
 						<main className="container mx-auto px-4 md:px-8 py-8 md:py-12">
 							<div className="space-y-8">
+								<Button
+									variant="ghost"
+									onClick={handleBack}
+									className="gap-2"
+									data-testid="button-back"
+								>
+									<ArrowLeft className="w-5 h-5" />
+									Back to Home
+								</Button>
 								<div className="text-center space-y-4">
 									<h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-chart-3 bg-clip-text text-transparent">
 										Story Library

@@ -82,8 +82,8 @@ export default function HeroCarousel({
 
 	return (
 		<div className="relative w-full h-[50vh] md:h-[60vh] rounded-3xl overflow-hidden">
-			{/* Soft Pastel Animated Gradient Background */}
-			<div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-chart-3/20 animate-gradient bg-[length:200%_200%]">
+			{/* Soft Pastel Pink Transparent Background */}
+			<div className="absolute inset-0 bg-gradient-to-r from-pink-200/20 via-pink-100/15 to-pink-200/20 animate-gradient bg-[length:200%_200%]">
 				<style>{`
 					@keyframes gradient {
 						0% { background-position: 0% 50%; }

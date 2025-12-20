@@ -192,8 +192,34 @@ flavor_openings: defineTable({
 		availableCredits: v.number(),
 		createdAt: v.number(),
 		updatedAt: v.number(),
-	}).index("by_user", ["userId"])
-
+	}).index("by_user", ["userId"]),
+	razorpay_plans: defineTable({
+		name: v.string(),
+		price: v.number(),
+		interval: v.union(v.literal("monthly"), v.literal("yearly")),
+		planId: v.string(),
+		createdAt: v.number(),
+	}).index("by_name", ["name"]),
+	user_subscriptions: defineTable({
+		userId: v.string(),
+		subscriptionId: v.string(),
+		planId: v.string(),
+		price: v.number(),
+		interval: v.union(v.literal("monthly"), v.literal("yearly")),
+		status: v.union(v.literal("active"), v.literal("inactive")),
+		createdAt: v.number(),
+	}).index("by_user", ["userId"]),
+	subscription_transactions: defineTable({
+		userId: v.string(),
+		subscriptionId: v.string(),
+		planId: v.string(),
+		price: v.number(),
+		interval: v.union(v.literal("monthly"), v.literal("yearly")),
+		status: v.union(v.literal("active"), v.literal("inactive")),
+		expiresAt: v.number(),
+		renewedAt: v.optional(v.number()),
+		createdAt: v.number(),
+	}).index("by_user", ["userId"]),
 });
 
 

@@ -2,6 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Star, Crown } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useConvexAuth } from "convex/react";
+import { useAction } from "convex/react";
+import { api } from "@story-telling-v2/backend/convex/_generated/api";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface PricingPlan {
 	id: string;
@@ -74,10 +79,53 @@ const pricingPlans: PricingPlan[] = [
 
 function PricingCard({ plan }: { plan: PricingPlan }) {
 	const navigate = useNavigate();
+	const { isAuthenticated } = useConvexAuth();
+	const initiateSubscription = useAction(api.subscription.initiateSubscription);
+	const [isLoading, setIsLoading] = useState(false);
 
-	const handleClick = () => {
-		if (!plan.isSelected) {
-			navigate({ to: "/dashboard" });
+	const handleClick = async () => {
+		if (plan.isSelected || plan.id === "free") {
+			return;
+		}
+
+		try {
+			setIsLoading(true);
+
+			if (!isAuthenticated) {
+				// Store plan ID in localStorage and redirect to signin
+				localStorage.setItem("pendingPlanId", plan.id);
+				navigate({ to: "/dashboard" });
+				return;
+			}
+
+			// User is authenticated, create subscription and redirect to checkout
+			const planIdMap: Record<string, string> = {
+				monthly: "plan_RpZZiFsx7YI1rA",
+				yearly: "plan_RpZabHcv8xiaoZ",
+			};
+
+			const razorpayPlanId = planIdMap[plan.id];
+			if (!razorpayPlanId) {
+				toast.error("Invalid plan selected");
+				return;
+			}
+
+			const { checkoutUrl } = await initiateSubscription({
+				planId: razorpayPlanId,
+			});
+
+			if (checkoutUrl) {
+				window.location.href = checkoutUrl;
+			} else {
+				toast.error("Failed to create subscription");
+			}
+		} catch (error) {
+			console.error("Error initiating subscription:", error);
+			toast.error(
+				error instanceof Error ? error.message : "Failed to initiate subscription"
+			);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -142,7 +190,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
 				{/* CTA Button */}
 				<Button
 					variant={plan.buttonVariant || "default"}
-					disabled={plan.isSelected}
+					disabled={plan.isSelected || isLoading}
 					onClick={handleClick}
 					className={`w-full rounded-[25px] font-semibold transition-all duration-300 ${
 						plan.isSelected
@@ -156,7 +204,7 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
 							: "bg-primary text-white"
 					}`}
 				>
-					{plan.buttonText}
+					{isLoading ? "Processing..." : plan.buttonText}
 				</Button>
 			</div>
 		</Card>

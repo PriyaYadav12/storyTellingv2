@@ -22,7 +22,7 @@ export const features = [
 		{
 			icon: Shield,
 			title: "Safe Content",
-			description: "Age-appropriate stories carefully crafted for children 2-8 years old",
+			description: "Age-appropriate stories carefully crafted for children 3+ years old",
 			color: "from-green-500 to-emerald-500"
 		},
 		{
@@ -41,21 +41,21 @@ export const features = [
 
 	export const testimonials = [
 		{
+			name: "Abhishek S.",
+			role: "Father of 1, Mumbai",
+			content: "Bedtime used to be a battle until we found LalliFafa. Now my son asks to go to bed early! Hearing his own name in the stories makes him feel so special. Best ₹999 I've spent this year.",
+			rating: 5
+		},
+		{
 			name: "Priya M.",
-			role: "Mother of 2",
-			content: "My kids love seeing their names in the stories! They ask for new LalliFafa adventures every night.",
+			role: "Mother of 2, Bangalore",
+			content: "My 5-year-old daughter refuses to read English books, but she listens to LalliFafa stories in Hindi every single day. Finally found something that teaches her values in our language. My mother-in-law loves it too!",
 			rating: 5
 		},
 		{
-			name: "Rajesh K.",
-			role: "Father of 3",
-			content: "The Hindi stories are perfect! My parents can now read to their grandchildren in their native language.",
-			rating: 5
-		},
-		{
-			name: "Anita S.",
-			role: "Early Education Teacher",
-			content: "I use these stories in my classroom. The life lessons are perfect for teaching values to young children.",
+			name: "Rekha K.",
+			role: "Mother of 3, Delhi",
+			content: "I've tried every app to keep my kids entertained during long car rides. LalliFafa is the only one that actually teaches them something while keeping them quiet. The personalization is genius - they think Lalli and Fafa are their real friends!",
 			rating: 5
 		}
 	];

@@ -30,14 +30,26 @@ export default function SignUpForm({
 					name: value.name,
 				},
 				{
-					onSuccess: () => {
-						// Wait for session to establish, then initialize role
-						// Navigation will happen in useEffect after role is set
-						navigate({
-							to: "/dashboard",
-							replace: true,
-						});
-						toast.success("Welcome to Story World! 🎉");
+					onSuccess: async () => {
+						// Check for pending plan
+						const pendingPlanId = localStorage.getItem("pendingPlanId");
+						if (pendingPlanId) {
+							localStorage.removeItem("pendingPlanId");
+							
+							// Redirect to pricing page which will handle subscription creation
+							navigate({
+								to: "/pricing",
+								replace: true,
+								search: { plan: pendingPlanId },
+							});
+							toast.success("Welcome to Story World! 🎉");
+						} else {
+							navigate({
+								to: "/dashboard",
+								replace: true,
+							});
+							toast.success("Welcome to Story World! 🎉");
+						}
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);

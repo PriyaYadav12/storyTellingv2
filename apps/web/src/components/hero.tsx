@@ -93,7 +93,7 @@ export default function Hero({ onGetStarted, isAuthenticated }: HeroProps) {
               </div>
               <div className="text-center p-2 md:p-3 bg-white/50 dark:bg-background/50 backdrop-blur-sm rounded-[20px] border border-border/50 hover-elevate transition-all duration-300">
                 <Heart className="w-6 h-6 mx-auto mb-1" style={{ color: '#5A189A' }} />
-                <div className="text-xs md:text-sm font-black mb-0.5" style={{ color: '#5A189A' }}>Ages 2-8</div>
+                <div className="text-xs md:text-sm font-black mb-0.5" style={{ color: '#5A189A' }}>Ages 3+</div>
                 <div className="text-xs font-semibold text-muted-foreground">Years Old</div>
               </div>
             </div>
@@ -113,7 +113,7 @@ export default function Hero({ onGetStarted, isAuthenticated }: HeroProps) {
                     lalliOnTop ? 'opacity-100' : 'opacity-50'
                   }`}></div>
                   <img 
-                    src="/Lalli_2.png" 
+                    src="/Lalli-new.png" 
                     alt="Lalli - A caring 6-year-old girl character" 
                     className={`relative w-48 md:w-64 h-auto object-contain drop-shadow-2xl transition-all duration-1000 group-hover/hero:scale-105 ${
                       lalliOnTop ? 'brightness-100' : 'brightness-75'

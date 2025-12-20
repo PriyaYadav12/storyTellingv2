@@ -44,3 +44,40 @@ export const _createCredit = mutation({
         return { success: true };
     },
 });
+
+export const _addCredits = mutation({
+    args: {
+        userId: v.string(),
+        credits: v.number(),
+    },
+    handler: async (ctx, { userId, credits }) => {
+        // Find user's credit record
+        const userCredit = await ctx.db
+            .query("user_credits")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .order("desc")
+            .first();
+
+        if (!userCredit) {
+            // Create credit record if it doesn't exist
+            await ctx.db.insert("user_credits", {
+                userId,
+                totalCredits: credits,
+                usedCredits: 0,
+                availableCredits: credits,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+            });
+        } else {
+            // Update existing credit record
+            const newTotalCredits = userCredit.totalCredits + credits;
+            const newAvailableCredits = userCredit.availableCredits + credits;
+            await ctx.db.patch(userCredit._id, {
+                totalCredits: newTotalCredits,
+                availableCredits: newAvailableCredits,
+                updatedAt: Date.now(),
+            });
+        }
+        return { success: true };
+    },
+});

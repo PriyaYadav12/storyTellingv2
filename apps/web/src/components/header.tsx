@@ -40,7 +40,7 @@ export default function Header({ onGetStarted }: HeaderProps) {
 		}
 	};
 
-	const landingNavItems = getLandingNavItems(navigate);
+	const landingNavItems = getLandingNavItems(navigate, currentPath);
 	const appNavItems = getAppNavItems(currentPath);
 
 	return (
@@ -54,7 +54,7 @@ export default function Header({ onGetStarted }: HeaderProps) {
 					<img
 						src="/logoNoBg.png"
 						alt="LalliFafa"
-						className="w-10 h-10 md:w-12 md:h-12 object-contain rounded-full"
+						className="w-16 h-16 md:w-20 md:h-20 object-contain rounded-full"
 					/>
 					<h1 className="text-xl md:text-2xl lg:text-3xl font-black bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 bg-clip-text text-transparent">
 						LalliFafa

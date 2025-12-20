@@ -14,6 +14,7 @@ import StoryGenerationForm from "@/components/StoryGenerationForm";
 import HeroCarousel from "@/components/HeroCarousel";
 import StatisticsCard from "@/components/StatisticsCard";
 import StreakTracker from "@/components/StreakTracker";
+import LowCreditBanner from "@/components/LowCreditBanner";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({
@@ -29,8 +30,10 @@ function RouteComponent() {
 	const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
 	const stories = useQuery(api.stories.list,isAuthenticated ? {} : "skip");
 	const achievementsData = useQuery(api.userProfiles.getAchievements, isAuthenticated ? {} : "skip");
+	const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
 	
 	const userName = profile?.parentName || "Friend";
+	const availableCredits = credits?.[0]?.availableCredits || 0;
 	
 	// Calculate statistics
 	const stats = useMemo(() => {
@@ -85,6 +88,7 @@ function RouteComponent() {
 					// Has profile, show dashboard
 					<div className="min-h-screen bg-background">
 						<main className="container mx-auto px-4 md:px-8 py-8 md:py-12 space-y-16 md:space-y-20">
+							<LowCreditBanner availableCredits={availableCredits} />
 							<section data-testid="section-hero">
 								<HeroCarousel />
 							</section>
