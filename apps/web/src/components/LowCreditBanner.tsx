@@ -30,7 +30,7 @@ export default function LowCreditBanner({ availableCredits }: LowCreditBannerPro
 					</div>
 				</div>
 				<Button
-					onClick={() => navigate({ to: "/pricing" })}
+					onClick={() => navigate({ to: "/pricing", search: { plan: undefined } })}
 					className="bg-orange-600 hover:bg-orange-700 text-white flex-shrink-0"
 				>
 					<Sparkles className="w-4 h-4 mr-2" />

@@ -57,6 +57,7 @@ export default function Footer() {
 									Blog
 								</a>
 							</li>
+							<li className="hover:text-foreground transition-colors cursor-pointer">contact at: raj@lallifafa.com</li>
 						</ul>
 					</div>
 

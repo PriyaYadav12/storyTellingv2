@@ -112,15 +112,34 @@ export const getSubscription = query({
 		const user = await authComponent.getAuthUser(ctx);
 		if (!user) return null;
 		const userId = String(user._id);
+		console.log('userId', userId);
 		// Get the most recent active subscription
 		const subscriptions = await ctx.db
 			.query("user_subscriptions")
 			.withIndex("by_user", (q) => q.eq("userId", userId))
 			.order("desc")
 			.collect();
-		
-		// Return active subscription or most recent one
-		return subscriptions.find(s => s.status === "active") || subscriptions[0] || null;
+		console.log('subscriptions', subscriptions);
+		const subscription = subscriptions.find(s => s.status === "active") || subscriptions[0] || null;
+		console.log('subscription', subscription);
+		if (!subscription) {
+			return null;
+		}
+
+		// Get the most recent active transaction with expiresAt
+		const transactions = await ctx.db
+			.query("subscription_transactions")
+			.withIndex("by_user", (q) => q.eq("userId", userId))
+			.filter((q) => q.eq(q.field("subscriptionId"), subscription.subscriptionId))
+			.order("desc")
+			.collect();
+		console.log('transactions', transactions);
+		const activeTransaction = transactions.find(t => t.status === "active") || transactions[0] || null;
+		console.log('activeTransaction', activeTransaction);
+		return {
+			...subscription,
+			expiresAt: activeTransaction?.expiresAt || null,
+		};
 	},
 });
 

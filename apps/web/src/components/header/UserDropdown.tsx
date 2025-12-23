@@ -11,18 +11,20 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
-import { UserCircle, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 
 interface UserDropdownProps {
 	userName: string;
 	userEmail?: string;
+	userLevel?: number;
 	isMobile?: boolean;
 	onNavClick?: () => void;
 }
 
 export function UserDropdown({ 
 	userName, 
-	userEmail, 
+	userEmail,
+	userLevel = 1,
 	isMobile = false,
 	onNavClick 
 }: UserDropdownProps) {
@@ -47,15 +49,15 @@ export function UserDropdown({
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button
-					variant="ghost"
-					className={`gap-2 text-base font-semibold rounded-full px-6 ${
-						isMobile ? "w-full justify-center" : ""
-					}`}
-				>
-					<UserCircle className="w-5 h-5" />
-					<span className={isMobile ? "" : "hidden md:inline"}>{userName}</span>
-				</Button>
+				<button className="flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full border border-border bg-white hover:bg-gray-50 transition-colors">
+					<div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white shadow-inner">
+						<User className="w-5 h-5" />
+					</div>
+					<div className="flex flex-col items-start">
+						<span className="text-sm font-bold text-foreground leading-none">{userName}</span>
+						<span className="text-xs text-muted-foreground">Level {userLevel} Explorer</span>
+					</div>
+				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-card" align="end">
 				<DropdownMenuLabel>
@@ -68,7 +70,7 @@ export function UserDropdown({
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem onClick={handleProfileClick}>
-					<UserCircle className="w-4 h-4 mr-2" />
+					<User className="w-4 h-4 mr-2" />
 					Profile
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleLogout}>

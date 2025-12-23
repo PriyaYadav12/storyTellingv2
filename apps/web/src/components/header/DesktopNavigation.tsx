@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { CreditCard, HelpCircle, Star } from "lucide-react";
+import { Home, BookOpen, HelpCircle, User, Star } from "lucide-react";
 import { NavButton } from "./NavButton";
 import { UserDropdown } from "./UserDropdown";
 import { type LandingNavItem, type AppNavItem } from "./navigationConfig";
+import { cn } from "@/lib/utils";
 
 interface DesktopNavigationProps {
 	isAuthenticated: boolean;
@@ -11,6 +12,7 @@ interface DesktopNavigationProps {
 	availableCredits: number;
 	userName: string;
 	userEmail?: string;
+	userLevel?: number;
 	landingNavItems: LandingNavItem[];
 	appNavItems: AppNavItem[];
 	onGetStarted: () => void;
@@ -22,44 +24,56 @@ export function DesktopNavigation({
 	availableCredits,
 	userName,
 	userEmail,
+	userLevel = 1,
 	landingNavItems,
 	appNavItems,
 	onGetStarted,
 }: DesktopNavigationProps) {
 	return (
-		<div className="hidden sm:flex gap-2">
+		<div className="hidden md:flex items-center gap-4">
 			{isAuthenticated ? (
-				// Authenticated: App navigation
+				// Authenticated: App navigation with pill container
 				<>
-					{appNavItems.map((item) => (
-						<Link key={item.label} to={item.path as any}>
-							<Button
-								variant="ghost"
-								className={`text-base font-semibold rounded-full px-6 ${
-									item.isActive
-										? "bg-primary/10 text-primary"
-										: "hover:bg-primary/10"
-								}`}
-							>
-								{item.label}
-							</Button>
-						</Link>
-					))}
+					<div className="flex items-center gap-2 bg-secondary/10 px-2 py-1.5 rounded-full">
+						{appNavItems.map((item) => {
+							// Map label to icon
+							const IconComponent = 
+								item.label === "Home" ? Home :
+								item.label === "Library" ? BookOpen :
+								HelpCircle;
+							
+							return (
+								<Link key={item.label} to={item.path as any}>
+									<button
+										className={cn(
+											"px-6 py-2 rounded-full font-semibold transition-all duration-200 flex items-center gap-2",
+											item.isActive 
+												? "bg-white text-primary shadow-sm" 
+												: "text-muted-foreground hover:text-primary hover:bg-white/50"
+										)}
+									>
+										<IconComponent className="w-4 h-4" />
+										{item.label}
+									</button>
+								</Link>
+							);
+						})}
+					</div>
 					
-					<Button
-						variant="ghost"
-						className="gap-2 text-base font-semibold rounded-full px-6"
-						disabled
-					>
-						<CreditCard className="w-5 h-5" />
-						<span className="hidden md:inline">{availableCredits} Credits</span>
-					</Button>
-					
-					<UserDropdown 
-						userName={userName} 
-						userEmail={userEmail}
-						isMobile={false}
-					/>
+					{/* Credits & User Profile */}
+					<div className="flex items-center gap-4">
+						<div className="hidden sm:flex flex-col items-end mr-2">
+							<span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Credits</span>
+							<span className="text-lg font-bold text-accent-foreground">{availableCredits} ✨</span>
+						</div>
+						
+						<UserDropdown 
+							userName={userName} 
+							userEmail={userEmail}
+							userLevel={userLevel}
+							isMobile={false}
+						/>
+					</div>
 				</>
 			) : (
 				// Unauthenticated: Landing page navigation

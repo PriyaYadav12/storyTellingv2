@@ -22,9 +22,13 @@ export default function Header({ onGetStarted }: HeaderProps) {
 	const user = useQuery(api.auth.getCurrentUser, isAuthenticated ? {} : "skip");
 	const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
 	const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
+	const stories = useQuery(api.stories.list, isAuthenticated ? {} : "skip");
 	
 	const userName = profile?.parentName || (user?.name as string | undefined) || "Friend";
 	const availableCredits = credits?.[0]?.availableCredits || 0;
+	const storyCount = stories?.length || 0;
+	// Calculate level based on stories created (simple: every 5 stories = 1 level, minimum level 1)
+	const userLevel = Math.max(1, Math.floor(storyCount / 5) + 1);
 	const currentPath = location.pathname;
 
 	const handleNavClick = () => {
@@ -44,45 +48,50 @@ export default function Header({ onGetStarted }: HeaderProps) {
 	const appNavItems = getAppNavItems(currentPath);
 
 	return (
-		<header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-			<div className="container mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
-				{/* Logo */}
-				<Link 
-					to={isAuthenticated ? "/dashboard" : "/"} 
-					className="flex items-center gap-2 md:gap-3 cursor-pointer hover-elevate rounded-lg p-2"
-				>
-					<img
-						src="/logoNoBg.png"
-						alt="LalliFafa"
-						className="w-16 h-16 md:w-20 md:h-20 object-contain rounded-full"
-					/>
-					<h1 className="text-xl md:text-2xl lg:text-3xl font-black bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 bg-clip-text text-transparent">
-						LalliFafa
-					</h1>
-				</Link>
-
-				{/* Navigation */}
-				<div className="flex items-center gap-2 md:gap-3">
-					<DesktopNavigation
-						isAuthenticated={isAuthenticated}
-						currentPath={currentPath}
-						availableCredits={availableCredits}
-						userName={userName}
-						userEmail={user?.email}
-						landingNavItems={landingNavItems}
-						appNavItems={appNavItems}
-						onGetStarted={handleGetStarted}
-					/>
-
-					{/* Mobile Menu Toggle */}
-					<Button
-						variant="ghost"
-						size="sm"
-						className="sm:hidden"
-						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+		<header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-border/50 shadow-sm">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="flex justify-between items-center h-20">
+					{/* Logo */}
+					<Link 
+						to={isAuthenticated ? "/dashboard" : "/"} 
+						className="flex items-center gap-3 group"
 					>
-						{isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-					</Button>
+						<div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary bg-primary/10 transition-transform group-hover:scale-110">
+							<img
+								src="/logoNoBg.png"
+								alt="LalliFafa"
+								className="w-full h-full object-cover"
+							/>
+						</div>
+						<span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+							LalliFafa
+						</span>
+					</Link>
+
+					{/* Navigation */}
+					<div className="flex items-center gap-4">
+						<DesktopNavigation
+							isAuthenticated={isAuthenticated}
+							currentPath={currentPath}
+							availableCredits={availableCredits}
+							userName={userName}
+							userEmail={user?.email}
+							userLevel={userLevel}
+							landingNavItems={landingNavItems}
+							appNavItems={appNavItems}
+							onGetStarted={handleGetStarted}
+						/>
+
+						{/* Mobile Menu Toggle */}
+						<Button
+							variant="ghost"
+							size="sm"
+							className="md:hidden"
+							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+						>
+							{isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+						</Button>
+					</div>
 				</div>
 			</div>
 
@@ -93,6 +102,7 @@ export default function Header({ onGetStarted }: HeaderProps) {
 					availableCredits={availableCredits}
 					userName={userName}
 					userEmail={user?.email}
+					userLevel={userLevel}
 					landingNavItems={landingNavItems}
 					appNavItems={appNavItems}
 					onGetStarted={handleGetStarted}

@@ -1,239 +1,99 @@
-import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { ArrowRight } from "lucide-react";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 
 interface Slide {
-	type: "image" | "video";
-	src: string;
-	alt?: string;
-	caption?: string;
+	id: number;
+	img: string;
+	title: string;
+	subtitle: string;
 }
 
 interface HeroCarouselProps {
 	slides?: Slide[];
-	autoPlayInterval?: number;
 }
 
-export default function HeroCarousel({ 
+export default function HeroCarousel({
 	slides = [
-		{ type: "image", src: "/Hero-carousel1.png", alt: "Lalli and Fafa", caption: "Meet Lalli & Fafa!" },
-		{ type: "image", src: "/Hero-carousel2.png", alt: "Lalli", caption: "Adventure Awaits!" },
-		{ type: "video", src: "/LalliVideo.mp4", caption:"Lalli,6" },
-		{ type: "video", src: "/FafaVideo.mp4", caption: "Fafa,3" },
+		{
+			id: 1,
+			img: "/Hero-carousel1.png",
+			title: "Unleash Your Imagination",
+			subtitle: "Join Lalli & Fafa on magical adventures!",
+		},
+		{
+			id: 2,
+			img: "/Hero-carousel2.png",
+			title: "Create Your Own Stories",
+			subtitle: "Become the hero of your own fairytale.",
+		},
 	],
-	autoPlayInterval = 5000 
 }: HeroCarouselProps) {
-	const [currentSlide, setCurrentSlide] = useState(0);
-	const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+	const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
+	const navigate = useNavigate();
+	const location = useLocation();
 
-	useEffect(() => {
-		// Use 7 seconds (7000ms) for video slides, otherwise use autoPlayInterval
-		const currentSlideType = slides[currentSlide]?.type;
-		const interval = currentSlideType === "video" ? 7000 : autoPlayInterval;
-
-		const timer = setInterval(() => {
-			setCurrentSlide((prev) => (prev + 1) % slides.length);
-		}, interval);
-
-		return () => clearInterval(timer);
-	}, [currentSlide, slides.length, autoPlayInterval, slides]);
-
-	// Handle video playback when slide changes
-	useEffect(() => {
-		videoRefs.current.forEach((video, index) => {
-			if (video && slides[index]?.type === "video") {
-				if (index === currentSlide) {
-					// Reset video to start
-					video.currentTime = 0;
-					// Try to play with audio first
-					video.muted = false;
-					video.volume = 0.1;
-					video.play().then(() => {
-						// Successfully started playing, keep unmuted
-						video.muted = false;
-					}).catch(() => {
-						// If autoplay with sound fails, try muted autoplay
-						video.muted = true;
-						video.volume = 0;
-						video.play().catch((err) => {
-							console.log("Video autoplay failed:", err);
-						});
-					});
+	const handleStartAdventure = () => {
+		const isOnDashboard = location.pathname === "/dashboard";
+		
+		if (!isOnDashboard) {
+			void navigate({ to: "/dashboard" });
+			// Scroll after navigation completes - use retry mechanism for reliability
+			const scrollToForm = () => {
+				const formSection = document.getElementById("section-story-form");
+				if (formSection) {
+					formSection.scrollIntoView({ behavior: "smooth" });
 				} else {
-					video.pause();
-					video.currentTime = 0;
-					video.muted = true;
+					// Retry if element not found yet (navigation may still be in progress)
+					setTimeout(scrollToForm, 100);
 				}
-			}
-		});
-	}, [currentSlide, slides]);
-
-	const goToSlide = (index: number) => {
-		setCurrentSlide(index);
-	};
-
-	const goToPrevious = () => {
-		setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-	};
-
-	const goToNext = () => {
-		setCurrentSlide((prev) => (prev + 1) % slides.length);
+			};
+			setTimeout(scrollToForm, 200);
+		} else {
+			// Already on dashboard, just scroll
+			document.getElementById("section-story-form")?.scrollIntoView({ behavior: "smooth" });
+		}
 	};
 
 	return (
-		<div className="relative w-full h-[50vh] md:h-[60vh] rounded-3xl overflow-hidden">
-			{/* Soft Pastel Pink Transparent Background */}
-			<div className="absolute inset-0 bg-gradient-to-r from-pink-200/20 via-pink-100/15 to-pink-200/20 animate-gradient bg-[length:200%_200%]">
-				<style>{`
-					@keyframes gradient {
-						0% { background-position: 0% 50%; }
-						50% { background-position: 100% 50%; }
-						100% { background-position: 0% 50%; }
-					}
-					.animate-gradient {
-						animation: gradient 15s ease infinite;
-					}
-				`}</style>
-			</div>
+		<div className="relative w-full overflow-hidden rounded-lg md:rounded-[3rem] shadow-2xl bg-gray-900">
+			<style>{`
+				@keyframes fadeIn {
+					from { opacity: 0; transform: translateY(20px); }
+					to { opacity: 1; transform: translateY(0); }
+				}
+			`}</style>
+			<div className="absolute inset-0 z-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
 
-			{/* Floating Particles */}
-			<div className="absolute inset-0 overflow-hidden pointer-events-none">
-				{Array.from({ length: 20 }).map((_, i) => (
-					<div
-						key={`star-${i}`}
-						className="absolute text-primary/30 animate-float"
-						style={{
-							left: `${Math.random() * 100}%`,
-							top: `${Math.random() * 100}%`,
-							animationDelay: `${Math.random() * 5}s`,
-							animationDuration: `${3 + Math.random() * 4}s`,
-							fontSize: `${0.5 + Math.random() * 1}rem`,
-						}}
-					>
-						{Math.random() > 0.5 ? '✨' : '⭐'}
-					</div>
-				))}
-				{Array.from({ length: 8 }).map((_, i) => (
-					<div
-						key={`cloud-${i}`}
-						className="absolute text-accent/20 animate-float-slow"
-						style={{
-							left: `${Math.random() * 100}%`,
-							top: `${Math.random() * 100}%`,
-							animationDelay: `${Math.random() * 3}s`,
-							animationDuration: `${8 + Math.random() * 4}s`,
-							fontSize: `${1.5 + Math.random() * 1}rem`,
-						}}
-					>
-						☁️
-					</div>
-				))}
-				<style>{`
-					@keyframes float {
-						0%, 100% { transform: translate(0, 0) rotate(0deg); }
-						25% { transform: translate(20px, -20px) rotate(5deg); }
-						50% { transform: translate(-15px, -40px) rotate(-5deg); }
-						75% { transform: translate(-20px, -20px) rotate(3deg); }
-					}
-					@keyframes float-slow {
-						0%, 100% { transform: translate(0, 0) rotate(0deg); }
-						33% { transform: translate(30px, -30px) rotate(3deg); }
-						66% { transform: translate(-30px, -60px) rotate(-3deg); }
-					}
-					.animate-float {
-						animation: float linear infinite;
-					}
-					.animate-float-slow {
-						animation: float-slow linear infinite;
-					}
-				`}</style>
-			</div>
-
-			<div className="relative w-full h-full z-10">
-				{slides.map((slide, index) => (
-					<div
-						key={index}
-						className={`absolute inset-0 transition-opacity duration-700 ${
-							index === currentSlide ? "opacity-100" : "opacity-0"
-						}`}
-					>
-						{slide.type === "image" ? (
-							<div className="relative w-full h-full flex items-center justify-center p-4">
-								<img
-									src={slide.src}
-									alt={slide.alt}
-									className="max-w-full max-h-full object-contain z-10 rounded-2xl shadow-lg"
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-								{slide.caption && (
-									<div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white pointer-events-none z-20">
-										<h2 className="text-4xl md:text-6xl font-bold text-center drop-shadow-lg">
-											{slide.caption}
-										</h2>
-									</div>
-								)}
+			<div className="embla" ref={emblaRef}>
+				<div className="flex h-[280px] sm:h-[350px] md:h-[500px] lg:h-[700px]">
+					{slides.map((slide) => (
+						<div className="flex-[0_0_100%] min-w-0 relative" key={slide.id}>
+							<img
+								src={slide.img}
+								alt={slide.title}
+								className="w-full h-full object-cover"
+							/>
+							<div className="absolute inset-0 z-30 flex flex-col justify-center items-center text-center text-white p-4 sm:p-6 md:p-8">
+								<h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold mb-2 sm:mb-3 md:mb-4 drop-shadow-lg opacity-0 animate-[fadeIn_0.7s_ease-in-out_0.1s_both]">
+									{slide.title}
+								</h1>
+								<p className="text-sm sm:text-base md:text-xl lg:text-2xl max-w-2xl mb-4 sm:mb-6 md:mb-8 drop-shadow-md opacity-0 animate-[fadeIn_0.7s_ease-in-out_0.3s_both]">
+									{slide.subtitle}
+								</p>
+								<button
+									onClick={handleStartAdventure}
+									className="group relative px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 bg-accent text-accent-foreground font-bold text-sm sm:text-base md:text-lg rounded-full shadow-lg shadow-accent/20 hover:scale-105 transition-all duration-300 flex items-center gap-2 opacity-0 animate-[fadeIn_0.5s_ease-in-out_0.5s_both]"
+								>
+									Start Your Adventure
+									<ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
+								</button>
 							</div>
-						) : (
-							<div className="relative w-full h-full flex items-center justify-center p-4">
-								<video
-									ref={(el) => {
-										videoRefs.current[index] = el;
-									}}
-									src={slide.src}
-									className="max-w-full max-h-full object-contain z-10 rounded-2xl shadow-lg"
-									autoPlay
-									playsInline
-									muted
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-								{slide.caption && (
-									<div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white pointer-events-none z-20">
-										<h2 className="text-4xl md:text-6xl font-bold text-center drop-shadow-lg">
-											{slide.caption}
-										</h2>
-									</div>
-								)}
-							</div>
-						)}
-					</div>
-				))}
-			</div>
-
-			<Button
-				size="icon"
-				variant="outline"
-				className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white z-30"
-				onClick={goToPrevious}
-				data-testid="button-carousel-prev"
-			>
-				<ChevronLeft className="w-6 h-6" />
-			</Button>
-
-			<Button
-				size="icon"
-				variant="outline"
-				className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white z-30"
-				onClick={goToNext}
-				data-testid="button-carousel-next"
-			>
-				<ChevronRight className="w-6 h-6" />
-			</Button>
-
-			<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-				{slides.map((_, index) => (
-					<button
-						key={index}
-						onClick={() => goToSlide(index)}
-						className={`w-3 h-3 rounded-full transition-all ${
-							index === currentSlide
-								? "bg-white w-8"
-								: "bg-white/50 hover:bg-white/75"
-						}`}
-						data-testid={`button-dot-${index}`}
-					/>
-				))}
+						</div>
+					))}
+				</div>				
 			</div>
 		</div>
 	);
 }
-

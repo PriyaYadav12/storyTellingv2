@@ -10,6 +10,7 @@ interface MobileNavigationProps {
 	availableCredits: number;
 	userName: string;
 	userEmail?: string;
+	userLevel?: number;
 	landingNavItems: LandingNavItem[];
 	appNavItems: AppNavItem[];
 	onGetStarted: () => void;
@@ -21,6 +22,7 @@ export function MobileNavigation({
 	availableCredits,
 	userName,
 	userEmail,
+	userLevel = 1,
 	landingNavItems,
 	appNavItems,
 	onGetStarted,
@@ -61,6 +63,7 @@ export function MobileNavigation({
 						<UserDropdown 
 							userName={userName} 
 							userEmail={userEmail}
+							userLevel={userLevel}
 							isMobile={true}
 							onNavClick={onNavClick}
 						/>

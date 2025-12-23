@@ -105,11 +105,6 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 			return;
 		}
 
-		if (selectedLength === "long") {
-			toast.error("5-minute stories are locked. Upgrade to premium to unlock!");
-			return;
-		}
-
 		if (availableCredits < creditCost) {
 			toast.error(`Insufficient credits. You need ${creditCost} credits but only have ${availableCredits}.`);
 			return;
@@ -204,7 +199,7 @@ export default function StoryGenerationForm({ onGenerate }: StoryGenerationFormP
 						<Button
 							size="lg"
 							className="px-12 py-6 text-xl rounded-2xl font-semibold bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600"
-							onClick={() => navigate({ to: "/pricing" })}
+							onClick={() => navigate({ to: "/pricing", search: { plan: undefined } })}
 							data-testid="button-subscribe"
 						>
 							<Crown className="w-6 h-6 mr-3" />

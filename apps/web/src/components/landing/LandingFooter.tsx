@@ -32,6 +32,7 @@ export function LandingFooter() {
             <h3 className="font-bold text-lg mb-4">Resources</h3>
             <ul className="space-y-3 text-muted-foreground">
               <li className="hover:text-foreground transition-colors cursor-pointer">Blog</li>
+              <li className="hover:text-foreground transition-colors cursor-pointer">contact at: raj@lallifafa.com</li>
             </ul>
           </div>
           

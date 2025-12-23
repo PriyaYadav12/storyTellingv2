@@ -2,6 +2,8 @@ import { Zap, Book, Star, Lock } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useQuery, useConvexAuth } from "convex/react";
+import { api } from "@story-telling-v2/backend/convex/_generated/api";
 
 interface StoryLengthOption {
 	value: "short" | "medium" | "long";
@@ -26,6 +28,14 @@ export default function StoryLengthSelector({
 	selectedLength,
 	onLengthChange,
 }: StoryLengthSelectorProps) {
+	const { isAuthenticated } = useConvexAuth();
+	const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
+	
+	// Check if user has active subscription with future expiry date
+	const hasActiveSubscription = subscription?.status === "active" && 
+		subscription?.expiresAt && 
+		subscription.expiresAt * 1000 > Date.now();
+	console.log(hasActiveSubscription);
 	return (
 		<div className="space-y-3">
 			<Label className="text-lg font-semibold text-foreground/80">
@@ -33,7 +43,8 @@ export default function StoryLengthSelector({
 			</Label>
 			{lengthOptions.map((option) => {
 				const Icon = option.icon;
-				const isLocked = option.isLocked || false;
+				// If user has active subscription, unlock premium features
+				const isLocked = hasActiveSubscription ? false : (option.isLocked || false);
 				return (
 					<label
 						key={option.value}
