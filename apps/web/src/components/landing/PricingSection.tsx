@@ -100,8 +100,8 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
 
 			// User is authenticated, create subscription and redirect to checkout
 			const planIdMap: Record<string, string> = {
-				monthly: "plan_RpZZiFsx7YI1rA",
-				yearly: "plan_RpZabHcv8xiaoZ",
+				monthly: "plan_RvJkxMI12m5s2R",
+				yearly: "plan_RvJlL6qxxggXpf",
 			};
 
 			const razorpayPlanId = planIdMap[plan.id];
