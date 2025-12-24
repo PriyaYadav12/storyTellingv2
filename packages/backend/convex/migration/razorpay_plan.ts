@@ -18,13 +18,13 @@ export const seedDefaults = mutation({
                 name: "Magic Pass - Monthly",
                 price: 199,
                 interval: "monthly" as const,
-                planId: "plan_RpZZiFsx7YI1rA",
+                planId: "plan_RvJkxMI12m5s2R",
             },
             {
                 name: "Magic Pass - Yearly",
                 price: 1999,
                 interval: "yearly" as const,
-                planId: "plan_RpZabHcv8xiaoZ",
+                planId: "plan_RvJlL6qxxggXpf",
             }
 
 		];

@@ -43,11 +43,12 @@ export const initiateSubscription = action({
 		// Get authenticated user
 		const user: User | null = await ctx.runQuery(api.auth.getCurrentUser, {});
 		if (!user) throw new Error("Not authenticated");
-		
+		console.log('user', user);
+		console.log('planId', planId);
 		// Get plan details
 		const plans: Plan[] = await ctx.runQuery(api.subscription.getPlans, {});
 		const selectedPlan: Plan | undefined = plans.find((p) => p.planId === planId);
-		
+		console.log('selectedPlan', selectedPlan);
 		if (!selectedPlan) {
 			throw new Error("Plan not found");
 		}
