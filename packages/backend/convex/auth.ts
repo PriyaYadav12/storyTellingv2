@@ -46,7 +46,7 @@ function createAuth(
               const { Resend } = await import("resend");
               const resend = new Resend(resendKey);
               await resend.emails.send({
-                from: "Lalli Fafa <onboarding@resend.dev>",
+                from: "Lalli Fafa <raj@lallifafa.com>",
                 to: [email],
                 subject:
                   type === "forget-password"
