@@ -21,6 +21,7 @@ export const generateNarration = internalAction({
 
     await generateMergedNarration(ctx, {
       storyId,
+      title: story.title,
       content: story.content,
       childName,
       childGender,

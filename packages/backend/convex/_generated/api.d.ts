@@ -28,6 +28,7 @@ import type * as migration_razorpay_plan from "../migration/razorpay_plan.js";
 import type * as migration_structure from "../migration/structure.js";
 import type * as migration_theme from "../migration/theme.js";
 import type * as migration_theme_compatibility from "../migration/theme_compatibility.js";
+import type * as migration_voice_models from "../migration/voice_models.js";
 import type * as narrationGenerator from "../narrationGenerator.js";
 import type * as privateData from "../privateData.js";
 import type * as razorpay_create_subscription from "../razorpay/create_subscription.js";
@@ -81,6 +82,7 @@ declare const fullApi: ApiFromModules<{
   "migration/structure": typeof migration_structure;
   "migration/theme": typeof migration_theme;
   "migration/theme_compatibility": typeof migration_theme_compatibility;
+  "migration/voice_models": typeof migration_voice_models;
   narrationGenerator: typeof narrationGenerator;
   privateData: typeof privateData;
   "razorpay/create_subscription": typeof razorpay_create_subscription;

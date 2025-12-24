@@ -271,6 +271,7 @@ export const getContentOnly = query({
 		if (!story) throw new Error("Story not found");
 		return {
 			content: story.content,
+			title: story.title,
 			params: story.params
 		};
 	},

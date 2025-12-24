@@ -220,6 +220,12 @@ flavor_openings: defineTable({
 		renewedAt: v.optional(v.number()),
 		createdAt: v.number(),
 	}).index("by_user", ["userId"]),
+	voice_models: defineTable({
+		name: v.string(),
+		voiceId: v.string(),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	}).index("by_name", ["name"]),
 });
 
 

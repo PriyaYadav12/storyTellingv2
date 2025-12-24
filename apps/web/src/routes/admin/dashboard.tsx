@@ -12,6 +12,7 @@ import {
 	LayoutDashboard,
 	Shield,
 	ScrollText,
+	Volume2,
 } from "lucide-react";
 import AdminHeader from "@/components/admin/admin-header";
 import { AdminStories } from "@/components/stories/adminStories";
@@ -19,6 +20,7 @@ import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminAssets } from "@/components/admin/AdminAssets";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminBlog } from "@/components/admin/AdminBlog";
+import { AdminVoice } from "@/components/admin/AdminVoice";
 export const Route = createFileRoute("/admin/dashboard")({
 	component: RouteComponent,
 });
@@ -88,7 +90,7 @@ function DashboardContent() {
 
 				{/* Tabs */}
 				<Tabs defaultValue="stories" className="w-full">
-					<TabsList className="grid w-full grid-cols-5 mb-8">
+					<TabsList className="grid w-full grid-cols-6 mb-8">
 						<TabsTrigger value="stories" className="flex items-center gap-2">
 							<BookOpen className="h-4 w-4" />
 							<span className="hidden sm:inline">Stories</span>
@@ -100,6 +102,10 @@ function DashboardContent() {
 						<TabsTrigger value="assets" className="flex items-center gap-2">
 							<FolderOpen className="h-4 w-4" />
 							<span className="hidden sm:inline">Assets</span>
+						</TabsTrigger>
+						<TabsTrigger value="voice" className="flex items-center gap-2">
+							<Volume2 className="h-4 w-4" />
+							<span className="hidden sm:inline">Voice</span>
 						</TabsTrigger>
 						<TabsTrigger value="settings" className="flex items-center gap-2">
 							<Settings className="h-4 w-4" />
@@ -153,19 +159,33 @@ function DashboardContent() {
 						</Card>
 					</TabsContent>
 
-						<TabsContent value="assets">
-							<Card>
-								<CardHeader>
-									<CardTitle>Assets Management</CardTitle>
-									<CardDescription>
-										Manage images, videos, and other media files from all stories
-									</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<AdminAssets />
-								</CardContent>
-							</Card>
-						</TabsContent>
+					<TabsContent value="assets">
+						<Card>
+							<CardHeader>
+								<CardTitle>Assets Management</CardTitle>
+								<CardDescription>
+									Manage images, videos, and other media files from all stories
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								<AdminAssets />
+							</CardContent>
+						</Card>
+					</TabsContent>
+
+					<TabsContent value="voice">
+						<Card>
+							<CardHeader>
+								<CardTitle>Voice Models Management</CardTitle>
+								<CardDescription>
+									Manage voice model IDs for narration (names cannot be changed)
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								<AdminVoice />
+							</CardContent>
+						</Card>
+					</TabsContent>
 
 					<TabsContent value="settings">
 						<AdminSettings />

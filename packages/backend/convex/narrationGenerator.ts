@@ -1,30 +1,83 @@
 import { ActionCtx } from "./_generated/server";
 import { api } from "./_generated/api";
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js/Client";
-import { VOICE_MAP } from "./voiceMap";
 import { Id } from "./_generated/dataModel";
 
 type Gender = "male" | "female" | "other";
 
-function resolveChildVoice(gender: Gender, language: string) {
-  if (gender === "male") return language === "Hindi" ? VOICE_MAP.HindiBoyChild : VOICE_MAP.BoyChild;
-  if (gender === "female") return language === "Hindi" ? VOICE_MAP.HindiGirlChild : VOICE_MAP.GirlChild;
-  return language === "Hindi" ? VOICE_MAP.HindiGirlChild : VOICE_MAP.GirlChild;
-}
+type VoiceMap = {
+  Narrator?: string;
+  Lalli?: string;
+  Fafa?: string;
+  GirlChild?: string;
+  BoyChild?: string;
+  HindiNarrator?: string;
+  HindiLalli?: string;
+  HindiFafa?: string;
+  HindiGirlChild?: string;
+  HindiBoyChild?: string;
+};
 
-function pickVoiceForSpeaker(speaker: string, childName: string, gender: Gender, language: string): string {
-  const s = speaker.trim().toLowerCase();
-  if (s === "narrator") return language === "Hindi" ? VOICE_MAP.HindiNarrator : VOICE_MAP.Narrator;
-  if (s === "lalli") return language === "Hindi" ? VOICE_MAP.HindiLalli : VOICE_MAP.Lalli;
-  if (s === "fafa") return language === "Hindi" ? VOICE_MAP.HindiFafa : VOICE_MAP.Fafa;
-  if (s === "child" || s === "girl child" || s === "boy child" || s === childName.trim().toLowerCase()) {
-    return resolveChildVoice(gender, language);
+async function loadVoiceMap(ctx: ActionCtx): Promise<VoiceMap> {
+  const voices = await ctx.runQuery(api.migration.voice_models.list);
+  const voiceMap: VoiceMap = {};
+  
+  for (const voice of voices) {
+    voiceMap[voice.name as keyof VoiceMap] = voice.voiceId;
   }
-  return language === "Hindi" ? VOICE_MAP.HindiNarrator : VOICE_MAP.Narrator;
+  
+  return voiceMap;
 }
 
-function parseStoryToSpeakerLines(content: string, childName: string) {
-  const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
+function resolveChildVoice(voiceMap: VoiceMap, gender: Gender, language: string): string {
+  if (gender === "male") {
+    return language === "Hindi" 
+      ? (voiceMap.HindiBoyChild || voiceMap.BoyChild || "") 
+      : (voiceMap.BoyChild || "");
+  }
+  if (gender === "female") {
+    return language === "Hindi" 
+      ? (voiceMap.HindiGirlChild || voiceMap.GirlChild || "") 
+      : (voiceMap.GirlChild || "");
+  }
+  return language === "Hindi" 
+    ? (voiceMap.HindiGirlChild || voiceMap.GirlChild || "") 
+    : (voiceMap.GirlChild || "");
+}
+
+function pickVoiceForSpeaker(
+  voiceMap: VoiceMap,
+  speaker: string, 
+  childName: string, 
+  gender: Gender, 
+  language: string
+): string {
+  const s = speaker.trim().toLowerCase();
+  if (s === "narrator") {
+    return language === "Hindi" 
+      ? (voiceMap.HindiNarrator || voiceMap.Narrator || "") 
+      : (voiceMap.Narrator || "");
+  }
+  if (s === "lalli") {
+    return language === "Hindi" 
+      ? (voiceMap.HindiLalli || voiceMap.Lalli || "") 
+      : (voiceMap.Lalli || "");
+  }
+  if (s === "fafa") {
+    return language === "Hindi" 
+      ? (voiceMap.HindiFafa || voiceMap.Fafa || "") 
+      : (voiceMap.Fafa || "");
+  }
+  if (s === "child" || s === "girl child" || s === "boy child" || s === childName.trim().toLowerCase()) {
+    return resolveChildVoice(voiceMap, gender, language);
+  }
+  return language === "Hindi" 
+    ? (voiceMap.HindiNarrator || voiceMap.Narrator || "") 
+    : (voiceMap.Narrator || "");
+}
+
+function parseStoryToSpeakerLines(title: string, content: string, childName: string) {
+  const lines = [title, ...content.split("\n").map(l => l.trim()).filter(Boolean)];
   const childLabel = (childName || "").trim().toLowerCase();
 
   const out: Array<{ order: number; speaker: string; text: string }> = [];
@@ -57,7 +110,7 @@ async function ttsArrayBuffer(voiceId: string, text: string): Promise<ArrayBuffe
     text,
     modelId: "eleven_turbo_v2_5",
     outputFormat: "mp3_22050_32", 
-    voiceSettings: { stability: 0.5, speed: 0.8 },
+    voiceSettings: { stability: 0.5, speed: 0.9 },
   });
 
   // handle web ReadableStream -> ArrayBuffer
@@ -115,6 +168,7 @@ export async function generateMergedNarration(
   ctx: ActionCtx,
   args: {
     storyId: Id<"stories">;
+    title: string;
     content: string;
     childName: string;
     childGender: Gender;
@@ -122,14 +176,23 @@ export async function generateMergedNarration(
   }
 ) {
   console.log("Generating voice narration for story");
-  const { storyId, content, childName, childGender, language } = args;
+  const { storyId, title, content, childName, childGender, language } = args;
 
-  const lines = parseStoryToSpeakerLines(content, childName);
+  // Load voice map from database once
+  const voiceMap = await loadVoiceMap(ctx);
+  if (!voiceMap.Narrator) {
+    throw new Error("Voice models not found in database. Please run the seed function.");
+  }
+
+  const lines = parseStoryToSpeakerLines(title, content, childName);
   console.log("Parsed Lines:", lines);
 
   // Limit concurrency to 3 TTS calls at a time
   const results = await mapWithConcurrencyLimit(lines, 2, async (l) => {
-    const voiceId = pickVoiceForSpeaker(l.speaker, childName, childGender, language);
+    const voiceId = pickVoiceForSpeaker(voiceMap, l.speaker, childName, childGender, language);
+    if (!voiceId) {
+      throw new Error(`Voice not found for speaker: ${l.speaker}`);
+    }
     const ab = await ttsArrayBuffer(voiceId, l.text);
     return { order: l.order, ab };
   });
