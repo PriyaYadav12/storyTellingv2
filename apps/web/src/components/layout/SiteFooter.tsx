@@ -43,9 +43,9 @@ const footerLinks = {
     { label: "Characters", href: "/#characters" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Use", href: "/terms" },
-    { label: "Refund Policy", href: "/refunds" },
+    { label: "Privacy Policy", href: "/legal/privacy" },
+    { label: "Terms of Use", href: "/legal/terms" },
+    { label: "Refund Policy", href: "/legal/refunds" },
   ],
 };
 

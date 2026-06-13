@@ -13,9 +13,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/pricing`,        lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/blog`,           lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
     { url: `${BASE}/learn`,          lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/about`,          lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     // Legal — kept for completeness, low priority
     { url: `${BASE}/legal/terms`,    lastModified: now, changeFrequency: "yearly",  priority: 0.2 },
     { url: `${BASE}/legal/privacy`,  lastModified: now, changeFrequency: "yearly",  priority: 0.2 },
+    { url: `${BASE}/legal/refunds`,  lastModified: now, changeFrequency: "yearly",  priority: 0.2 },
     // Removed: /shop (page doesn't exist — caused "duplicate canonical" error in GSC)
     // Removed: /sign-in, /sign-up (auth pages have no SEO value and waste crawl budget)
   ];
