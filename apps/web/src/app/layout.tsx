@@ -51,13 +51,11 @@ export const metadata: Metadata = {
   publisher: "Lalli Fafa",
   category: "Education",
 
-  /* ── Canonical / alternate ── */
+  /* ── Canonical / alternate ──
+     Per-page canonicals are set via each page's own `metadata.alternates.canonical`.
+     This is just the fallback for pages that don't override it. */
   alternates: {
     canonical: BASE,
-    languages: {
-      "en-IN": BASE,
-      "hi-IN": `${BASE}/hi`,
-    },
   },
 
   /* ── Open Graph ── */
@@ -133,8 +131,6 @@ export default function RootLayout({
       className={`${baloo2.variable} ${nunito.variable} h-full`}
     >
       <head>
-        {/* Canonical — tells Google the www version is authoritative */}
-        <link rel="canonical" href="https://www.lallifafa.com/" />
         {/* Preconnect to font origin for faster load */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
