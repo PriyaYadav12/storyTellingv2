@@ -328,6 +328,15 @@ export default async function BlogPostPage({
           font-style: italic;
           color: rgba(45,45,45,0.65);
         }
+        .blog-content a {
+          color: var(--lf-teal);
+          font-weight: 700;
+          text-decoration: underline;
+          text-decoration-color: rgba(0,201,167,0.35);
+        }
+        .blog-content a:hover {
+          text-decoration-color: var(--lf-teal);
+        }
       `}</style>
 
       <SiteFooter />

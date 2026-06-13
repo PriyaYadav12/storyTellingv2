@@ -35,7 +35,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>There's a meaningful difference between an app that lets you type your child's name into a generic story, and one that builds the story around your child — their interests, their age-appropriate challenges, their personality traits.</p>
 
-<p>A quick test: does the app ask you anything about your child beyond their name? If the only personalisation field is "Child's Name," the story is a template with a find-and-replace. If it asks about favourite animals, colours, a sibling's name, or what your child is working on (sharing, courage, trying new foods), the story is being built around your child specifically — and that's where the real benefit lives.</p>
+<p>A quick test: does the app ask you anything about your child beyond their name? If the only personalisation field is "Child's Name," the story is a template with a find-and-replace. If it asks about favourite animals, colours, a sibling's name, or what your child is working on (sharing, courage, trying new foods), the story is being built around your child specifically — and that's where the real benefit lives. (We go deeper on why this distinction matters in <a href="/blog/personalised-stories-vs-storybooks">personalised stories vs. regular storybooks</a>.)</p>
 
 <h2>2. Real bilingual narration, not just subtitles</h2>
 
@@ -72,7 +72,7 @@ export const BLOG_POSTS: BlogPost[] = [
   <li>Could my child enjoy this with their eyes closed?</li>
 </ul>
 
-<p>If you can answer those five questions confidently for an app, you've found something worth adding to the routine. This is exactly the bar we built Lalli Fafa to meet — personalised stories about your child, narrated calmly in English or Hindi, with nothing waiting at the end except a good night.</p>
+<p>If you can answer those five questions confidently for an app, you've found something worth adding to the routine. This is exactly the bar we built <a href="/generate">Lalli Fafa</a> to meet — personalised stories about your child, narrated calmly in English or Hindi, with nothing waiting at the end except a good night. See our <a href="/pricing">plans</a> to get started, or read about <a href="/blog/bedtime-routine-for-working-parents">building a routine that survives a busy weekday</a>.</p>
     `,
   },
   {
@@ -109,7 +109,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <h2>Making it personal</h2>
 
-<p>The same principle that makes any story land harder for a child — being the character — applies especially well to festival stories. A story where your child (by name) helps light the very last diya in the rangoli, or decides to save a sparkler for a friend who couldn't come over, turns an abstract cultural celebration into a personal memory-in-the-making.</p>
+<p>The same principle that makes any story land harder for a child — being the character — applies especially well to festival stories. A story where your child (by name) helps light the very last diya in the rangoli, or decides to save a sparkler for a friend who couldn't come over, turns an abstract cultural celebration into a personal memory-in-the-making. (This is the same <a href="/blog/personalised-stories-vs-storybooks">self-reference effect</a> that makes personalised stories so effective more broadly.)</p>
 
 <p>This is particularly meaningful for children growing up outside India, for whom festivals can sometimes feel like "something we do" rather than something that's truly theirs. A story where they are the one celebrating — in their own words, their own home, their own family — closes that gap.</p>
 
@@ -117,7 +117,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>The same approach works for any festival a family celebrates — Holi's playfulness and forgiveness, Eid's generosity and patience, Christmas's giving and togetherness, Pongal's gratitude for harvest. The mechanism is the same regardless of the festival: let the child live the feeling of the celebration through a character who is unmistakably them, and the values embedded in that celebration arrive without ever needing to be stated.</p>
 
-<p>This festival season, instead of (or alongside) the usual stories, try one set during the celebration itself — diyas, rangoli, sweets, family — with your child as the one at the centre of it. It tends to become the story they ask for again next year, when the diyas are out again and the feeling comes flooding back.</p>
+<p>This festival season, instead of (or alongside) the usual stories, try one set during the celebration itself — diyas, rangoli, sweets, family — with your child as the one at the centre of it. It tends to become the story they ask for again next year, when the diyas are out again and the feeling comes flooding back. <a href="/generate">Create a Diwali story for your child</a> in English or Hindi in under two minutes.</p>
     `,
   },
   {
@@ -156,7 +156,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>The advantages of personalisation are narrower but, where they apply, significant:</p>
 
 <ul>
-  <li><strong>Identity-building.</strong> A child who repeatedly hears themselves described as brave, kind, or resourceful starts to build that into their self-concept — not as praise, but as narrative evidence.</li>
+  <li><strong>Identity-building.</strong> A child who repeatedly hears themselves described as brave, kind, or resourceful starts to build that into their self-concept — not as praise, but as narrative evidence. We explore this in more depth in <a href="/blog/why-personalised-stories-build-confidence">why personalised stories build confidence</a>.</li>
   <li><strong>Behaviour rehearsal.</strong> When the character facing a hard choice (sharing, telling the truth, trying again after failing) shares the child's name, the choice feels like a rehearsal for the child's own life — not someone else's lesson.</li>
   <li><strong>Engagement for reluctant listeners.</strong> Children who are otherwise resistant to "story time" often engage immediately when they realise the story is about them. The personalisation itself is a hook.</li>
   <li><strong>Addressing specific, current situations.</strong> A storybook can't be written tonight about the specific disagreement your child had with their best friend this afternoon. A personalised story can.</li>
@@ -166,7 +166,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>Most families find the best rhythm is a mix: classic storybooks as a steady diet — for craft, shared culture, and the simple pleasure of beautiful illustration — with personalised stories used more deliberately, for moments that call for it. A new sibling arriving. Starting school. A specific fear. A behaviour you're trying to encourage.</p>
 
-<p>Used this way, personalised stories aren't a replacement for the bookshelf. They're a tool that does something the bookshelf can't — meeting your child exactly where they are, as the hero of their own night.</p>
+<p>Used this way, personalised stories aren't a replacement for the bookshelf. They're a tool that does something the bookshelf can't — meeting your child exactly where they are, as the hero of their own night. <a href="/generate">Try it free</a> and see how your child reacts to hearing their own name in the story.</p>
     `,
   },
   {
@@ -199,7 +199,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <h3>Minute 12–20: The story — protected, no matter what</h3>
 <p>This is the part that's most tempting to cut when you're exhausted, and it's the part that matters most. The story is what your child will remember about today. It's the thing that makes the whole routine feel like connection rather than just a sequence of tasks.</p>
 
-<p>This is also where audio narration genuinely helps working parents — not as a replacement for you, but as relief for the nights when reading aloud yourself isn't realistic. A short, calm, personalised audio story that your child presses play on themselves still delivers the story, the wind-down, and (because it's about them) the sense of being known — even on a night when you're lying next to them with your eyes closed too.</p>
+<p>This is also where audio narration genuinely helps working parents — not as a replacement for you, but as relief for the nights when reading aloud yourself isn't realistic. A short, calm, <a href="/generate">personalised audio story</a> that your child presses play on themselves still delivers the story, the wind-down, and (because it's about them) the sense of being known — even on a night when you're lying next to them with your eyes closed too.</p>
 
 <h2>The "good enough" principle</h2>
 
@@ -215,13 +215,13 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <h2>When grandparents or family are far away</h2>
 
-<p>For many Indian families, especially those living abroad or in different cities from grandparents, bedtime is also when a child misses people they don't see every day. A story — especially one in Hindi, in a voice that sounds warm and familiar — can quietly fill some of that gap. It's not a substitute for a video call with Nani, but on the nights a call isn't possible, a Hindi bedtime story can still carry some of that same feeling of being held by family.</p>
+<p>For many Indian families, especially those living abroad or in different cities from grandparents, bedtime is also when a child misses people they don't see every day. A story — especially one in <a href="/blog/hindi-storytelling-bilingual-families">Hindi, in a voice that sounds warm and familiar</a> — can quietly fill some of that gap. It's not a substitute for a video call with Nani, but on the nights a call isn't possible, a Hindi bedtime story can still carry some of that same feeling of being held by family.</p>
 
 <h2>The real win</h2>
 
 <p>The goal on a busy weekday isn't an elaborate routine. It's 20 minutes, most nights, where your child feels like the day ended with someone paying attention to them — even if that someone is tired, even if dinner was late, even if there's still a message waiting on your phone.</p>
 
-<p>That's a routine that survives real life. And real life is the only kind there is.</p>
+<p>That's a routine that survives real life. And real life is the only kind there is. For the longer-form version of this routine, see <a href="/blog/bedtime-routine-that-actually-works">our full guide to a bedtime routine that actually works</a>.</p>
     `,
   },
   {
