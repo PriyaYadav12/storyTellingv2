@@ -102,25 +102,38 @@ export default function AboutPage() {
 
         {/* Mission */}
         <section style={{ background: "var(--lf-mint)" }}>
-          <div className="mx-auto px-5 py-14" style={{ maxWidth: 800 }}>
-            <h2
-              style={{
-                fontFamily: "'Baloo 2', sans-serif",
-                fontWeight: 800,
-                fontSize: "clamp(1.6rem,3.5vw,2.2rem)",
-                color: "var(--lf-dark)",
-                lineHeight: 1.2,
-                marginBottom: "1rem",
-              }}
-            >
-              Our mission
-            </h2>
-            <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.85 }}>
-              Bedtime is one of the few moments in a child&apos;s day that&apos;s entirely about them — and we think it should feel that way. Our mission is to make personalised, high-quality storytelling accessible to every family, in the languages spoken at home, without ads, gimmicks, or screen-time guilt.
-            </p>
-            <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.85, marginTop: "0.9rem" }}>
-              Every story your child generates is unique to them — built from their name, age, favourite things, and the lesson you want to gently weave in, then illustrated and narrated end-to-end by AI we&apos;ve spent a long time tuning to feel warm rather than mechanical.
-            </p>
+          <div className="mx-auto px-5 py-14" style={{ maxWidth: 1000 }}>
+            <div className="flex flex-col md:flex-row items-center gap-10">
+              <div className="flex-1">
+                <h2
+                  style={{
+                    fontFamily: "'Baloo 2', sans-serif",
+                    fontWeight: 800,
+                    fontSize: "clamp(1.6rem,3.5vw,2.2rem)",
+                    color: "var(--lf-dark)",
+                    lineHeight: 1.2,
+                    marginBottom: "1rem",
+                  }}
+                >
+                  Our mission
+                </h2>
+                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.85 }}>
+                  Bedtime is one of the few moments in a child&apos;s day that&apos;s entirely about them — and we think it should feel that way. Our mission is to make personalised, high-quality storytelling accessible to every family, in the languages spoken at home, without ads, gimmicks, or screen-time guilt.
+                </p>
+                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.85, marginTop: "0.9rem" }}>
+                  Every story your child generates is unique to them — built from their name, age, favourite things, and the lesson you want to gently weave in, then illustrated and narrated end-to-end by AI we&apos;ve spent a long time tuning to feel warm rather than mechanical.
+                </p>
+              </div>
+              <div className="flex-shrink-0" style={{ width: 260 }}>
+                <Image
+                  src="/lf-scene-mission.png"
+                  alt="Lalli and Fafa sharing a story together"
+                  width={520}
+                  height={520}
+                  className="w-full h-auto rounded-3xl"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
