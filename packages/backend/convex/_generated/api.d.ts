@@ -32,6 +32,7 @@ import type * as migration_structure from "../migration/structure.js";
 import type * as migration_system_config from "../migration/system_config.js";
 import type * as migration_theme from "../migration/theme.js";
 import type * as migration_theme_compatibility from "../migration/theme_compatibility.js";
+import type * as migration_update_themes_lessons from "../migration/update_themes_lessons.js";
 import type * as migration_voice_models from "../migration/voice_models.js";
 import type * as narrationGenerator from "../narrationGenerator.js";
 import type * as privateData from "../privateData.js";
@@ -84,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   "migration/system_config": typeof migration_system_config;
   "migration/theme": typeof migration_theme;
   "migration/theme_compatibility": typeof migration_theme_compatibility;
+  "migration/update_themes_lessons": typeof migration_update_themes_lessons;
   "migration/voice_models": typeof migration_voice_models;
   narrationGenerator: typeof narrationGenerator;
   privateData: typeof privateData;

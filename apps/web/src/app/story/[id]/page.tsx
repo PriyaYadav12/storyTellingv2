@@ -477,6 +477,51 @@ function StoryViewer({
     }
   }, [isPlaying]);
 
+  /* Screen Wake Lock — keep the screen on while the story is playing so it
+     doesn't lock mid-narration. Re-acquires on tab refocus since the OS
+     releases the lock when the page is hidden. */
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  useEffect(() => {
+    if (!isPlaying || !("wakeLock" in navigator)) return;
+
+    let released = false;
+    const acquire = async () => {
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        if (released) { lock.release().catch(() => {}); return; }
+        wakeLockRef.current = lock;
+      } catch {
+        // Permission denied or unsupported — playback continues normally.
+      }
+    };
+    acquire();
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && !wakeLockRef.current) acquire();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      released = true;
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      wakeLockRef.current?.release().catch(() => {});
+      wakeLockRef.current = null;
+    };
+  }, [isPlaying]);
+
+  /* Autoplay narration as soon as the player is ready. Browsers that block
+     unmuted autoplay will reject the play() promise — in that case we leave
+     playback paused and the user starts it with the Play button. */
+  const autoplayTriedRef = useRef(false);
+  useEffect(() => {
+    if (autoplayTriedRef.current || !narrationUrl || !audioRef.current) return;
+    autoplayTriedRef.current = true;
+    audioRef.current
+      .play()
+      .then(() => setIsPlaying(true))
+      .catch(() => { /* autoplay blocked — user taps Play */ });
+  }, [narrationUrl]);
+
   /* Seek audio to scene's start position using character-weighted timeline.
      Uses reliableDuration (audio element's actual value) for accurate seeking;
      falls back to display duration if reliable value not yet available. */
@@ -1582,6 +1627,14 @@ const FORGE_MESSAGES = [
   ["✨", "Sprinkling a little magic on the pages…"],
   ["📖", "The story is coming to life…"],
   ["🎙️", "Warming up the voices for narration…"],
+  ["🖌️", "Choosing colours brighter than usual…"],
+  ["🦊", "Fafa is rehearsing a dramatic gasp…"],
+  ["🦁", "Lalli is double-checking the happy ending…"],
+  ["🌙", "Tucking in a few cozy little details…"],
+  ["🎬", "Setting the scene, lights, action…"],
+  ["🐾", "Following Lalli and Fafa's footprints…"],
+  ["🧁", "Adding a sprinkle of bedtime magic…"],
+  ["🪄", "Almost time to turn the first page…"],
 ];
 
 function StoryForgeLoadingScreen({
@@ -1595,6 +1648,7 @@ function StoryForgeLoadingScreen({
 }) {
   const [msgIdx, setMsgIdx] = useState(0);
   const [dots, setDots] = useState(".");
+  const [writingElapsed, setWritingElapsed] = useState(0);
 
   // Cycle fun messages every 3.5 seconds
   useEffect(() => {
@@ -1605,6 +1659,13 @@ function StoryForgeLoadingScreen({
   // Animate ellipsis
   useEffect(() => {
     const id = setInterval(() => setDots(d => d.length >= 3 ? "." : d + "."), 500);
+    return () => clearInterval(id);
+  }, []);
+
+  // Tick up a counter while the story text is being written, so the
+  // progress bar creeps forward instead of sitting frozen on one number.
+  useEffect(() => {
+    const id = setInterval(() => setWritingElapsed(s => s + 1), 1000);
     return () => clearInterval(id);
   }, []);
 
@@ -1622,7 +1683,8 @@ function StoryForgeLoadingScreen({
     stage = 1;
     stageTitle = "Writing the story" + dots;
     stageDesc = "Lalli & Fafa are crafting your personalised adventure";
-    progress = 18;
+    // Creep from 12% to 28% over the first ~40s, then hold — never reach stage 2's 30%.
+    progress = Math.min(28, 12 + writingElapsed * 0.4);
   } else if (imagesReady < TOTAL_SCENES) {
     stage = 2;
     stageTitle = `Painting scene ${imagesReady + 1} of ${TOTAL_SCENES}` + dots;

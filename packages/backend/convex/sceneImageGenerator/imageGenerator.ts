@@ -146,7 +146,39 @@ async function processSceneImage(
 }
 
 /**
- * Generates and stores all scene images sequentially.
+ * Runs `fn` over `items` with at most `limit` calls in flight at once,
+ * preserving input order in the returned results array.
+ */
+async function mapWithConcurrencyLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+  let active = 0;
+
+  return new Promise((resolve, reject) => {
+    function startNext() {
+      while (active < limit && nextIndex < items.length) {
+        const idx = nextIndex++;
+        active++;
+        fn(items[idx], idx)
+          .then((res) => { results[idx] = res; })
+          .catch(reject)
+          .finally(() => {
+            active--;
+            if (nextIndex < items.length) startNext();
+            else if (active === 0) resolve(results);
+          });
+      }
+    }
+    startNext();
+  });
+}
+
+/**
+ * Generates and stores all scene images, up to 3 at a time.
  * Each scene gets the character reference image for consistency,
  * but NOT the previous scene — this prevents composition copying
  * which causes scenes to look identical.
@@ -170,9 +202,7 @@ export async function generateAllSceneImages(
     ? await loadImageFromStorage(ctx, childAvatarStorageId)
     : undefined;
 
-  const results: SceneGenerationResult[] = [];
-
-  for (const scene of sortedScenes) {
+  const results = await mapWithConcurrencyLimit(sortedScenes, 3, async (scene) => {
     console.log(`[generateAllSceneImages] Generating scene ${scene.sceneNumber}`);
 
     // Generate without previous scene — avoids composition copying that makes scenes look identical.
@@ -201,9 +231,9 @@ export async function generateAllSceneImages(
       );
     }
 
-    results.push(result);
     console.log(`[generateAllSceneImages] Scene ${scene.sceneNumber} done (success: ${result.success})`);
-  }
+    return result;
+  });
 
   const failed = results.filter((r) => !r.success);
   if (failed.length) console.warn("Failed scenes:", failed);
