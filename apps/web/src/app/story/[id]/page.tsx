@@ -602,9 +602,28 @@ function StoryViewer({
     return () => window.removeEventListener("keydown", onKey);
   }, [isPlaying, currentScene, setCurrentScene]);
 
+  // Guards a resume: Convex storage doesn't support range requests, so after a
+  // pause the browser may have to re-fetch the file from byte 0 and silently
+  // snap currentTime back toward 0 once that data starts arriving — sometimes
+  // a moment after play() resolves. While a guard is active, onTimeUpdate
+  // re-applies the target position until playback catches back up to it.
+  const resumeGuardRef = useRef<{ target: number; until: number } | null>(null);
+
   /* Audio event handlers */
   const onTimeUpdate = () => {
-    if (audioRef.current && !seeking) setCurrentTime(audioRef.current.currentTime);
+    const audio = audioRef.current;
+    if (!audio) return;
+    const guard = resumeGuardRef.current;
+    if (guard) {
+      if (performance.now() > guard.until) {
+        resumeGuardRef.current = null;
+      } else if (audio.currentTime < guard.target - 1) {
+        audio.currentTime = guard.target;
+      } else {
+        resumeGuardRef.current = null;
+      }
+    }
+    if (!seeking) setCurrentTime(audio.currentTime);
   };
   // Accept a finite duration from the audio element; ignore Infinity (no Accept-Ranges on Convex).
   const onLoadedMetadata = () => {
@@ -634,11 +653,11 @@ function StoryViewer({
     } else {
       const resumeAt = pausePositionRef.current;
       const audio = audioRef.current;
-      audio.play().then(() => {
-        if (resumeAt > 0 && Math.abs(audio.currentTime - resumeAt) > 0.75) {
-          audio.currentTime = resumeAt;
-        }
-      }).catch(() => {});
+      if (resumeAt > 0) {
+        audio.currentTime = resumeAt;
+        resumeGuardRef.current = { target: resumeAt, until: performance.now() + 4000 };
+      }
+      audio.play().catch(() => {});
       setIsPlaying(true);
     }
   };
