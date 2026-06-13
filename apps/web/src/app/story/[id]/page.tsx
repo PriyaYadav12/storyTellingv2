@@ -509,17 +509,28 @@ function StoryViewer({
     };
   }, [isPlaying]);
 
-  /* Autoplay narration as soon as the player is ready. Browsers that block
-     unmuted autoplay will reject the play() promise — in that case we leave
+  /* Autoplay narration as soon as the player is ready. Browsers always allow
+     *muted* autoplay, so we start muted, then immediately unmute once
+     playback has actually begun — unmuting a playing element doesn't require
+     a fresh user gesture. If even muted playback is rejected, we leave
      playback paused and the user starts it with the Play button. */
   const autoplayTriedRef = useRef(false);
   useEffect(() => {
     if (autoplayTriedRef.current || !narrationUrl || !audioRef.current) return;
     autoplayTriedRef.current = true;
-    audioRef.current
+    const audio = audioRef.current;
+    audio.muted = true;
+    audio
       .play()
-      .then(() => setIsPlaying(true))
-      .catch(() => { /* autoplay blocked — user taps Play */ });
+      .then(() => {
+        setIsPlaying(true);
+        audio.muted = muted;
+      })
+      .catch(() => {
+        audio.muted = muted;
+        /* autoplay blocked — user taps Play */
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [narrationUrl]);
 
   /* Seek audio to scene's start position using character-weighted timeline.
@@ -578,9 +589,7 @@ function StoryViewer({
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.code === "Space") {
         e.preventDefault();
-        if (!audioRef.current) return;
-        if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
-        else { audioRef.current.play(); setIsPlaying(true); }
+        togglePlay();
       } else if (e.code === "ArrowRight") {
         e.preventDefault();
         setCurrentScene(currentScene + 1, true, titleOffsetRef.current, sceneTimelineRef.current);
@@ -611,10 +620,27 @@ function StoryViewer({
   };
   const onEnded = () => setIsPlaying(false);
 
+  // Remembers exactly where playback was paused, in case the browser drops
+  // its buffered position on resume (Convex storage doesn't support range
+  // requests, so re-buffering after a pause can otherwise snap back to 0).
+  const pausePositionRef = useRef(0);
+
   const togglePlay = () => {
     if (!audioRef.current) return;
-    if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
-    else { audioRef.current.play(); setIsPlaying(true); }
+    if (isPlaying) {
+      pausePositionRef.current = audioRef.current.currentTime;
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      const resumeAt = pausePositionRef.current;
+      const audio = audioRef.current;
+      audio.play().then(() => {
+        if (resumeAt > 0 && Math.abs(audio.currentTime - resumeAt) > 0.75) {
+          audio.currentTime = resumeAt;
+        }
+      }).catch(() => {});
+      setIsPlaying(true);
+    }
   };
 
   const onScrubberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1650,6 +1676,28 @@ function StoryForgeLoadingScreen({
   const [dots, setDots] = useState(".");
   const [writingElapsed, setWritingElapsed] = useState(0);
 
+  // Soft ambient music while waiting — picks one track at random and loops it quietly.
+  const loadingMusicRef = useRef<HTMLAudioElement>(null);
+  const [musicTrack] = useState(() => BG_TRACKS[Math.floor(Math.random() * BG_TRACKS.length)]);
+  const [musicMuted, setMusicMuted] = useState(false);
+
+  useEffect(() => {
+    const audio = loadingMusicRef.current;
+    if (!audio) return;
+    audio.volume = BG_VOLUME;
+    audio.muted = true;
+    audio.play().then(() => { audio.muted = false; }).catch(() => { audio.muted = false; });
+  }, []);
+
+  const toggleMusic = () => {
+    const audio = loadingMusicRef.current;
+    if (!audio) return;
+    const next = !musicMuted;
+    setMusicMuted(next);
+    audio.muted = next;
+    if (!next) audio.play().catch(() => {});
+  };
+
   // Cycle fun messages every 3.5 seconds
   useEffect(() => {
     const id = setInterval(() => setMsgIdx(i => (i + 1) % FORGE_MESSAGES.length), 3500);
@@ -1714,6 +1762,9 @@ function StoryForgeLoadingScreen({
       <div style={{ position: "absolute", bottom: "12%", right: "5%", width: 320, height: 320, background: "radial-gradient(circle,rgba(249,199,0,0.09) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
       <div style={{ position: "absolute", top: "45%", right: "15%", width: 200, height: 200, background: "radial-gradient(circle,rgba(168,85,247,0.08) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
 
+      {/* Soft ambient music while waiting */}
+      <audio ref={loadingMusicRef} src={musicTrack} loop />
+
       {/* Back link */}
       <Link
         href="/library"
@@ -1723,10 +1774,20 @@ function StoryForgeLoadingScreen({
         <ArrowLeft size={13} /> Library
       </Link>
 
-      {/* Logo + brand */}
+      {/* Music mute toggle */}
+      <button
+        onClick={toggleMusic}
+        aria-label={musicMuted ? "Unmute music" : "Mute music"}
+        className="absolute top-5 right-5 flex items-center justify-center w-9 h-9 rounded-full transition-all hover:bg-white/10"
+        style={{ color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}
+      >
+        {musicMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+      </button>
+
+      {/* Lalli & Fafa visual + brand */}
       <div className="flex flex-col items-center gap-2">
-        <div className="relative" style={{ width: 80, height: 80 }}>
-          <Image src="/lf-logo.png" alt="Lalli Fafa" fill className="object-contain animate-bounce" style={{ animationDuration: "2.2s" }} />
+        <div className="relative" style={{ width: 150, height: 150, animation: "float-slow 4s ease-in-out infinite" }}>
+          <Image src="/lf-characters.png" alt="Lalli and Fafa" fill className="object-contain" priority />
         </div>
         <div className="flex items-center gap-2">
           <Sparkles size={14} style={{ color: "var(--lf-teal)" }} />
