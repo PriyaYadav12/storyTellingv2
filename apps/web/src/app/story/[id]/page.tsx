@@ -605,9 +605,14 @@ function StoryViewer({
   // Guards a resume: Convex storage doesn't support range requests, so after a
   // pause the browser may have to re-fetch the file from byte 0 and silently
   // snap currentTime back toward 0 once that data starts arriving — sometimes
-  // a moment after play() resolves. While a guard is active, onTimeUpdate
+  // several seconds after play() resolves. While a guard is active, onTimeUpdate
   // re-applies the target position until playback catches back up to it.
   const resumeGuardRef = useRef<{ target: number; until: number } | null>(null);
+
+  // Always-fresh record of "where we currently are", updated on every timeupdate.
+  // Used as the resume position if the user pauses via something other than the
+  // play/pause button (media keys, hardware controls, etc.).
+  const lastPositionRef = useRef(0);
 
   /* Audio event handlers */
   const onTimeUpdate = () => {
@@ -616,13 +621,16 @@ function StoryViewer({
     const guard = resumeGuardRef.current;
     if (guard) {
       if (performance.now() > guard.until) {
+        console.debug("[narration] resume guard expired", { currentTime: audio.currentTime, target: guard.target });
         resumeGuardRef.current = null;
-      } else if (audio.currentTime < guard.target - 1) {
+      } else if (Math.abs(audio.currentTime - guard.target) > 1.5) {
+        console.debug("[narration] resume guard correcting", { from: audio.currentTime, to: guard.target });
         audio.currentTime = guard.target;
       } else {
         resumeGuardRef.current = null;
       }
     }
+    lastPositionRef.current = audio.currentTime;
     if (!seeking) setCurrentTime(audio.currentTime);
   };
   // Accept a finite duration from the audio element; ignore Infinity (no Accept-Ranges on Convex).
@@ -645,20 +653,55 @@ function StoryViewer({
   const pausePositionRef = useRef(0);
 
   const togglePlay = () => {
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!audio) return;
     if (isPlaying) {
-      pausePositionRef.current = audioRef.current.currentTime;
-      audioRef.current.pause();
+      pausePositionRef.current = audio.currentTime || lastPositionRef.current;
+      console.debug("[narration] pause at", pausePositionRef.current);
+      audio.pause();
       setIsPlaying(false);
-    } else {
-      const resumeAt = pausePositionRef.current;
-      const audio = audioRef.current;
-      if (resumeAt > 0) {
-        audio.currentTime = resumeAt;
-        resumeGuardRef.current = { target: resumeAt, until: performance.now() + 4000 };
-      }
+      return;
+    }
+
+    const resumeAt = pausePositionRef.current;
+    console.debug("[narration] resume requested", { resumeAt, currentTime: audio.currentTime, readyState: audio.readyState });
+    setIsPlaying(true);
+
+    if (resumeAt <= 0.25 || Math.abs(audio.currentTime - resumeAt) <= 0.25) {
       audio.play().catch(() => {});
-      setIsPlaying(true);
+      return;
+    }
+
+    let settled = false;
+    const finishResume = (source: string) => {
+      if (settled) return;
+      settled = true;
+      audio.removeEventListener("seeked", onSeeked);
+      console.debug("[narration] resuming playback", { source, currentTime: audio.currentTime });
+      // Keep correcting for a few seconds in case Convex's lack of range-request
+      // support causes the buffer to silently snap currentTime back toward 0
+      // after playback has already started.
+      resumeGuardRef.current = { target: resumeAt, until: performance.now() + 8000 };
+      audio.play().catch(() => {});
+    };
+    const onSeeked = () => finishResume("seeked");
+
+    const performSeek = () => {
+      audio.currentTime = resumeAt;
+      audio.addEventListener("seeked", onSeeked);
+      // Safety net: some browsers/files never emit `seeked` for short seeks.
+      setTimeout(() => finishResume("timeout"), 1500);
+    };
+
+    if (audio.readyState >= 1) {
+      // HAVE_METADATA or better — safe to seek immediately.
+      performSeek();
+    } else {
+      // Not loaded yet — wait for metadata before seeking, otherwise the
+      // currentTime assignment is silently ignored.
+      audio.addEventListener("loadedmetadata", performSeek, { once: true });
+      // Absolute fallback in case loadedmetadata never fires.
+      setTimeout(() => finishResume("metadata-timeout"), 3000);
     }
   };
 
