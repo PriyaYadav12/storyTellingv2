@@ -125,6 +125,21 @@ function parseStoryToSpeakerLines(title: string, content: string, childName: str
   return out;
 }
 
+/**
+ * ElevenLabs reads the spelling "Lalli" with a short first vowel ("La-li"),
+ * but the character's name is pronounced with a long first vowel ("Laa-li").
+ * For narration only (never the stored story text/subtitles, which must keep
+ * the "Lalli" spelling), respell every occurrence as "Laalli" so the TTS
+ * voice says it correctly. Preserves the original capitalisation.
+ */
+function applyPronunciationFixes(text: string): string {
+  return text.replace(/\bLalli\b/gi, (match) => {
+    if (match === match.toUpperCase()) return "LAALLI";
+    if (match[0] === match[0].toUpperCase()) return "Laalli";
+    return "laalli";
+  });
+}
+
 async function ttsArrayBuffer(voiceId: string, text: string, language: string): Promise<ArrayBuffer> {
   const apiKey = process.env.ELEVEN_LABS_API_KEY;
   if (!apiKey) throw new Error("ELEVENLABS_API_KEY missing");
@@ -245,7 +260,7 @@ export async function generateMergedNarration(
       console.error(`[TTS] No voice ID for speaker: ${l.speaker}`);
       return null;
     }
-    const ab = await ttsArrayBuffer(voiceId, l.text, language);
+    const ab = await ttsArrayBuffer(voiceId, applyPronunciationFixes(l.text), language);
     return { order: l.order, ab };
   });
 
