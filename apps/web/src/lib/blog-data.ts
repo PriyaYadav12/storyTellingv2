@@ -15,6 +15,65 @@ export interface BlogPost {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "is-ai-generated-content-safe-for-kids",
+    title: "Is AI-generated content safe for kids? A parent's guide",
+    excerpt:
+      "AI-generated stories are everywhere now, but \"AI\" covers everything from genuinely safe, well-guardrailed tools to open-ended generators that can produce literally anything. Here's how to tell the difference — and what to check before you trust an app with your child's bedtime.",
+    tag: "Technology & Safety",
+    tagColor: "#7C4DFF",
+    date: "16 Jun 2026",
+    readTime: "7 min read",
+    emoji: "🛡️",
+    image: "/lf-scene-safety-shield.png",
+    imgPosition: "center",
+    content: `
+<p><strong>AI-generated content can be completely safe for kids — but only when it's built with constraints from the start: a fixed story engine with pre-approved themes and lessons, no open-ended prompts a child or parent can type freely, no ads or tracking, and private storage that never shares your child's data.</strong> The same underlying AI models that can write anything can also be wrapped in guardrails that make them write only age-appropriate, on-brand stories — the difference is entirely in how the app is built, not in the AI itself.</p>
+
+<p>As a parent, "AI-generated" can sound like a red flag — understandably, since most people's mental model of AI is an open chatbot that can be coaxed into producing almost anything. But that's just one way to use AI. Here's what to actually look for.</p>
+
+<h2>1. Can the app generate "anything," or does it work from a fixed menu?</h2>
+
+<p>This is the single most important question. An open-ended AI tool — type any prompt, get any story — has no real ceiling on what it might produce, even with a content filter bolted on afterwards. Filters can be worked around, and they're reactive: they catch problems after generation, not before.</p>
+
+<p>A safer design flips this around: the app defines a fixed set of themes (space adventure, jungle expedition, festival celebration, and so on) and a fixed set of lessons (kindness, courage, sharing, perseverance). The AI's job is to weave your child's name, age, and preferences into <em>one of those pre-approved combinations</em> — not to write whatever it wants. The creative range is wide enough to feel fresh every time, but the boundaries were set by humans before a single story was generated.</p>
+
+<h2>2. Is there a human-designed story structure underneath?</h2>
+
+<p>Good children's stories aren't just "anything that uses the right words" — they follow structures that work for young minds: a clear beginning, a gentle challenge, a resolution, and a takeaway. If an AI app has multiple narrative structures and a defined lesson library built by people who thought about child development, the AI is filling in a template that was already designed to be appropriate — it's not improvising the shape of the story too.</p>
+
+<p>We wrote about this in more depth in <a href="/blog/how-we-use-ai-to-create-stories-that-feel-human">how we use AI to create stories that feel human</a> — the short version is that the "AI" part is doing less than people assume, and the "designed by humans" part is doing more.</p>
+
+<h2>3. What happens to your child's data?</h2>
+
+<p>This matters as much as the content itself. Ask:</p>
+<ul>
+  <li><strong>What information is collected?</strong> Name, age, favourite colour/animal are typically enough for genuine personalisation — anything asking for much more should raise questions.</li>
+  <li><strong>Is it shared with third parties?</strong> Look for an explicit "we never share personal data" statement, not just silence on the topic.</li>
+  <li><strong>Is it stored privately per account?</strong> Stories and profile details should not be visible to other users or public by default.</li>
+  <li><strong>Are there ads or tracking pixels?</strong> An app that's free because of advertising is, in some sense, paid for with your child's attention and data. Ad-free, subscription-or-free models align the app's incentives with your child's experience rather than against it.</li>
+</ul>
+
+<p>You can see exactly how we answer these questions for Lalli Fafa on our <a href="/learn">FAQ page</a> — including which AI models we use and why.</p>
+
+<h2>4. Who's actually generating the images and voices?</h2>
+
+<p>Illustrations and narration are also "AI-generated" in most modern story apps, and the same logic applies: an image model given total freedom can produce inconsistent, occasionally strange results, while one constrained to a fixed art style, fixed character designs, and a locked colour palette produces something that looks like it belongs in the same book every time. For narration, look for warm, calm, purpose-built voices rather than generic text-to-speech — the difference is obvious within the first few seconds of listening, and it's a good proxy for how much care went into the rest of the app.</p>
+
+<h2>5. A quick safety checklist</h2>
+
+<p>Before trusting any AI story app with your child, check whether you can answer "yes" to each of these:</p>
+<ul>
+  <li>Does the app generate from a fixed set of themes and lessons, rather than an open prompt?</li>
+  <li>Is there a clear privacy statement saying personal data isn't shared?</li>
+  <li>Is the app ad-free, with nothing appearing after a story ends?</li>
+  <li>Are illustrations and narration consistent in style — a sign of a constrained, designed pipeline rather than raw output?</li>
+  <li>Could you read the FAQ and explain to another parent, in plain language, how the story is generated?</li>
+</ul>
+
+<p>If you can say yes to all five, the "AI" in "AI-generated" is doing exactly what it should — handling the heavy lifting of personalisation and production, inside boundaries set by people who thought carefully about what belongs in a bedtime story. That's the bar we hold <a href="/generate">Lalli Fafa</a> to: a fixed story engine, pre-approved themes and lessons, no ads, no tracking, and private storage — generating something new every night without ever generating something unexpected. Read more in our <a href="/blog/best-bedtime-story-apps-for-kids-india">guide to choosing a bedtime story app</a>, or see our <a href="/pricing">plans</a> to try it yourself.</p>
+    `,
+  },
+  {
     slug: "best-bedtime-story-apps-for-kids-india",
     title: "Best bedtime story apps for kids in India: what to look for",
     excerpt:

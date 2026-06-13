@@ -17,6 +17,14 @@ export const metadata: Metadata = {
     description:
       "We believe every child deserves to be the hero of their own story. Here's why we built Lalli Fafa, and what we stand for.",
     url: `${BASE}/about`,
+    images: [
+      {
+        url: `${BASE}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "About Lalli Fafa — our mission and values",
+      },
+    ],
   },
 };
 

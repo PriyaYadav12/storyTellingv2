@@ -14,6 +14,14 @@ export const metadata: Metadata = {
     title: "Lalli Fafa Story Themes — Personalised for your child",
     description: "10+ story themes. Your child is always the hero.",
     url: "https://www.lallifafa.com/stories",
+    images: [
+      {
+        url: "https://www.lallifafa.com/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Lalli Fafa Story Themes — adventure, friendship, space and more",
+      },
+    ],
   },
 };
 

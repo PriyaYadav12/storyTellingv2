@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     description:
       "Everything you need to know about Lalli Fafa — personalised stories, bilingual narration, safety, and pricing.",
     url: `${BASE}/learn`,
+    images: [
+      {
+        url: `${BASE}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "Lalli Fafa FAQ — common questions answered",
+      },
+    ],
   },
 };
 

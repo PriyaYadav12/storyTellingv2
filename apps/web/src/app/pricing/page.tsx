@@ -19,6 +19,14 @@ export const metadata: Metadata = {
     description:
       "Start free with 250 credits (≈4 stories). Upgrade anytime to Magic Pass for ₹199/month.",
     url: `${BASE}/pricing`,
+    images: [
+      {
+        url: `${BASE}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "Lalli Fafa Pricing — Free plan and Magic Pass subscription",
+      },
+    ],
   },
 };
 
