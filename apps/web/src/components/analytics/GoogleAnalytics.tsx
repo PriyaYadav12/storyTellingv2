@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GOOGLE_ADS_ID = "AW-17812500793";
 
 /* ── Page-view tracker (must be inside Suspense for useSearchParams) ── */
 function PageViewTracker() {
@@ -39,6 +40,7 @@ export function GoogleAnalytics() {
             page_path: window.location.pathname,
             send_page_view: false
           });
+          gtag('config', '${GOOGLE_ADS_ID}');
         `}
       </Script>
       <Suspense fallback={null}>
