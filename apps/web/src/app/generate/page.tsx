@@ -27,6 +27,45 @@ import { toast } from "sonner";
 import { UserPill } from "@/components/layout/UserPill";
 import { trackStoryGenerated, trackUpgradeClick } from "@/lib/analytics";
 
+const THEME_ICONS: Record<string, string> = {
+  "Magical Forest": "🌳",
+  "Ocean Adventure": "🌊",
+  "Space Journey": "🚀",
+  "Jungle Safari": "🐘",
+  "Mountain Quest": "⛰️",
+  "Dinosaurs Park": "🦕",
+  "Dinosaur Park": "🦕",
+  "Birthday Party": "🎂",
+  "Circus Fun": "🎪",
+  "Desert Trek": "🏜️",
+  "Treasure Hunt": "🗺️",
+  "Ancient Kingdom": "🏰",
+  "Festival Night": "🎉",
+  "Cloud Kingdom": "☁️",
+  "Underwater City": "🐠",
+  "Village Fair": "🎡",
+};
+const DEFAULT_THEME_ICON = "✨";
+
+const LESSON_ICONS: Record<string, string> = {
+  Kindness: "💖",
+  Sharing: "🤝",
+  Honesty: "🌟",
+  Courage: "🦁",
+  Teamwork: "🙌",
+  "Caring for Nature": "🌱",
+  Respect: "🙏",
+  Gratitude: "💛",
+  Friendship: "👫",
+  Perseverance: "💪",
+  Creativity: "🎨",
+  Responsibility: "✅",
+};
+const DEFAULT_LESSON_ICON = "📖";
+
+// Subtle pastel backgrounds cycled across unselected cards for a bit of color variety.
+const CARD_TINTS = ["#FFF4E0", "#E6FAF6", "#F3EEFF", "#FFE8EC", "#E8F5E9", "#FFF9DB"];
+
 export default function GeneratePage() {
   const { isAuthenticated } = useConvexAuth();
 
@@ -284,22 +323,31 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
             {/* Theme */}
             <Section icon={<Sparkles size={18} />} title="Theme *">
-              <div className="flex flex-wrap gap-2">
-                {(themes ?? []).map((t: { name: string }) => (
-                  <button
-                    key={t.name}
-                    onClick={() => setTheme(theme === t.name ? "" : t.name)}
-                    className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
-                    style={{
-                      background: theme === t.name ? "var(--lf-dark)" : "#fff",
-                      border: `1.5px solid ${theme === t.name ? "var(--lf-dark)" : "rgba(0,0,0,0.1)"}`,
-                      color: theme === t.name ? "#fff" : "var(--lf-dark)",
-                      fontFamily: "'Nunito', sans-serif",
-                    }}
-                  >
-                    {t.name}
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {(themes ?? []).map((t: { name: string }, i: number) => {
+                  const isSelected = theme === t.name;
+                  return (
+                    <button
+                      key={t.name}
+                      onClick={() => setTheme(theme === t.name ? "" : t.name)}
+                      className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
+                      style={{
+                        background: isSelected ? "var(--lf-dark)" : CARD_TINTS[i % CARD_TINTS.length],
+                        border: `1.5px solid ${isSelected ? "var(--lf-dark)" : "rgba(0,0,0,0.06)"}`,
+                        color: isSelected ? "#fff" : "var(--lf-dark)",
+                        boxShadow: isSelected ? "0 4px 14px rgba(0,0,0,0.18)" : "none",
+                      }}
+                    >
+                      <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>
+                        {THEME_ICONS[t.name] ?? DEFAULT_THEME_ICON}
+                      </span>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
+                        {t.name}
+                      </span>
+                      {isSelected && <Check size={14} style={{ color: "var(--lf-teal)" }} />}
+                    </button>
+                  );
+                })}
               </div>
               {!theme && (
                 <p className="text-xs mt-1" style={{ color: "rgba(45,45,45,0.4)", fontFamily: "'Nunito', sans-serif" }}>
@@ -310,34 +358,47 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
             {/* Lesson */}
             <Section icon={<BookOpen size={18} />} title="Lesson (optional)">
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 <button
                   onClick={() => setLesson("")}
-                  className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
+                  className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
                   style={{
                     background: lesson === "" ? "var(--lf-teal)" : "#fff",
-                    border: `1.5px solid ${lesson === "" ? "var(--lf-teal)" : "rgba(0,0,0,0.1)"}`,
+                    border: `1.5px solid ${lesson === "" ? "var(--lf-teal)" : "rgba(0,0,0,0.08)"}`,
                     color: lesson === "" ? "#fff" : "var(--lf-dark)",
-                    fontFamily: "'Nunito', sans-serif",
+                    boxShadow: lesson === "" ? "0 4px 14px rgba(0,201,167,0.25)" : "none",
                   }}
                 >
-                  None
+                  <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>🚫</span>
+                  <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
+                    None
+                  </span>
+                  {lesson === "" && <Check size={14} />}
                 </button>
-                {(lessons ?? []).map((l: { name: string }) => (
-                  <button
-                    key={l.name}
-                    onClick={() => setLesson(lesson === l.name ? "" : l.name)}
-                    className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
-                    style={{
-                      background: lesson === l.name ? "var(--lf-teal)" : "#fff",
-                      border: `1.5px solid ${lesson === l.name ? "var(--lf-teal)" : "rgba(0,0,0,0.1)"}`,
-                      color: lesson === l.name ? "#fff" : "var(--lf-dark)",
-                      fontFamily: "'Nunito', sans-serif",
-                    }}
-                  >
-                    {l.name}
-                  </button>
-                ))}
+                {(lessons ?? []).map((l: { name: string }, i: number) => {
+                  const isSelected = lesson === l.name;
+                  return (
+                    <button
+                      key={l.name}
+                      onClick={() => setLesson(lesson === l.name ? "" : l.name)}
+                      className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
+                      style={{
+                        background: isSelected ? "var(--lf-teal)" : CARD_TINTS[(i + 1) % CARD_TINTS.length],
+                        border: `1.5px solid ${isSelected ? "var(--lf-teal)" : "rgba(0,0,0,0.06)"}`,
+                        color: isSelected ? "#fff" : "var(--lf-dark)",
+                        boxShadow: isSelected ? "0 4px 14px rgba(0,201,167,0.25)" : "none",
+                      }}
+                    >
+                      <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>
+                        {LESSON_ICONS[l.name] ?? DEFAULT_LESSON_ICON}
+                      </span>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
+                        {l.name}
+                      </span>
+                      {isSelected && <Check size={14} />}
+                    </button>
+                  );
+                })}
               </div>
             </Section>
 

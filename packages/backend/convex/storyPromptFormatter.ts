@@ -56,7 +56,7 @@ export function formatStoryPrompt(
       storyType: storyTypeName,
       storyTypeGuidance: storyTypeHint,
     },
-    instructions: "BEGIN STORY NOW. MANDATORY: The story body must be 430–450 words (title excluded, SCENE METADATA excluded). Count your words before finalising. Each of the 5 scenes must be approximately 85–90 words of story content. Do not go below 430 words and do not exceed 450 words.",
+    instructions: `BEGIN STORY NOW. MANDATORY: The story body must be 430–450 words (title excluded, SCENE METADATA excluded). Count your words before finalising. Each of the 5 scenes must be approximately 85–90 words of story content. Do not go below 430 words and do not exceed 450 words. MANDATORY: Every one of the 5 SCENE METADATA lines (Scene 1 through Scene 5) must explicitly name and visually describe ${childInfo.name} doing or noticing something — ${childInfo.name} must be a clearly visible, active character standing alongside Lalli and Fafa in EVERY scene's image description. Never write a scene description that only features Lalli and Fafa.`,
   };
 
   return JSON.stringify(payload, null, 2);

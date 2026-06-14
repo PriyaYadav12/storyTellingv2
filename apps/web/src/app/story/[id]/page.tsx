@@ -117,14 +117,59 @@ function splitSentences(text: string | null | undefined): string[] {
   return raw.map((s) => s.trim()).filter(Boolean);
 }
 
-/* Divide story.content into per-scene chunks by splitting paragraphs equally */
+/**
+ * Split story.content into numScenes chunks of roughly equal character length,
+ * breaking only at paragraph (line) boundaries.
+ *
+ * Why character-weighted instead of equal line counts? TTS speaking time is
+ * proportional to character count, not line count — a scene written as many
+ * short dialogue lines would otherwise grab a disproportionate share of the
+ * narration timeline under naive equal-line-count division, causing the
+ * subtitle and scene image to drift out of sync with the audio.
+ */
+function splitContentIntoScenes(content: string, numScenes: number): string[] {
+  if (!content || numScenes === 0) return [];
+  const paras = content.split("\n").map(l => l.trim()).filter(Boolean);
+  if (paras.length === 0) return Array.from({ length: numScenes }, () => "");
+  if (paras.length <= numScenes) {
+    return Array.from({ length: numScenes }, (_, i) => paras[i] ?? "");
+  }
+
+  const totalChars = paras.reduce((sum, p) => sum + p.length, 0);
+  const chunks: string[] = [];
+  let paraIdx = 0;
+  let charsUsed = 0;
+
+  for (let scene = 0; scene < numScenes; scene++) {
+    if (scene === numScenes - 1) {
+      chunks.push(paras.slice(paraIdx).join("\n"));
+      break;
+    }
+    const remainingScenes = numScenes - scene;
+    const remainingParas = paras.length - paraIdx;
+    const target = (totalChars * (scene + 1)) / numScenes;
+    const chunkParas: string[] = [];
+    let chunkChars = 0;
+    // Always take at least one paragraph, and leave at least one per remaining scene
+    while (
+      paraIdx < paras.length &&
+      remainingParas - chunkParas.length > remainingScenes - 1 &&
+      (chunkParas.length === 0 || charsUsed + chunkChars + paras[paraIdx].length <= target)
+    ) {
+      chunkChars += paras[paraIdx].length;
+      chunkParas.push(paras[paraIdx]);
+      paraIdx++;
+    }
+    charsUsed += chunkChars;
+    chunks.push(chunkParas.join("\n"));
+  }
+  return chunks;
+}
+
+/* Get a single scene's narrative text chunk */
 function getSceneTextChunk(content: string, sceneIndex: number, numScenes: number): string {
   if (!content || numScenes === 0) return "";
-  const paras = content.split("\n").map(l => l.trim()).filter(Boolean);
-  if (paras.length === 0) return "";
-  const chunkSize = Math.ceil(paras.length / numScenes);
-  const start = sceneIndex * chunkSize;
-  return paras.slice(start, start + chunkSize).join("\n").trim();
+  return splitContentIntoScenes(content, numScenes)[sceneIndex]?.trim() ?? "";
 }
 
 /* ── Comic narration helpers ── */
@@ -238,12 +283,8 @@ function buildSceneTimeline(
   numScenes: number
 ): Array<{ startFrac: number; endFrac: number }> {
   if (!content || numScenes === 0) return [];
-  const paras = content.split("\n").map(l => l.trim()).filter(Boolean);
-  const chunkSize = Math.ceil(paras.length / numScenes);
-  const charCounts = Array.from({ length: numScenes }, (_, i) => {
-    const chunk = paras.slice(i * chunkSize, (i + 1) * chunkSize);
-    return Math.max(1, chunk.join("").length);
-  });
+  const chunks = splitContentIntoScenes(content, numScenes);
+  const charCounts = chunks.map(c => Math.max(1, c.length));
   const total = charCounts.reduce((a, b) => a + b, 0);
   const timeline: Array<{ startFrac: number; endFrac: number }> = [];
   let cumulative = 0;
@@ -1144,6 +1185,23 @@ function StoryViewer({
                   </div>
                 </div>
               )}
+
+              {/* Preload the next couple of scene images so switching scenes is
+                  instant instead of showing a "Loading illustration…" spinner. */}
+              {[1, 2].map(offset => {
+                const idx = currentScene + offset;
+                const preloadUrl = idx < numScenes ? imageUrls?.[idx]?.url : null;
+                if (!preloadUrl) return null;
+                return (
+                  <div
+                    key={`preload-${idx}`}
+                    aria-hidden
+                    style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0, pointerEvents: "none" }}
+                  >
+                    <Image src={preloadUrl} alt="" fill loading="eager" />
+                  </div>
+                );
+              })}
 
               {/* Scene number badge */}
               <div

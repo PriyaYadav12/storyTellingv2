@@ -146,6 +146,12 @@ COMPOSITION GUIDELINES:
 • Child-friendly, warm lighting — no harsh shadows
 • Colourful, simple background that tells the scene's story without cluttering
 • All characters visible and on-model
+
+MANDATORY CHARACTER PRESENCE — DO NOT SKIP:
+This illustration MUST show ALL THREE characters together: Lalli, Fafa, AND ${child.name}.
+${child.name} must be clearly visible, on-model, and actively part of the scene in this image —
+even if the scene brief above focuses mainly on Lalli and Fafa's actions.
+An image containing only Lalli and Fafa without ${child.name} is INCORRECT and unacceptable.
 ${continuityPrompt}
 
 FINAL CHECK: The style must be flat 2D cartoon, pastel palette, soft cell-shading — matching the character reference image exactly. Any photorealism, 3D rendering, or style drift is unacceptable.
