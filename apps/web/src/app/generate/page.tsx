@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { UserPill } from "@/components/layout/UserPill";
+import { trackStoryGenerated, trackUpgradeClick } from "@/lib/analytics";
 
 export default function GeneratePage() {
   const { isAuthenticated } = useConvexAuth();
@@ -91,6 +92,11 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
           language: languageName,
           childId: hasSecondChild ? childId : undefined,
         },
+      });
+      trackStoryGenerated({
+        theme,
+        language: languageName === "Hindi" ? "Hindi" : "English",
+        length: "medium",
       });
       router.push(`/story/${result.storyId}`);
     } catch (err: unknown) {
@@ -178,7 +184,12 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
             </span>
           </div>
           {!isLoading && availableCredits < 120 && (
-            <Link href="/pricing" className="text-xs font-semibold" style={{ color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif" }}>
+            <Link
+              href="/pricing"
+              onClick={() => trackUpgradeClick("monthly", "generate_credits_banner")}
+              className="text-xs font-semibold"
+              style={{ color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif" }}
+            >
               Top up →
             </Link>
           )}
@@ -336,7 +347,12 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                 <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, color: "#b83030", textAlign: "center", fontSize: "0.95rem" }}>
                   You&apos;re out of credits. Top up to generate stories!
                 </p>
-                <Link href="/pricing" className="btn-primary" style={{ justifyContent: "center" }}>
+                <Link
+                  href="/pricing"
+                  onClick={() => trackUpgradeClick("monthly", "generate_out_of_credits")}
+                  className="btn-primary"
+                  style={{ justifyContent: "center" }}
+                >
                   <Zap size={16} /> View plans
                 </Link>
               </div>
@@ -345,7 +361,13 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                 {!canAfford && (
                   <p className="text-sm text-center" style={{ color: "#b83030", fontFamily: "'Nunito', sans-serif" }}>
                     Not enough credits ({availableCredits} available, {CREDIT_COST} needed).{" "}
-                    <Link href="/pricing" style={{ color: "var(--lf-teal)", fontWeight: 600 }}>Top up →</Link>
+                    <Link
+                      href="/pricing"
+                      onClick={() => trackUpgradeClick("monthly", "generate_insufficient_credits")}
+                      style={{ color: "var(--lf-teal)", fontWeight: 600 }}
+                    >
+                      Top up →
+                    </Link>
                   </p>
                 )}
                 <button

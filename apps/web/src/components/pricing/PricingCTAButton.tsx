@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
+import { trackUpgradeClick } from "@/lib/analytics";
 
 interface PricingCTAButtonProps {
   planInterval: "monthly" | "yearly" | "free";
@@ -28,6 +29,7 @@ export function PricingCTAButton({
       router.push("/sign-up");
       return;
     }
+    trackUpgradeClick(planInterval, "pricing_page");
     // Always go to /checkout — the checkout page resolves auth and redirects to
     // Razorpay (logged in) or to sign-in with redirect back here (logged out).
     router.push(`/checkout?plan=${planInterval}`);

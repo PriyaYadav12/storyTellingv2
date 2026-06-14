@@ -36,6 +36,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { UserPill } from "@/components/layout/UserPill";
+import { trackUpgradeClick } from "@/lib/analytics";
 
 /* ──────────────────── helpers ───────────────────────── */
 
@@ -772,6 +773,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-6">
                   <Link
                     href="/pricing"
+                    onClick={() => trackUpgradeClick("monthly", "profile_get_more_credits")}
                     className="btn-primary"
                     style={{ justifyContent: "center", padding: "0.9rem", fontSize: "1rem" }}
                   >
