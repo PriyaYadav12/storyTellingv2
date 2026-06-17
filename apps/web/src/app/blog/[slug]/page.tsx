@@ -74,12 +74,30 @@ export default async function BlogPostPage({
     mainEntityOfPage: { "@type": "WebPage", "@id": `${BASE}/blog/${slug}` },
   };
 
+  const faqSchema = post.faqs?.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: post.faqs.map(({ q, a }) => ({
+          "@type": "Question",
+          name: q,
+          acceptedAnswer: { "@type": "Answer", text: a },
+        })),
+      }
+    : null;
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
       <SiteHeader />
       <main style={{ background: "linear-gradient(160deg,#FFF8E7 0%,#E6FAF6 50%,#F3EEFF 100%)" }}>
 
@@ -161,6 +179,55 @@ export default async function BlogPostPage({
                 className="blog-content"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
+
+              {/* Q&A section */}
+              {post.faqs && post.faqs.length > 0 && (
+                <div className="mt-12">
+                  <h2
+                    style={{
+                      fontFamily: "'Baloo 2', sans-serif",
+                      fontWeight: 800,
+                      fontSize: "1.3rem",
+                      color: "var(--lf-dark)",
+                      marginBottom: "1.25rem",
+                    }}
+                  >
+                    Common questions
+                  </h2>
+                  <div className="flex flex-col gap-4">
+                    {post.faqs.map(({ q, a }) => (
+                      <div
+                        key={q}
+                        className="flex flex-col gap-2 p-5 rounded-2xl"
+                        style={{ background: "rgba(255,255,255,0.85)", border: "1.5px solid rgba(0,0,0,0.07)" }}
+                      >
+                        <h3
+                          style={{
+                            fontFamily: "'Baloo 2', sans-serif",
+                            fontWeight: 700,
+                            fontSize: "1rem",
+                            color: "var(--lf-dark)",
+                            margin: 0,
+                          }}
+                        >
+                          {q}
+                        </h3>
+                        <p
+                          style={{
+                            fontFamily: "'Nunito', sans-serif",
+                            fontSize: "0.95rem",
+                            color: "rgba(45,45,45,0.72)",
+                            lineHeight: 1.8,
+                            margin: 0,
+                          }}
+                        >
+                          {a}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Author strip */}
               <div

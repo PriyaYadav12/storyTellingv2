@@ -11,6 +11,7 @@ export interface BlogPost {
   imgPosition?: string;
   featured?: boolean;
   content: string; // HTML string
+  faqs?: { q: string; a: string }[];
 }
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -72,6 +73,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>If you can say yes to all five, the "AI" in "AI-generated" is doing exactly what it should — handling the heavy lifting of personalisation and production, inside boundaries set by people who thought carefully about what belongs in a bedtime story. That's the bar we hold <a href="/generate">Lalli Fafa</a> to: a fixed story engine, pre-approved themes and lessons, no ads, no tracking, and private storage — generating something new every night without ever generating something unexpected. Read more in our <a href="/blog/best-bedtime-story-apps-for-kids-india">guide to choosing a bedtime story app</a>, or see our <a href="/pricing">plans</a> to try it yourself.</p>
     `,
+    faqs: [
+      {
+        q: "Is AI-generated content safe for children?",
+        a: "AI-generated content can be completely safe for children when the app is built with constraints from the start — a fixed set of themes and lessons, no open-ended prompts, no ads, and private data storage. The safety depends on how the app is built, not on the AI technology itself.",
+      },
+      {
+        q: "How do I know if an AI story app is safe for my child?",
+        a: "Check whether the app generates stories from a fixed, pre-approved menu of themes and lessons rather than letting you type any prompt freely, has a clear privacy statement saying personal data is not shared, is completely ad-free, and has consistent illustration and narration style. If you can answer yes to all four, the app was designed with safety as a first principle.",
+      },
+      {
+        q: "What information should an AI story app collect about my child?",
+        a: "A well-designed personalised story app needs very little: typically your child's name, age, and a few favourite things such as their favourite animal, colour, or activity. Anything asking for significantly more personal information should raise questions. Stories generated from just these basics can still be rich and genuinely personalised.",
+      },
+    ],
   },
   {
     slug: "best-bedtime-story-apps-for-kids-india",
@@ -133,6 +148,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>If you can answer those five questions confidently for an app, you've found something worth adding to the routine. This is exactly the bar we built <a href="/generate">Lalli Fafa</a> to meet — personalised stories about your child, narrated calmly in English or Hindi, with nothing waiting at the end except a good night. See our <a href="/pricing">plans</a> to get started, or read about <a href="/blog/bedtime-routine-for-working-parents">building a routine that survives a busy weekday</a>.</p>
     `,
+    faqs: [
+      {
+        q: "What makes a bedtime story app good for children in India?",
+        a: "The best bedtime story apps for children in India offer real personalisation where your child is the actual hero rather than a name-swap template, genuine bilingual narration in English and Hindi with native pronunciation, calm pacing designed to bring energy down rather than up, and a completely ad-free experience where nothing plays after the story ends.",
+      },
+      {
+        q: "Are there story apps for kids that support Hindi narration in India?",
+        a: "Yes, but the quality varies significantly. Look specifically for apps where the Hindi narration is native in quality — not a translation being read aloud, and not robotic text-to-speech. The difference is immediately obvious within the first ten seconds of listening. Well-built Hindi narration sounds like a story that was always meant to be told in Hindi.",
+      },
+      {
+        q: "Should bedtime story apps for children be ad-free?",
+        a: "Yes — this is non-negotiable for bedtime specifically. The moment a story ends and an ad or watch-next prompt appears, the calm, sleep-ready state your child was in gets interrupted by exactly the kind of stimulating content you were trying to avoid. A good bedtime story app ends with quiet, not more content.",
+      },
+    ],
   },
   {
     slug: "diwali-stories-for-kids-why-festival-stories-matter",
@@ -178,6 +207,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>This festival season, instead of (or alongside) the usual stories, try one set during the celebration itself — diyas, rangoli, sweets, family — with your child as the one at the centre of it. It tends to become the story they ask for again next year, when the diyas are out again and the feeling comes flooding back. <a href="/generate">Create a Diwali story for your child</a> in English or Hindi in under two minutes.</p>
     `,
+    faqs: [
+      {
+        q: "Why are Diwali stories good for children?",
+        a: "Festival stories teach values through celebration rather than instruction — a Diwali story about light, sharing sweets, and togetherness lands as joy first and lesson second, which is exactly the order that makes things stick for young children. Diwali stories are especially effective because children are already living inside the theme: the diyas, the smell of mithai, the family gathering around them.",
+      },
+      {
+        q: "What values can Diwali stories teach children?",
+        a: "Diwali stories naturally carry ideas that are genuinely useful for children: light overcoming darkness — a feeling children understand viscerally — generosity through sharing sweets and gifts, the renewal of cleaning and preparing your space, and togetherness that is particularly meaningful for families with relatives in different cities. The most effective approach is letting children experience these values through the story rather than announcing them as lessons.",
+      },
+      {
+        q: "How do I make a Diwali story feel personal for my child?",
+        a: "Put your child in the story as the character — not as an observer watching someone else celebrate, but as the one lighting the last diya in the rangoli or sharing their sparkler with a friend who could not come. When children experience a festival through a character who is unmistakably them, the celebration stops feeling like something they watch and starts feeling like something that is truly theirs.",
+      },
+    ],
   },
   {
     slug: "personalised-stories-vs-storybooks",
@@ -227,6 +270,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>Used this way, personalised stories aren't a replacement for the bookshelf. They're a tool that does something the bookshelf can't — meeting your child exactly where they are, as the hero of their own night. <a href="/generate">Try it free</a> and see how your child reacts to hearing their own name in the story.</p>
     `,
+    faqs: [
+      {
+        q: "Are personalised stories better than regular storybooks for children?",
+        a: "They do different jobs. Traditional storybooks build shared cultural references, expose children to lives unlike their own, and often have illustration and craft that is hard to match. Personalised stories do one specific thing storybooks structurally cannot: they let a child experience themselves as the protagonist, which research links to higher self-efficacy and stronger identification with the story's lessons. Most families find the best approach is both.",
+      },
+      {
+        q: "What is the self-reference effect in children's stories?",
+        a: "The self-reference effect is a well-documented psychological phenomenon: people remember and engage more deeply with information connected to themselves. For children, a story about a character with their name, their interests, and their personality activates a fundamentally different kind of engagement than a story about a generic character. They stop being observers and become active participants — rehearsing choices and feelings as if they were real.",
+      },
+      {
+        q: "Do personalised children's stories actually help with behaviour and confidence?",
+        a: "Research suggests yes, with a specific mechanism: personalised stories move children from rule-following — I should share — to identity-based behaviour — I am the kind of person who shares. When a child repeatedly hears themselves as brave, kind, or resourceful in a story, those traits start to feel true. Not as empty praise, but as narrative evidence that becomes part of how they see themselves.",
+      },
+    ],
   },
   {
     slug: "bedtime-routine-for-working-parents",
@@ -282,6 +339,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>That's a routine that survives real life. And real life is the only kind there is. For the longer-form version of this routine, see <a href="/blog/bedtime-routine-that-actually-works">our full guide to a bedtime routine that actually works</a>.</p>
     `,
+    faqs: [
+      {
+        q: "How can working parents create a consistent bedtime routine?",
+        a: "Protect three core elements even on the busiest nights: a consistent signal that bedtime has started such as dimming lights or a specific phrase, five to seven minutes of body care in a fixed order, and a story — even a short one. A 20-minute routine done consistently most nights is significantly better for children than a 45-minute routine done only when time allows.",
+      },
+      {
+        q: "What is the most important part of a child's bedtime routine?",
+        a: "The story. It is the most tempting element to cut when you are exhausted, and the one that matters most. A story is what your child will remember about the day. It is what makes bedtime feel like connection rather than just a sequence of tasks — and it is what signals to a child's brain that the day has ended with someone paying attention to them.",
+      },
+      {
+        q: "How do I keep bedtime consistent when I get home late from work?",
+        a: "Keep the shape of the routine the same even when time is short. The consistency of the sequence — signal, body care, story, lights — is what trains a child's brain to expect sleep. Shortening each step is far less disruptive than skipping steps or changing the order. Even a 15-minute version of the routine, done every night, builds the neurological cues that a longer but irregular routine cannot.",
+      },
+    ],
   },
   {
     slug: "why-personalised-stories-build-confidence",
@@ -342,6 +413,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>The research is clear, the mechanism is understood, and the application has never been simpler. The next story you tell your child could be the one they carry inside them for the rest of their life.</p>
     `,
+    faqs: [
+      {
+        q: "How do personalised stories build confidence in children?",
+        a: "When a child hears their own name in a story and sees themselves as the hero navigating a real challenge, their brain shifts from passive audience to active participant. A 2019 study found that children aged 4 to 6 who regularly heard personalised stories showed measurably higher self-efficacy — a stronger belief that they could handle challenges — compared to children who heard the same stories with generic characters. Over time, this creates a confidence loop: the child begins to internalise the qualities the story gives them.",
+      },
+      {
+        q: "From what age do personalised stories help build confidence?",
+        a: "The effect is measurable from around age 3, when narrative identity — the story a child constructs about who they are — begins forming. The richest impact tends to be between ages 3 and 8, when children are most deeply engaged in character-identification and when self-concept is most actively being built. For children struggling with confidence in a specific area, a personalised story where their character succeeds at that very thing can be particularly powerful.",
+      },
+      {
+        q: "What makes a personalised story genuinely effective for a child?",
+        a: "Effective personalisation goes beyond swapping in a child's name. The richest impact comes when the story incorporates their genuine interests, reflects real traits they demonstrate, presents age-appropriate challenges that feel real to them, and offers a resolution they can model. A child whose love of elephants is woven into the logic of a story — not just mentioned as a passing detail — experiences the personalisation as something deeper than a name-swap.",
+      },
+    ],
   },
   {
     slug: "bedtime-routine-that-actually-works",
@@ -406,6 +491,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>Start tonight. Even an imperfect routine, done consistently, is vastly better than a perfect routine done sporadically.</p>
     `,
+    faqs: [
+      {
+        q: "What is the best bedtime routine for children aged 2 to 8?",
+        a: "Sleep science points to four consistent elements: a wind-down signal that is the same cue every night that active time is ending, body care in a fixed order, a calm story of 10 to 15 minutes, and a short transition to lights-out. The total should be 25 to 35 minutes. What matters more than length is consistency — the same sequence, at roughly the same time, most nights. That predictability is what trains a child's nervous system to expect sleep.",
+      },
+      {
+        q: "Why do children resist going to bed?",
+        a: "Primarily because sleep is not a switch — it is a gradual state the nervous system needs to be guided into over 20 to 40 minutes. Children who are exposed to stimulating screens close to bedtime are physiologically not ready to sleep when they are asked to, regardless of how tired they are. Inconsistency makes this worse: a routine that varies nightly fails to build the neurological cues that signal sleep is coming now.",
+      },
+      {
+        q: "How important is a bedtime story in a child's routine?",
+        a: "Very. A bedtime story serves three functions simultaneously: it gives the child a reason to get into bed willingly, provides a gentle emotional download for the day, and transitions the brain into the narrative imaginative mode that is closest to the dreaming state. Children who have consistent, story-rich bedtime routines in early childhood show measurably lower anxiety levels in primary school — not because of the sleep itself, but because of what the daily ritual communicated about their world.",
+      },
+    ],
   },
   {
     slug: "hindi-storytelling-bilingual-families",
@@ -465,6 +564,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>That grandparent is irreplaceable. But when they're not there, a story in the right language is the next best thing.</p>
     `,
+    faqs: [
+      {
+        q: "Why are Hindi stories important for bilingual children?",
+        a: "Language is not just a communication tool — it is the medium in which emotion is stored and identity is anchored. Hindi, or any first-language mother tongue, triggers deeper emotional processing than a second language. When a child hears a story in Hindi, particularly in the cadences of home and family, it lands in a different part of their experience than an English story does. Both have value, but they are doing different things.",
+      },
+      {
+        q: "Does reading to children in Hindi help their English development?",
+        a: "Yes — research on bilingual language development is clear that a strong first language supports, not hinders, second language acquisition. Children with robust Hindi build a richer conceptual base that English vocabulary maps onto more deeply. Investing in Hindi stories during ages 2 to 8 is not a trade-off against English development; it is the foundation that makes English richer too.",
+      },
+      {
+        q: "What do children miss when all their stories are in English?",
+        a: "Children who receive all their narrative content in English — even when they speak Hindi at home — sometimes struggle to access Hindi as an expressive language. They can follow conversation but cannot tell a story in it. Hindi also carries concepts that have no English equivalent: himmat for earned, warm courage; jugaad for creative problem-solving under constraints; mann ki baat for the unspoken feelings of the heart. These concepts arrive through Hindi stories in a way translation cannot replicate.",
+      },
+    ],
   },
   {
     slug: "how-we-use-ai-to-create-stories-that-feel-human",
@@ -523,6 +636,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>That's a collaboration we feel good about.</p>
     `,
+    faqs: [
+      {
+        q: "Why do AI-generated children's stories often feel hollow?",
+        a: "Most AI children's stories get the what right — the plot, the character arc, the moral — but miss the how: the specific texture of language that makes a story feel warm. They tell emotions rather than showing them, resolve conflicts without the genuine messiness that makes resolution satisfying, and generate characters with names but not personalities. The result is technically correct but emotionally empty.",
+      },
+      {
+        q: "What makes an AI children's story feel warm and human?",
+        a: "Specificity over generality, conflict before comfort, showing feelings before naming them, and language calibrated to the child's age without being dumbed down. Beyond craft, genuine personalisation — where a child's interests and traits are woven into the story's logic rather than sprinkled as surface decoration — is what makes an AI story feel like it was written for your child specifically, not generated for children generally.",
+      },
+      {
+        q: "Can AI replace the warmth of a parent reading a bedtime story?",
+        a: "No — and good AI storytelling tools do not try to. A parent's voice, presence, and knowledge of their specific child is irreplaceable. What AI can do is give you a beautifully crafted, genuinely personalised story in two minutes — one that you then read to your child in your voice, at your pace. The AI is the writer; you are the storyteller. That collaboration is what makes it work.",
+      },
+    ],
   },
   {
     slug: "teaching-kindness-through-storytelling",
@@ -579,6 +706,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>The story did the heavy lifting. Your job is to hold the space for your child to discover what it means — for themselves, in their own words.</p>
     `,
+    faqs: [
+      {
+        q: "Why does telling a child to be kind not change their behaviour?",
+        a: "Because it is an abstract instruction delivered in a moment of conflict, when the brain is least receptive to abstract reasoning. It asks a child's underdeveloped prefrontal cortex to override an immediate emotional impulse using a concept they have been told but have not felt. Stories bypass this entirely: they create vicarious emotional experiences of kindness that become emotional memories, and emotional memories shape behaviour far more powerfully than rules do.",
+      },
+      {
+        q: "How do stories teach children to be kind?",
+        a: "Through narrative transportation — the psychological phenomenon where a listener becomes so absorbed in a story that their brain begins processing fictional events as real experiences. For children, who have more permeable boundaries between imagination and reality than adults, this is especially powerful. When a child inhabits a story where a character chooses kindness at real personal cost, they do not just observe the choice — they experience it. That vicarious experience creates an emotional memory that instruction cannot.",
+      },
+      {
+        q: "What kind of kindness stories work best for young children?",
+        a: "Stories where kindness costs something. The character should be genuinely tempted not to be kind — hungry but sharing their last biscuit, tired but helping a friend anyway. The moment of internal struggle before the kind choice is what makes the lesson stick: the child experiences the difficulty and the warm resolution as a complete emotional arc. Stories where kindness is effortless, or where the character is already saintly, do not create the same emotional imprint.",
+      },
+    ],
   },
   {
     slug: "science-behind-audio-stories-and-childrens-memory",
@@ -649,6 +790,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>Your child's brain was built for this. It has been, for hundreds of thousands of years.</p>
     `,
+    faqs: [
+      {
+        q: "Why do children remember audio stories better than things they have watched or read?",
+        a: "Because audio requires active construction. When a child listens to a story without visuals, their brain generates the images, voices, and settings itself — and that active mental construction is itself a memory-formation process. Video does the imagining for you; audio makes you imagine. When you have imagined something, you own it in a way you do not when it has been shown to you. This is why you can recall the plot of a story heard at age five in vivid detail decades later.",
+      },
+      {
+        q: "Are audio stories better than video content for young children?",
+        a: "For memory retention and imagination development, yes. Studies comparing audio and video stories in children aged 3 to 8 consistently find that audio produces better story comprehension and retention. Audio also avoids the blue-light problem that disrupts sleep, does not trigger the just-one-more pattern that visual content creates, and activates imaginative processing that is strongly associated with vocabulary development and emotional intelligence.",
+      },
+      {
+        q: "What is neural coupling and why does it matter for children's stories?",
+        a: "Neural coupling is the phenomenon discovered by Princeton researchers where a listener's brain patterns begin to mirror those of the speaker telling a story. The more tightly coupled the brains, the better the listener comprehends and remembers the story. This coupling effect is stronger with audio than with text, and particularly strong in children whose visual processing systems are still developing. It is part of why oral storytelling has been the primary way humans pass knowledge across generations for most of history.",
+      },
+    ],
   },
   {
     slug: "screen-time-vs-story-time-research",
@@ -718,6 +873,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>What matters most isn't whether the screen is on. It's whether the story is too.</p>
     `,
+    faqs: [
+      {
+        q: "Is all screen time equally bad for young children?",
+        a: "No — and the research is clear on this. The type of content and context of viewing matter enormously. Passive, fast-paced commercial content such as most YouTube videos is consistently associated with reduced attention spans and disrupted sleep in children under 5. Co-viewed, slower-paced, educational content shows far smaller negative effects. The concern is not screens themselves; it is what is on them and whether an adult is present.",
+      },
+      {
+        q: "How much story time should children get each day?",
+        a: "Research points to 20 minutes of shared story time per day as the threshold associated with meaningful benefits — larger vocabulary, stronger narrative comprehension, better emotional regulation, and higher reading readiness. This can be read-aloud, audio stories, or narrated together. What matters most is that it happens most days and that stories are available in both the child's languages if they are bilingual.",
+      },
+      {
+        q: "Are audio stories a good alternative to screen time at bedtime?",
+        a: "Yes — among the most evidence-backed alternatives available. Audio stories have none of the downsides of visual screens: no blue light, no fast-cutting, no passive consumption. They preserve many benefits of traditional story time: narrative immersion, vocabulary exposure, and emotional processing. Research on children aged 3 to 8 consistently shows that audio stories outperform video for memory retention and produce better sleep preparation than screen content.",
+      },
+    ],
   },
   {
     slug: "indian-values-children-stories",
@@ -776,6 +945,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>That's the real magic of India's storytelling tradition. It was never about entertainment alone. It was always about shaping the person who listened.</p>
     `,
+    faqs: [
+      {
+        q: "How can Indian parents teach values to children through stories?",
+        a: "The most effective approach is to let the story come first and the lesson second — so naturally that the child does not realise they have received one. Stories from the Panchatantra, Jataka Tales, and Indian oral traditions work because they embed values like honesty, generosity, and courage in vivid narrative situations rather than announcing them as morals. The child experiences the value through a character's choice, which is far more lasting than being told what is right.",
+      },
+      {
+        q: "What Indian values can be taught through children's stories?",
+        a: "The richest terrain includes respect for elders through stories where an elder's wisdom solves the problem, generosity where sharing is shown to be intelligent rather than just virtuous, courage where the character is genuinely afraid and acts anyway, ahimsa where the solution is always kind even toward the antagonist, and community over self where individual success feels hollow without togetherness. The key with all of them is showing the value in action rather than stating it as a principle.",
+      },
+      {
+        q: "Why is the Panchatantra good for children?",
+        a: "The Panchatantra is one of the world's oldest collections of fables specifically designed to teach values and wisdom through animals and adventure. Its stories work for children because they embed practical lessons — honesty, loyalty, the consequences of greed — in entertaining plots with memorable characters, rather than presenting wisdom as abstract instruction. The lessons arrive as story first; the principle crystallises only afterwards, which is exactly the right order for young minds.",
+      },
+    ],
   },
   {
     slug: "how-to-raise-a-reader-indian-parents",
@@ -853,6 +1036,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>Everything else is scaffolding around that central fact.</p>
     `,
+    faqs: [
+      {
+        q: "How do I raise a child who loves reading?",
+        a: "The foundational step is ensuring reading is experienced as pleasure before it is experienced as work. Children who associate stories with warmth, laughter, and closeness before they can read a word become readers. Read to them from infancy. Let them choose what they read, even if it is comics. Keep reading aloud even after they can read themselves — being read to at a level above one's own reading ability expands vocabulary faster than independent reading alone.",
+      },
+      {
+        q: "When should I start reading to my child?",
+        a: "From birth. Babies do not understand words, but they understand rhythm, tone, and the face of the person telling the story. The goal at this stage is not comprehension — it is association. You are teaching your child's nervous system that the sound of a story means safety, closeness, and pleasure. That association, built from the earliest weeks of life, is the foundation every later love of reading rests on.",
+      },
+      {
+        q: "Should I read to my child in Hindi or English?",
+        a: "Both, ideally — and in Hindi particularly if it is the language of your home and family. Children who read in their mother tongue first learn to read in English faster, not slower. A child with strong Hindi has a richer conceptual base to map English vocabulary onto. Stories in Hindi also carry cultural and emotional content that English cannot fully replicate, particularly important for children growing up in India or bilingual households.",
+      },
+    ],
   },
   {
     slug: "why-children-ask-for-same-story-repeatedly",
@@ -916,6 +1113,20 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>There will be a last time they ask for that book. You won't know it's the last time when it happens. Let yourself enjoy it while it lasts.</p>
     `,
+    faqs: [
+      {
+        q: "Why does my child keep asking for the same story every night?",
+        a: "Because their brain is doing important work with it. Each repetition of a familiar story adds a new layer: the first time, a child tracks the plot; the second time, they notice character motivations; by the tenth time, they have internalised the narrative structure and are using it as a template to understand other stories. Repetition is also emotional regulation — a story with a known ending lets a child experience narrative tension without the anxiety of genuine uncertainty.",
+      },
+      {
+        q: "Is it normal for children to want the same book every night?",
+        a: "Completely normal — and a sign that their brain is developing healthily. Before around age 7, children's primary learning mechanism is repetition and pattern recognition, not novelty-seeking. Therapists and developmental psychologists view repetitive story engagement as a healthy sign of emotional processing and cognitive scaffolding, not a developmental concern. The moment your child starts correcting you when you skip a page is a sign they have mastered the story — a significant developmental achievement.",
+      },
+      {
+        q: "How do I gently introduce new stories when my child only wants one?",
+        a: "Add rather than replace. Keep the beloved story in the routine as an anchor and introduce new, shorter stories alongside it — before or after, not instead. Use their interests as a bridge: if the favourite story features a dog, introduce a new story that also has a dog. Letting children choose from two or three options also helps — children with agency over story choice engage more deeply with new material than children whose books are chosen for them.",
+      },
+    ],
   },
 ];
 
