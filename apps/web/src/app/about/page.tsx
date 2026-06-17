@@ -295,6 +295,59 @@ export default function AboutPage() {
             }),
           }}
         />
+        {/* Founder entity for GEO / E-E-A-T */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              name: "Raj Kothari",
+              jobTitle: "Founder",
+              worksFor: {
+                "@type": "Organization",
+                name: "Lalli Fafa",
+                url: BASE,
+              },
+              url: `${BASE}/about`,
+            }),
+          }}
+        />
+
+        {/* Founder */}
+        <section className="mx-auto px-5 py-14" style={{ maxWidth: 800 }}>
+          <h2
+            style={{
+              fontFamily: "'Baloo 2', sans-serif",
+              fontWeight: 800,
+              fontSize: "clamp(1.4rem,3vw,1.9rem)",
+              color: "var(--lf-dark)",
+              marginBottom: "1.5rem",
+              textAlign: "center",
+            }}
+          >
+            Built by a parent, for parents
+          </h2>
+          <div
+            className="flex flex-col md:flex-row items-start gap-6 p-7 rounded-3xl"
+            style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)" }}
+          >
+            <div
+              className="flex items-center justify-center rounded-2xl flex-shrink-0 text-3xl"
+              style={{ width: 64, height: 64, background: "rgba(0,201,167,0.1)" }}
+            >
+              👋
+            </div>
+            <div>
+              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "1.05rem", color: "var(--lf-dark)", marginBottom: "0.4rem" }}>
+                Raj Kothari — Founder
+              </p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.7)", lineHeight: 1.8 }}>
+                Lalli Fafa was built by an Indian parent who grew up on stories — and found that the best ones available for his own child either weren&apos;t in Hindi, weren&apos;t personalised, or were designed to keep children awake rather than help them sleep. So he built what he wished existed: a platform that puts every child at the centre of their own bedtime story, in the language of their home.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Contact CTA */}
         <section style={{ background: "var(--lf-peach)" }}>

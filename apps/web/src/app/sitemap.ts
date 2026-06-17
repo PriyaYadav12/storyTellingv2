@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/lib/blog-data";
+import { STORY_THEMES } from "@/lib/story-themes";
 
 const BASE = "https://www.lallifafa.com";
 
@@ -29,5 +30,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...blogRoutes];
+  const themeRoutes: MetadataRoute.Sitemap = STORY_THEMES.map((theme) => ({
+    url: `${BASE}/stories/${theme.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...themeRoutes, ...blogRoutes];
 }

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Star, BookOpen } from "lucide-react";
+import { Star, BookOpen, ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { HeroCTA, ThemeCTA, BottomCTA } from "./StoryCTA";
+import { STORY_THEMES } from "@/lib/story-themes";
 
 export const metadata: Metadata = {
   title: "Story Themes — Adventure, Friendship, Space & More",
@@ -25,69 +26,6 @@ export const metadata: Metadata = {
   },
 };
 
-const themes = [
-  {
-    emoji: "🗺️",
-    title: "The Adventure Quest",
-    tagline: "Brave journeys into unknown lands",
-    tags: ["courage", "exploration", "friendship"],
-    sample:
-      "Arjun raced through the whispering forest, Lalli by his side. 'The golden key must be here,' Fafa squeaked from Arjun's pocket...",
-    color: "var(--lf-sunshine)",
-    bg: "rgba(249,199,0,0.1)",
-  },
-  {
-    emoji: "🤝",
-    title: "The Kindness Mission",
-    tagline: "Small acts that change everything",
-    tags: ["kindness", "empathy", "sharing"],
-    sample:
-      "Aanya noticed the little bird sitting alone. 'Everyone deserves a friend,' she told Lalli. Together, they built the most wonderful nest...",
-    color: "var(--lf-teal)",
-    bg: "var(--lf-mint)",
-  },
-  {
-    emoji: "🌟",
-    title: "The Everyday Wonder",
-    tagline: "Magic hiding in plain sight",
-    tags: ["curiosity", "wonder", "imagination"],
-    sample:
-      "Rohan thought ordinary days were boring. Until Fafa pointed up. 'Look!' Between the clouds — a whole world Rohan had never seen...",
-    color: "var(--lf-mango)",
-    bg: "rgba(255,107,53,0.08)",
-  },
-  {
-    emoji: "🦁",
-    title: "Courage Under Stars",
-    tagline: "Face your fears, find your strength",
-    tags: ["bravery", "self-belief", "growth"],
-    sample:
-      "Maya was scared of the dark. But tonight was different. Lalli whispered, 'Darkness isn&apos;t empty. It&apos;s just waiting for your light...'",
-    color: "#8B5CF6",
-    bg: "rgba(139,92,246,0.08)",
-  },
-  {
-    emoji: "🎯",
-    title: "The Big Dream",
-    tagline: "Every great journey starts with one step",
-    tags: ["perseverance", "goals", "belief"],
-    sample:
-      "Dev wanted to be the best kite-flyer in all of India. Fafa had a plan. 'We&apos;ll need string, courage, and one really windy day...'",
-    color: "var(--lf-sunshine)",
-    bg: "rgba(249,199,0,0.1)",
-  },
-  {
-    emoji: "💚",
-    title: "Nature's Secret",
-    tagline: "The earth has stories to tell",
-    tags: ["nature", "environment", "wonder"],
-    sample:
-      "Isha planted a tiny seed. 'Will it grow?' she asked. Lalli smiled. 'Everything that matters starts small. Just like you did...'",
-    color: "var(--lf-teal)",
-    bg: "var(--lf-mint)",
-  },
-];
-
 const stats = [
   { value: "3", label: "Story structures" },
   { value: "20+", label: "Unique openings" },
@@ -103,11 +41,12 @@ const itemListSchema = {
   name: "Lalli Fafa Story Themes",
   description: "Personalised children's story themes featuring Lalli & Fafa — adventure, kindness, courage, nature, and more. Every story is narrated in English or Hindi with your child as the hero.",
   url: `${BASE}/stories`,
-  itemListElement: themes.map((theme, i) => ({
+  itemListElement: STORY_THEMES.map((theme, i) => ({
     "@type": "ListItem",
     position: i + 1,
     name: theme.title,
     description: theme.tagline,
+    url: `${BASE}/stories/${theme.slug}`,
   })),
 };
 
@@ -210,7 +149,7 @@ export default function StoriesPage() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {themes.map((theme) => (
+              {STORY_THEMES.map((theme) => (
                 <div
                   key={theme.title}
                   className="group flex flex-col rounded-3xl overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
@@ -273,8 +212,15 @@ export default function StoriesPage() {
                     </div>
                   </div>
 
-                  <div className="px-6 pb-6">
+                  <div className="px-6 pb-6 flex gap-2">
                     <ThemeCTA />
+                    <Link
+                      href={`/stories/${theme.slug}`}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all hover:bg-white/60"
+                      style={{ color: "rgba(45,45,45,0.6)", fontFamily: "'Nunito', sans-serif", background: "rgba(255,255,255,0.35)" }}
+                    >
+                      Learn more <ArrowRight size={13} />
+                    </Link>
                   </div>
                 </div>
               ))}
