@@ -31,35 +31,35 @@ export const metadata: Metadata = {
 const faqItems = [
   {
     q: "Who is Lalli?",
-    a: "Lalli is a warm-hearted, adventurous girl with a knack for noticing the small wonders in the world — a firefly blinking in the dark, a kind word that changes someone's day, a path through the forest no one else thought to take. She is curious, brave, and always the first to suggest exploring further. You'll recognise her by her yellow dress, orange shoes, and the little teal bag that, according to Fafa, is somehow bigger on the inside.",
+    a: "Lalli is a six-year-old girl with a big heart and an even bigger sense of adventure. She is Fafa's elder sister — the one who leads the way, keeps things (mostly) in order, and finds magic in the tiniest corners of everyday life. You will recognise her by her dark brown hair in two playful ponytails, her cheerful dresses with star and flower prints, and the little blue sling bag she carries everywhere — packed with crayons, shiny pebbles, and whatever she has decided is a magical find that day.",
   },
   {
     q: "Who is Fafa?",
-    a: "Fafa is Lalli's best friend and fellow adventurer. He is playful, a little silly, and has the biggest laugh of anyone you've ever met. He has had his light blue bunny plush since he can remember, and it has accompanied him on every single adventure. Beneath all his jokes and unexpected detours, Fafa has a huge heart — the kind of loyalty that makes you feel safe no matter where the story takes you.",
+    a: "Fafa is three years old, Lalli's little brother, and the cause of at least half the adventures they go on — usually by accident. He is curious, bouncy, and wonderfully clumsy. He once tried to wash his shoes in the teapot. He asks questions like why do stars twinkle and whether clouds can tickle. He finds something magical in almost everything he looks at, and his big round eyes and chubby-cheeked grin are impossible to say no to.",
   },
   {
     q: "Are Lalli and Fafa siblings?",
-    a: "No — they're best friends, which they will both tell you is even better. They've been inseparable since the day they met. They look out for each other, disagree sometimes (especially about which way to go), and always find their way back to the same laughter. Their friendship is at the heart of every story they share.",
+    a: "Yes! Lalli is the elder sister at six, and Fafa is her three-year-old little brother. Their sibling bond is the emotional heart of every story — Lalli is protective and a little bossy, Fafa is chaotic and endlessly loveable, and together they balance each other out perfectly. They argue sometimes (mostly about whether to follow the path or chase the butterfly), but they always find their way back to each other.",
   },
   {
-    q: "What do Lalli and Fafa love most?",
-    a: "Adventures — big and small. Forests, festivals, rainy afternoons, markets full of colour, animals that need helping, puzzles that need solving. They love meeting new friends, which is why they're so excited when a child joins them in a story. They also, without question, both love snacks. Fafa firmly believes no journey should begin without one.",
+    q: "How old are Lalli and Fafa?",
+    a: "Lalli is around six years old — old enough to lead the way and explain things to Fafa, young enough to still believe a shiny pebble might be magical. Fafa is three — at that perfect age where everything is a discovery and nothing is too strange to investigate. The three-year gap between them is what creates the warmth and the comedy of their adventures.",
+  },
+  {
+    q: "What is Lalli like as a big sister?",
+    a: "Lalli is the kind of big sister who holds your hand in the scary part, rolls her eyes when you trip over your own feet, and then quietly makes sure you are okay. She is responsible, brave, and a natural leader — but she can be a little bossy when she thinks she knows best (which is most of the time). She teaches Fafa things in her very serious teacher voice, collects leaves and buttons as magical tools, and explains the world through the most vivid metaphors. She is never mean — just wonderfully, warmly certain that she is right.",
+  },
+  {
+    q: "What is Fafa like as a little brother?",
+    a: "Fafa is the kind of little brother who accidentally starts the adventure, then has no idea that is what just happened. He pulls the mysterious rope, opens the door nobody else noticed, and chases the butterfly straight into the enchanted forest. His mistakes are never mean — they are funny, innocent, and full of heart. He cries when he is lost and cheers up the moment Lalli gives him a hug. Younger children especially love Fafa because they see themselves in him — small, curious, and convinced that everything just might be a little bit magical.",
   },
   {
     q: "What kind of adventures do Lalli and Fafa go on?",
-    a: "It depends on the story. Some days they explore enchanted forests or sail to faraway islands. Other days the adventure is as close as a neighbourhood park, a grandparent's kitchen, or the excitement of a festival the night before Diwali. Their stories celebrate kindness, curiosity, courage, and honesty — but always in ways that feel natural, joyful, and never preachy.",
+    a: "Fafa usually starts them — by finding a glowing pebble, following a talking bird, or accidentally sitting on a magic button. Lalli figures out what to do next. Their adventures take them to enchanted forests, rainy-day forts, busy festival nights, quiet grandparent kitchens, and worlds full of giggling stars. Every story carries a gentle lesson — about kindness, curiosity, courage, or honesty — woven naturally into the adventure, never announced as a lesson.",
   },
   {
     q: "Why does the child appear in every Lalli and Fafa story?",
-    a: "Because they belong there. Lalli and Fafa's world is built to be joined — every story begins the moment a real child steps into it alongside them. The child is never a bystander; they're at the centre of the adventure, the one Lalli and Fafa turn to when things get tricky, the one who makes the difference in the end. That's how it's always meant to be.",
-  },
-  {
-    q: "Where are Lalli and Fafa from?",
-    a: "Lalli and Fafa grew up with the warmth, sounds, and colour of India around them — but their adventures take them everywhere. You'll find them in Indian homes during monsoon evenings and also beneath starry skies in faraway lands. Their world feels both deeply familiar and quietly magical, which is exactly how we wanted it.",
-  },
-  {
-    q: "What age are Lalli and Fafa stories for?",
-    a: "Their stories work beautifully for children between 2 and 8 — old enough to follow the adventure, young enough to believe fully in the magic of it. The language, pacing, and themes adjust gently depending on the child's age, so a three-year-old and a seven-year-old can both have their own version of a Lalli and Fafa story that feels made just for them.",
+    a: "Because Lalli and Fafa's world is built to be joined. Every story begins the moment a real child steps into it alongside them. The child is not a side character watching from the edges — they are in the middle of the adventure, the one Lalli and Fafa turn to when things get tricky. Lalli always makes sure to highlight what makes each child uniquely wonderful. That is just how she is.",
   },
 ];
 
