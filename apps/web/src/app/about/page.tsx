@@ -28,6 +28,41 @@ export const metadata: Metadata = {
   },
 };
 
+const faqItems = [
+  {
+    q: "Who is Lalli?",
+    a: "Lalli is a warm-hearted, adventurous girl with a knack for noticing the small wonders in the world — a firefly blinking in the dark, a kind word that changes someone's day, a path through the forest no one else thought to take. She is curious, brave, and always the first to suggest exploring further. You'll recognise her by her yellow dress, orange shoes, and the little teal bag that, according to Fafa, is somehow bigger on the inside.",
+  },
+  {
+    q: "Who is Fafa?",
+    a: "Fafa is Lalli's best friend and fellow adventurer. He is playful, a little silly, and has the biggest laugh of anyone you've ever met. He has had his light blue bunny plush since he can remember, and it has accompanied him on every single adventure. Beneath all his jokes and unexpected detours, Fafa has a huge heart — the kind of loyalty that makes you feel safe no matter where the story takes you.",
+  },
+  {
+    q: "Are Lalli and Fafa siblings?",
+    a: "No — they're best friends, which they will both tell you is even better. They've been inseparable since the day they met. They look out for each other, disagree sometimes (especially about which way to go), and always find their way back to the same laughter. Their friendship is at the heart of every story they share.",
+  },
+  {
+    q: "What do Lalli and Fafa love most?",
+    a: "Adventures — big and small. Forests, festivals, rainy afternoons, markets full of colour, animals that need helping, puzzles that need solving. They love meeting new friends, which is why they're so excited when a child joins them in a story. They also, without question, both love snacks. Fafa firmly believes no journey should begin without one.",
+  },
+  {
+    q: "What kind of adventures do Lalli and Fafa go on?",
+    a: "It depends on the story. Some days they explore enchanted forests or sail to faraway islands. Other days the adventure is as close as a neighbourhood park, a grandparent's kitchen, or the excitement of a festival the night before Diwali. Their stories celebrate kindness, curiosity, courage, and honesty — but always in ways that feel natural, joyful, and never preachy.",
+  },
+  {
+    q: "Why does the child appear in every Lalli and Fafa story?",
+    a: "Because they belong there. Lalli and Fafa's world is built to be joined — every story begins the moment a real child steps into it alongside them. The child is never a bystander; they're at the centre of the adventure, the one Lalli and Fafa turn to when things get tricky, the one who makes the difference in the end. That's how it's always meant to be.",
+  },
+  {
+    q: "Where are Lalli and Fafa from?",
+    a: "Lalli and Fafa grew up with the warmth, sounds, and colour of India around them — but their adventures take them everywhere. You'll find them in Indian homes during monsoon evenings and also beneath starry skies in faraway lands. Their world feels both deeply familiar and quietly magical, which is exactly how we wanted it.",
+  },
+  {
+    q: "What age are Lalli and Fafa stories for?",
+    a: "Their stories work beautifully for children between 2 and 8 — old enough to follow the adventure, young enough to believe fully in the magic of it. The language, pacing, and themes adjust gently depending on the child's age, so a three-year-old and a seven-year-old can both have their own version of a Lalli and Fafa story that feels made just for them.",
+  },
+];
+
 const values = [
   {
     icon: Heart,
@@ -185,6 +220,78 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
+
+        {/* Q&A — Meet Lalli & Fafa */}
+        <section style={{ background: "var(--lf-mint)" }}>
+          <div className="mx-auto px-5 py-14" style={{ maxWidth: 800 }}>
+            <div className="flex flex-col items-center gap-2 mb-10 text-center">
+              <h2
+                style={{
+                  fontFamily: "'Baloo 2', sans-serif",
+                  fontWeight: 800,
+                  fontSize: "clamp(1.6rem,3.5vw,2.2rem)",
+                  color: "var(--lf-dark)",
+                  lineHeight: 1.2,
+                }}
+              >
+                Meet Lalli &amp; Fafa
+              </h2>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1rem", color: "rgba(45,45,45,0.6)", maxWidth: 500, lineHeight: 1.7 }}>
+                Everything you&apos;ve ever wanted to know about the two friends at the heart of every story.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-5">
+              {faqItems.map(({ q, a }) => (
+                <div
+                  key={q}
+                  className="flex flex-col gap-2 p-6 rounded-2xl"
+                  style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)" }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: "'Baloo 2', sans-serif",
+                      fontWeight: 700,
+                      fontSize: "1.08rem",
+                      color: "var(--lf-dark)",
+                      lineHeight: 1.3,
+                      margin: 0,
+                    }}
+                  >
+                    {q}
+                  </h3>
+                  <p
+                    style={{
+                      fontFamily: "'Nunito', sans-serif",
+                      fontSize: "0.97rem",
+                      color: "rgba(45,45,45,0.72)",
+                      lineHeight: 1.8,
+                      margin: 0,
+                    }}
+                  >
+                    {a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ structured data for Google */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: faqItems.map(({ q, a }) => ({
+                "@type": "Question",
+                name: q,
+                acceptedAnswer: { "@type": "Answer", text: a },
+              })),
+            }),
+          }}
+        />
 
         {/* Contact CTA */}
         <section style={{ background: "var(--lf-peach)" }}>
