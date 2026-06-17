@@ -131,12 +131,12 @@ export function HeroSection() {
                 </Link>
               )}
               <Link
-                href="/stories"
+                href="/stories/adventure-quest"
                 className="btn-ghost"
                 style={{ fontSize: "1.05rem", padding: "0.9rem 2.25rem" }}
               >
                 <Play size={15} fill="currentColor" />
-                See a story
+                See a sample
               </Link>
             </div>
 

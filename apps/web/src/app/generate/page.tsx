@@ -22,6 +22,7 @@ import {
   Globe,
   Loader2,
   Check,
+  Ruler,
 } from "lucide-react";
 import { toast } from "sonner";
 import { UserPill } from "@/components/layout/UserPill";
@@ -63,6 +64,12 @@ const LESSON_ICONS: Record<string, string> = {
 };
 const DEFAULT_LESSON_ICON = "📖";
 
+const LENGTHS: { value: "short" | "medium" | "long"; label: string; desc: string; credits: number; premium?: boolean }[] = [
+  { value: "short",  label: "Short",  desc: "~3 min read",  credits: 80 },
+  { value: "medium", label: "Medium", desc: "~6 min read",  credits: 80 },
+  { value: "long",   label: "Long",   desc: "~10 min read", credits: 80, premium: true },
+];
+
 // Subtle pastel backgrounds cycled across unselected cards for a bit of color variety.
 const CARD_TINTS = ["#FFF4E0", "#E6FAF6", "#F3EEFF", "#FFE8EC", "#E8F5E9", "#FFF9DB"];
 
@@ -96,8 +103,11 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
   const themes = useQuery(api["migration/theme"].list, isAuthenticated ? {} : "skip");
   const lessons = useQuery(api["migration/lesson"].list, isAuthenticated ? {} : "skip");
+  const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
   // Languages come from DB so the admin panel toggle (isActive) controls what users see.
   const dbLanguages = useQuery((api as any)["migration/languages"].list, isAuthenticated ? {} : "skip");
+
+  const isPremium = subscription?.status === "active";
 
   const generateStory = useAction(api.generateStory.enqueueStory);
 
@@ -106,6 +116,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   const [childId, setChildId] = useState<"1" | "2">("1");
   const [storyType, setStoryType] = useState<string>("adventure");
+  const [length, setLength] = useState<"short" | "medium" | "long">("medium");
   const [languageCode, setLanguageCode] = useState<string>("en");
   const [theme, setTheme] = useState("");
   const [lesson, setLesson] = useState("");
@@ -128,6 +139,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
           theme,
           lesson: lesson || undefined,
           storyType,
+          length,
           language: languageName,
           childId: hasSecondChild ? childId : undefined,
         },
@@ -216,10 +228,13 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
         {/* Credits */}
         <div className="flex items-center justify-between px-5 py-3 rounded-2xl" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Zap size={18} style={{ color: "#a855f7" }} />
             <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, color: "var(--lf-dark)", fontSize: "0.9rem" }}>
               {isLoading ? "—" : availableCredits} credits available
+            </span>
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.4)" }}>
+              · 80 credits = 1 story
             </span>
           </div>
           {!isLoading && availableCredits < 120 && (
@@ -291,9 +306,42 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                   </button>
                 ))}
               </div>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.4)", marginTop: 4 }}>
-                Each story is ~300 words · ~2 min read · 80 credits
-              </p>
+            </Section>
+
+            {/* Story length */}
+            <Section icon={<Ruler size={18} />} title="Story length">
+              <div className="flex gap-3 flex-wrap">
+                {LENGTHS.map((l) => {
+                  const locked = l.premium && !isPremium;
+                  const selected = length === l.value;
+                  return (
+                    <button
+                      key={l.value}
+                      onClick={() => !locked && setLength(l.value)}
+                      disabled={locked}
+                      className="flex flex-col gap-1 px-5 py-3 rounded-2xl text-left transition-all"
+                      style={{
+                        background: selected ? "var(--lf-dark)" : "#fff",
+                        border: `2px solid ${selected ? "var(--lf-dark)" : "rgba(0,0,0,0.08)"}`,
+                        color: selected ? "#fff" : "var(--lf-dark)",
+                        opacity: locked ? 0.5 : 1,
+                        cursor: locked ? "not-allowed" : "pointer",
+                        minWidth: 90,
+                      }}
+                    >
+                      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.9rem" }}>
+                        {l.label}{locked ? " 🔒" : ""}
+                      </span>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", opacity: 0.75 }}>
+                        {l.desc}
+                      </span>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: selected ? "var(--lf-teal)" : "rgba(45,45,45,0.45)" }}>
+                        {l.premium ? "Magic Pass" : `${l.credits} credits`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </Section>
 
             {/* Language */}

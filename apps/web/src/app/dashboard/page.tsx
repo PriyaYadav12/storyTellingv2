@@ -20,18 +20,11 @@ import {
   Sparkles,
   Flame,
   Star,
-  LogOut,
   User,
   Library,
   ChevronRight,
   Zap,
-  Globe,
-  Ruler,
-  Heart,
-  FileText,
   Loader2,
-  Check,
-  X,
   Plus,
   Play,
 } from "lucide-react";
@@ -64,14 +57,6 @@ function getSceneForTheme(theme?: string): string {
   return all[Math.abs(theme.charCodeAt(0)) % all.length];
 }
 
-/* ── Generate form options ── */
-const LANGUAGES = ["English", "Hindi"] as const;
-const LENGTHS: { value: "short" | "medium" | "long"; label: string; desc: string; credits: number; premium?: boolean }[] = [
-  { value: "short", label: "Short", desc: "~3 min", credits: 80 },
-  { value: "medium", label: "Medium", desc: "~6 min", credits: 80 },
-  { value: "long", label: "Long", desc: "~10 min", credits: 0, premium: true },
-];
-
 /* ── Stat card colours ── */
 const STAT_COLORS = [
   { bg: "linear-gradient(135deg,#00c9a7 0%,#00a38d 100%)", icon: "rgba(255,255,255,0.3)", text: "#fff" },
@@ -94,7 +79,6 @@ function FloatingSparkle({ style }: { style: React.CSSProperties }) {
    ================================================================ */
 export default function DashboardPage() {
   const { isAuthenticated } = useConvexAuth();
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <>
@@ -146,7 +130,7 @@ export default function DashboardPage() {
       </Unauthenticated>
 
       <Authenticated>
-        <DashboardContent drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} isAuthenticated={isAuthenticated} />
+        <DashboardContent isAuthenticated={isAuthenticated} />
       </Authenticated>
     </>
   );
@@ -155,15 +139,7 @@ export default function DashboardPage() {
 /* ================================================================
    DASHBOARD CONTENT
    ================================================================ */
-function DashboardContent({
-  drawerOpen,
-  setDrawerOpen,
-  isAuthenticated,
-}: {
-  drawerOpen: boolean;
-  setDrawerOpen: (v: boolean) => void;
-  isAuthenticated: boolean;
-}) {
+function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
   const router = useRouter();
 
   const { data: session } = authClient.useSession();
@@ -220,12 +196,6 @@ function DashboardContent({
     toast.success("Signed out successfully");
   }
 
-  // Close drawer with Escape key
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setDrawerOpen(false); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [setDrawerOpen]);
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(160deg,#FFF8E7 0%,#E6FAF6 50%,#F3EEFF 100%)" }}>
@@ -636,433 +606,7 @@ function DashboardContent({
 
       </main>
 
-      {/* ── Story Creation Drawer ── */}
-      {drawerOpen && (
-        <StoryDrawer
-          isAuthenticated={isAuthenticated}
-          onClose={() => setDrawerOpen(false)}
-        />
-      )}
     </div>
-  );
-}
-
-/* ================================================================
-   STORY CREATION DRAWER
-   ================================================================ */
-function StoryDrawer({
-  isAuthenticated,
-  onClose,
-}: {
-  isAuthenticated: boolean;
-  onClose: () => void;
-}) {
-  const router = useRouter();
-
-  const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
-  const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
-  const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
-  const themes = useQuery(api["migration/theme"].list, isAuthenticated ? {} : "skip");
-  const lessons = useQuery(api["migration/lesson"].list, isAuthenticated ? {} : "skip");
-  const generateStory = useAction(api.generateStory.enqueueStory);
-
-  const availableCredits = credits?.[0]?.availableCredits ?? 0;
-  const isPremium = subscription?.status === "active";
-  const hasSecondChild = !!(profile as { child2Name?: string } | null | undefined)?.child2Name;
-
-  const [childId, setChildId] = useState<"1" | "2">("1");
-  const [length, setLength] = useState<"short" | "medium" | "long">("short");
-  const [language, setLanguage] = useState<"English" | "Hindi">("English");
-  const [theme, setTheme] = useState("");
-  const [lesson, setLesson] = useState("");
-  const [useFavorites, setUseFavorites] = useState(true);
-  const [textOnly, setTextOnly] = useState(false);
-  const [generating, setGenerating] = useState(false);
-
-  const creditCost = textOnly ? 20 : 80;
-  const canAfford = availableCredits >= creditCost;
-  const canGenerate = !!theme && canAfford && !generating;
-
-  const isLoading = profile === undefined || themes === undefined || lessons === undefined || credits === undefined;
-
-  async function handleGenerate() {
-    if (!canGenerate) return;
-    setGenerating(true);
-    try {
-      const result = await generateStory({
-        params: {
-          theme,
-          lesson: lesson || undefined,
-          length,
-          language,
-          useFavorites,
-          textOnly,
-          childId: hasSecondChild ? childId : undefined,
-        },
-      });
-      router.push(`/story/${result.storyId}`);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Story generation failed. Please try again.";
-      toast.error(msg);
-      setGenerating(false);
-    }
-  }
-
-  return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50"
-        style={{ background: "rgba(19,16,32,0.6)", backdropFilter: "blur(4px)" }}
-        onClick={onClose}
-      />
-
-      {/* Panel */}
-      <div
-        className="drawer-panel fixed right-0 top-0 bottom-0 z-50 flex flex-col overflow-hidden"
-        style={{
-          width: "min(560px, 100vw)",
-          background: "linear-gradient(160deg,#FFF8E7 0%,#F2FFF9 100%)",
-          boxShadow: "-8px 0 60px rgba(0,0,0,0.25)",
-        }}
-      >
-        {/* Drawer header */}
-        <div
-          className="flex items-center justify-between px-6 py-5 flex-shrink-0"
-          style={{ background: "linear-gradient(135deg,#131020,#1a1740)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="relative" style={{ width: 40, height: 40 }}>
-              <Image src="/lf-hero.png" alt="Lalli Fafa" fill className="object-contain" />
-            </div>
-            <div>
-              <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.15rem", color: "#fff" }}>
-                Create a Story ✨
-              </h2>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(255,255,255,0.5)" }}>
-                Pick options — ready in under 2 minutes
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
-            style={{ color: "rgba(255,255,255,0.6)" }}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Credits bar */}
-        <div
-          className="flex items-center justify-between px-6 py-2.5 flex-shrink-0"
-          style={{ background: "rgba(168,85,247,0.08)", borderBottom: "1px solid rgba(168,85,247,0.15)" }}
-        >
-          <div className="flex items-center gap-2">
-            <Zap size={15} style={{ color: "#a855f7" }} />
-            <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "#7c3aed" }}>
-              {isLoading ? "—" : availableCredits} credits available
-            </span>
-          </div>
-          {availableCredits < 80 && (
-            <Link href="/checkout?plan=monthly" onClick={onClose} className="text-xs font-bold" style={{ color: "var(--lf-teal)" }}>
-              Top up →
-            </Link>
-          )}
-        </div>
-
-        {/* Scrollable form */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-20">
-              <div className="relative" style={{ width: 48, height: 48 }}>
-                <Image src="/lf-logo.png" alt="loading" fill className="object-contain animate-bounce" />
-              </div>
-              <p style={{ fontFamily: "'Nunito', sans-serif", color: "rgba(45,45,45,0.5)" }}>Loading your options…</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5">
-
-              {/* Child selector */}
-              {hasSecondChild && (
-                <DrawerSection icon={<User size={16} />} title="Which child?" color="var(--lf-teal)">
-                  <div className="flex gap-3">
-                    {(["1", "2"] as const).map((id) => {
-                      const name = id === "1" ? profile?.childName : (profile as { child2Name?: string })?.child2Name;
-                      return (
-                        <OptionChip key={id} selected={childId === id} onClick={() => setChildId(id)} label={name ?? `Child ${id}`} />
-                      );
-                    })}
-                  </div>
-                </DrawerSection>
-              )}
-
-              {/* Language */}
-              <DrawerSection icon={<Globe size={16} />} title="Language" color="#f9c700">
-                <div className="flex gap-3">
-                  {LANGUAGES.map((lang) => (
-                    <OptionChip
-                      key={lang}
-                      selected={language === lang}
-                      onClick={() => setLanguage(lang)}
-                      label={lang === "English" ? "🇬🇧 English" : "🇮🇳 Hindi"}
-                    />
-                  ))}
-                </div>
-              </DrawerSection>
-
-              {/* Story length */}
-              <DrawerSection icon={<Ruler size={16} />} title="Story length" color="#ff6b35">
-                <div className="flex gap-3 flex-wrap">
-                  {LENGTHS.map((l) => {
-                    const locked = l.premium && !isPremium;
-                    return (
-                      <button
-                        key={l.value}
-                        onClick={() => !locked && setLength(l.value)}
-                        disabled={locked}
-                        className="flex flex-col gap-0.5 px-5 py-3 rounded-2xl text-left transition-all"
-                        style={{
-                          background: length === l.value ? "var(--lf-teal)" : "#fff",
-                          border: `1.5px solid ${length === l.value ? "var(--lf-teal)" : "rgba(0,0,0,0.1)"}`,
-                          color: length === l.value ? "#fff" : "var(--lf-dark)",
-                          opacity: locked ? 0.5 : 1,
-                          cursor: locked ? "not-allowed" : "pointer",
-                          minWidth: 100,
-                          boxShadow: length === l.value ? "0 4px 12px rgba(0,201,167,0.3)" : "none",
-                        }}
-                      >
-                        <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.9rem" }}>
-                          {l.label} {locked ? "🔒" : ""}
-                        </span>
-                        <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", opacity: 0.8 }}>{l.desc}</span>
-                        {!l.premium && (
-                          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, opacity: 0.85 }}>
-                            {l.credits} credits
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </DrawerSection>
-
-              {/* Theme */}
-              <DrawerSection icon={<Sparkles size={16} />} title="Theme *" color="#a855f7">
-                <div className="flex flex-wrap gap-2">
-                  {(themes ?? []).map((t: { name: string }) => (
-                    <button
-                      key={t.name}
-                      onClick={() => setTheme(theme === t.name ? "" : t.name)}
-                      className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
-                      style={{
-                        background: theme === t.name ? "var(--lf-dark)" : "#fff",
-                        border: `1.5px solid ${theme === t.name ? "var(--lf-dark)" : "rgba(0,0,0,0.1)"}`,
-                        color: theme === t.name ? "#fff" : "var(--lf-dark)",
-                        fontFamily: "'Nunito', sans-serif",
-                        boxShadow: theme === t.name ? "0 2px 8px rgba(0,0,0,0.2)" : "none",
-                      }}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
-                {!theme && (
-                  <p className="text-xs mt-1" style={{ color: "rgba(45,45,45,0.4)", fontFamily: "'Nunito', sans-serif" }}>
-                    ↑ Select a theme to continue
-                  </p>
-                )}
-              </DrawerSection>
-
-              {/* Lesson */}
-              <DrawerSection icon={<BookOpen size={16} />} title="Lesson (optional)" color="var(--lf-teal)">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setLesson("")}
-                    className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
-                    style={{
-                      background: lesson === "" ? "var(--lf-teal)" : "#fff",
-                      border: `1.5px solid ${lesson === "" ? "var(--lf-teal)" : "rgba(0,0,0,0.1)"}`,
-                      color: lesson === "" ? "#fff" : "var(--lf-dark)",
-                      fontFamily: "'Nunito', sans-serif",
-                    }}
-                  >
-                    None
-                  </button>
-                  {(lessons ?? []).map((l: { name: string }) => (
-                    <button
-                      key={l.name}
-                      onClick={() => setLesson(lesson === l.name ? "" : l.name)}
-                      className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
-                      style={{
-                        background: lesson === l.name ? "var(--lf-teal)" : "#fff",
-                        border: `1.5px solid ${lesson === l.name ? "var(--lf-teal)" : "rgba(0,0,0,0.1)"}`,
-                        color: lesson === l.name ? "#fff" : "var(--lf-dark)",
-                        fontFamily: "'Nunito', sans-serif",
-                      }}
-                    >
-                      {l.name}
-                    </button>
-                  ))}
-                </div>
-              </DrawerSection>
-
-              {/* Personalisation */}
-              <DrawerSection icon={<Heart size={16} />} title="Personalisation" color="#ff6b35">
-                <div className="flex flex-col gap-2.5">
-                  <DrawerCheckbox
-                    checked={useFavorites}
-                    onChange={setUseFavorites}
-                    label="Personalise with favourites"
-                    desc="Include your child's favourite colour, animal & interests"
-                  />
-                  <DrawerCheckbox
-                    checked={textOnly}
-                    onChange={(v) => { setTextOnly(v); if (v) setLength("short"); }}
-                    label={<span className="flex items-center gap-1.5"><FileText size={13} /> Text only (20 credits)</span>}
-                    desc="Skip AI illustrations — just the story text"
-                  />
-                </div>
-              </DrawerSection>
-
-            </div>
-          )}
-        </div>
-
-        {/* ── Sticky generate button ── */}
-        <div
-          className="flex-shrink-0 px-6 py-5"
-          style={{ borderTop: "1.5px solid rgba(0,0,0,0.08)", background: "rgba(255,252,245,0.95)", backdropFilter: "blur(8px)" }}
-        >
-          {availableCredits < 20 ? (
-            <div className="flex flex-col gap-3 items-center py-4 px-5 rounded-2xl" style={{ background: "rgba(255,100,60,0.06)", border: "1.5px solid rgba(255,100,60,0.2)" }}>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, color: "#b83030", textAlign: "center", fontSize: "0.9rem" }}>
-                You&apos;re out of credits. Top up to generate stories!
-              </p>
-              <Link href="/checkout?plan=monthly" onClick={onClose} className="btn-primary" style={{ justifyContent: "center", padding: "0.6rem 1.4rem" }}>
-                <Zap size={15} /> Get Magic Pass
-              </Link>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {!canAfford && (
-                <p className="text-sm text-center" style={{ color: "#b83030", fontFamily: "'Nunito', sans-serif" }}>
-                  Not enough credits ({availableCredits} available, {creditCost} needed).{" "}
-                  <Link href="/checkout?plan=monthly" onClick={onClose} style={{ color: "var(--lf-teal)", fontWeight: 700 }}>Top up →</Link>
-                </p>
-              )}
-              <button
-                onClick={handleGenerate}
-                disabled={!canGenerate}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-lg transition-all"
-                style={{
-                  background: canGenerate ? "linear-gradient(135deg,var(--lf-teal),#00a38d)" : "rgba(0,0,0,0.1)",
-                  color: canGenerate ? "#fff" : "rgba(45,45,45,0.35)",
-                  fontFamily: "'Baloo 2', sans-serif",
-                  cursor: canGenerate ? "pointer" : "not-allowed",
-                  boxShadow: canGenerate ? "0 6px 24px rgba(0,201,167,0.45)" : "none",
-                }}
-              >
-                {generating ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    Lalli &amp; Fafa are writing…
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={20} />
-                    Generate Story {creditCost > 0 ? `· ${creditCost} credits` : ""}
-                  </>
-                )}
-              </button>
-              {generating && (
-                <p className="text-center text-xs" style={{ color: "rgba(45,45,45,0.45)", fontFamily: "'Nunito', sans-serif" }}>
-                  ✨ Crafting your personalised story — about 20 seconds…
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ── Drawer sub-components ── */
-
-function DrawerSection({
-  icon,
-  title,
-  color,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  color: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-3 p-4 rounded-2xl" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.07)" }}>
-      <div className="flex items-center gap-2">
-        <span style={{ color }}>{icon}</span>
-        <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.9rem", color: "var(--lf-dark)" }}>{title}</span>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function OptionChip({ selected, onClick, label }: { selected: boolean; onClick: () => void; label: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all"
-      style={{
-        background: selected ? "var(--lf-teal)" : "#f7f5f0",
-        border: `1.5px solid ${selected ? "var(--lf-teal)" : "rgba(0,0,0,0.08)"}`,
-        color: selected ? "#fff" : "var(--lf-dark)",
-        fontFamily: "'Nunito', sans-serif",
-        fontSize: "0.88rem",
-        boxShadow: selected ? "0 2px 8px rgba(0,201,167,0.3)" : "none",
-      }}
-    >
-      {selected && <Check size={13} />}
-      {label}
-    </button>
-  );
-}
-
-function DrawerCheckbox({
-  checked,
-  onChange,
-  label,
-  desc,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: React.ReactNode;
-  desc: string;
-}) {
-  return (
-    <button
-      onClick={() => onChange(!checked)}
-      className="flex items-start gap-3 text-left rounded-xl p-3 transition-all"
-      style={{
-        background: checked ? "rgba(0,201,167,0.06)" : "transparent",
-        border: `1.5px solid ${checked ? "var(--lf-teal)" : "rgba(0,0,0,0.08)"}`,
-      }}
-    >
-      <div
-        className="flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center mt-0.5 transition-all"
-        style={{ background: checked ? "var(--lf-teal)" : "#fff", border: `2px solid ${checked ? "var(--lf-teal)" : "rgba(0,0,0,0.2)"}` }}
-      >
-        {checked && <Check size={11} color="#fff" />}
-      </div>
-      <div className="flex flex-col gap-0.5">
-        <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.88rem", color: "var(--lf-dark)" }}>{label}</span>
-        <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.5)" }}>{desc}</span>
-      </div>
-    </button>
   );
 }
 

@@ -63,7 +63,7 @@ interface FormData {
   parentName: string;
   childName: string;
   childNickName: string;
-  childDateOfBirth: string;
+  childAge: number | null;
   childGender: Gender;
   favoriteColor: string;
   favoriteAnimal: string;
@@ -87,16 +87,6 @@ const STEP_META = [
     sub: "This animal friend will join every single adventure. Choose wisely!",
   },
 ];
-
-function computeAge(dob: string): number {
-  if (!dob) return 0;
-  const birth = new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
-}
 
 // ─── Page shell ───────────────────────────────────────────────────────────────
 
@@ -155,14 +145,17 @@ function OnboardingForm() {
     parentName: "",
     childName: "",
     childNickName: "",
-    childDateOfBirth: "",
+    childAge: null,
     childGender: "male",
     favoriteColor: "",
     favoriteAnimal: "",
   });
 
-  function update(field: keyof FormData, value: string) {
-    setForm((f) => ({ ...f, [field]: value }));
+  function update(field: keyof FormData, value: string | number) {
+    setForm((f) => ({
+      ...f,
+      [field]: field === "childAge" ? Number(value) : value,
+    }));
   }
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -186,9 +179,7 @@ function OnboardingForm() {
   function handleNext() {
     if (step === 1) {
       if (!form.childName.trim()) { toast.error("Please enter your child's name"); return; }
-      if (!form.childDateOfBirth) { toast.error("Please enter your child's date of birth"); return; }
-      const age = computeAge(form.childDateOfBirth);
-      if (age < 1 || age > 15) { toast.error("Child must be between 1 and 15 years old"); return; }
+      if (!form.childAge) { toast.error("Please select your child's age"); return; }
     }
     setStep((s) => s + 1);
   }
@@ -196,11 +187,10 @@ function OnboardingForm() {
   async function doSubmit() {
     setLoading(true);
     try {
-      const age = computeAge(form.childDateOfBirth);
       await createProfile({
         parentName: sessionName || form.parentName.trim(),
         childName: form.childName.trim(),
-        childAge: age,
+        childAge: form.childAge ?? 5,
         childGender: form.childGender,
         childNickName: form.childNickName.trim() || undefined,
         favoriteColor: form.favoriteColor || undefined,
@@ -263,10 +253,6 @@ function OnboardingForm() {
 
   const meta = STEP_META[step - 1];
   const childFirstName = form.childName.split(" ")[0] || "your child";
-
-  // ── Today and 15-years-ago for DOB bounds ──────────────────────────────────
-  const maxDob = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-  const minDob = new Date(Date.now() - 16 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
   return (
     <div className="min-h-screen flex" style={{ background: "var(--lf-dark)" }}>
@@ -401,20 +387,35 @@ function OnboardingForm() {
                       </div>
                     </div>
 
-                    {/* Date of birth */}
-                    <div className="flex flex-col gap-2">
-                      <label style={labelStyle}>Date of birth</label>
-                      <input
-                        type="date"
-                        value={form.childDateOfBirth}
-                        onChange={(e) => update("childDateOfBirth", e.target.value)}
-                        max={maxDob}
-                        min={minDob}
-                        style={{ ...inputStyle, colorScheme: "dark" }}
-                      />
-                      {form.childDateOfBirth && computeAge(form.childDateOfBirth) >= 1 && (
-                        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "var(--lf-teal)", marginTop: 2, marginLeft: 4 }}>
-                          🎂 {computeAge(form.childDateOfBirth)} years old
+                    {/* Age picker */}
+                    <div className="flex flex-col gap-3">
+                      <label style={labelStyle}>Age</label>
+                      <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((age) => {
+                          const sel = form.childAge === age;
+                          return (
+                            <button
+                              key={age}
+                              type="button"
+                              onClick={() => update("childAge", String(age))}
+                              className="flex items-center justify-center py-2.5 rounded-xl transition-all"
+                              style={{
+                                border: "1.5px solid",
+                                borderColor: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.1)",
+                                background: sel ? "rgba(0,201,167,0.15)" : "rgba(255,255,255,0.04)",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem", color: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.55)" }}>
+                                {age}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {form.childAge && (
+                        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "var(--lf-teal)", marginLeft: 2 }}>
+                          🎂 {form.childAge} years old
                         </p>
                       )}
                     </div>
@@ -722,7 +723,7 @@ function OnboardingForm() {
                   )}
 
                   {/* Skip option for optional steps */}
-                  {step === 2 && (
+                  {(step === 2 || step === 3) && (
                     <button
                       type="button"
                       onClick={() => setStep((s) => s + 1)}
@@ -731,10 +732,10 @@ function OnboardingForm() {
                       Skip for now →
                     </button>
                   )}
-                  {step === 3 && (
+                  {step === 4 && (
                     <button
                       type="button"
-                      onClick={() => setStep((s) => s + 1)}
+                      onClick={doSubmit}
                       style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(255,255,255,0.25)", background: "none", border: "none", cursor: "pointer", padding: "4px", textAlign: "center" }}
                     >
                       Skip for now →

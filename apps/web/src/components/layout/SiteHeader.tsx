@@ -11,11 +11,9 @@ import { api } from "../../../convex/_generated/api";
 
 const navLinks = [
   { label: "Stories", href: "/stories" },
-  { label: "How It Works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Learn", href: "/learn" },
-  { label: "Shop", href: "/shop" },
   { label: "Blog", href: "/blog" },
+  { label: "Shop", href: "/shop" },
 ];
 
 const socials = [
