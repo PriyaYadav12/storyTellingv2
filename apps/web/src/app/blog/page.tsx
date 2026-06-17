@@ -20,12 +20,32 @@ export const metadata: Metadata = {
   },
 };
 
+const BASE = "https://www.lallifafa.com";
+
+const itemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Lalli Fafa Blog — Stories for Parents",
+  description: "Tips, insights, and honest conversations about raising curious, creative, and kind children.",
+  url: `${BASE}/blog`,
+  itemListElement: BLOG_POSTS.map((post, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    url: `${BASE}/blog/${post.slug}`,
+    name: post.title,
+  })),
+};
+
 export default function BlogPage() {
   const featured = getFeaturedPost();
   const rest = BLOG_POSTS.filter((p) => !p.featured);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
       <SiteHeader />
       <main style={{ background: "linear-gradient(160deg,#FFF8E7 0%,#E6FAF6 50%,#F3EEFF 100%)" }}>
 

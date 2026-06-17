@@ -86,6 +86,28 @@ export default async function BlogPostPage({
       }
     : null;
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: BASE },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${BASE}/blog` },
+      { "@type": "ListItem", position: 3, name: post.title, item: `${BASE}/blog/${slug}` },
+    ],
+  };
+
+  const speakableSchema = post.faqs?.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": `${BASE}/blog/${slug}`,
+        speakable: {
+          "@type": "SpeakableSpecification",
+          cssSelector: ["h1", ".blog-faq-section"],
+        },
+      }
+    : null;
+
   return (
     <>
       <script
@@ -96,6 +118,16 @@ export default async function BlogPostPage({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {speakableSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableSchema) }}
         />
       )}
       <SiteHeader />
@@ -182,7 +214,7 @@ export default async function BlogPostPage({
 
               {/* Q&A section */}
               {post.faqs && post.faqs.length > 0 && (
-                <div className="mt-12">
+                <div className="blog-faq-section mt-12">
                   <h2
                     style={{
                       fontFamily: "'Baloo 2', sans-serif",

@@ -118,8 +118,11 @@ export default function AboutPage() {
               >
                 Hi, we&apos;re Lalli &amp; Fafa.
               </h1>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1rem", color: "rgba(45,45,45,0.5)", lineHeight: 1.7, maxWidth: 480, fontStyle: "italic" }}>
+                Lalli Fafa is a personalised children&apos;s storytelling platform for Indian families — generating fully illustrated, narrated bedtime stories in English and Hindi, with your child as the hero alongside Lalli (age 6) and Fafa (age 3), her younger brother.
+              </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.8, maxWidth: 480 }}>
-                We started Lalli Fafa with one simple belief: every child deserves to hear stories where <strong>they</strong> are the one who&apos;s brave, kind, curious, and clever — told in a voice they trust, in the languages they grow up speaking.
+                We started with one simple belief: every child deserves to hear stories where <strong>they</strong> are the one who&apos;s brave, kind, curious, and clever — told in a voice they trust, in the languages they grow up speaking.
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.8, maxWidth: 480 }}>
                 So we built a platform that takes a few details about your child and turns them into a fully illustrated, narrated adventure — in English or Hindi — featuring two characters who are quickly becoming family favourites: us.

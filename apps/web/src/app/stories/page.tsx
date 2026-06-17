@@ -95,9 +95,29 @@ const stats = [
   { value: "English & Hindi", label: "Narration languages" },
 ];
 
+const BASE = "https://www.lallifafa.com";
+
+const itemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Lalli Fafa Story Themes",
+  description: "Personalised children's story themes featuring Lalli & Fafa — adventure, kindness, courage, nature, and more. Every story is narrated in English or Hindi with your child as the hero.",
+  url: `${BASE}/stories`,
+  itemListElement: themes.map((theme, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: theme.title,
+    description: theme.tagline,
+  })),
+};
+
 export default function StoriesPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
       <SiteHeader />
       <main>
         {/* Hero */}
