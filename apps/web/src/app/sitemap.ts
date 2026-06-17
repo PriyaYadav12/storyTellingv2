@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticRoutes: MetadataRoute.Sitemap = [
     // Core public pages — high-value for SEO
-    { url: BASE,                     lastModified: now, changeFrequency: "weekly",  priority: 1   },
+    { url: `${BASE}/`,               lastModified: now, changeFrequency: "weekly",  priority: 1   },
     { url: `${BASE}/stories`,        lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/pricing`,        lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/blog`,           lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
