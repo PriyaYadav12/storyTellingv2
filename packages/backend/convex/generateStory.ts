@@ -64,7 +64,7 @@ export const _generateContent = internalAction({
 
     const makeStoryRequest = async (temperature: number) =>
       gemini.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-2.5-pro",
         config: {
           temperature,
           systemInstruction: system,
@@ -80,7 +80,7 @@ export const _generateContent = internalAction({
     if (isNonStory) {
       console.warn("AI returned non-story response, retrying:", content.slice(0, 80));
       const retryResp = await gemini.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-2.5-pro",
         config: {
           temperature: 0.7,
           systemInstruction: system,
@@ -112,7 +112,7 @@ export const _generateContent = internalAction({
         : `too long (${wordCount} words, max 450)`;
       console.warn(`Story body ${reason}, retrying...`);
       const retryResp = await gemini.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-2.5-pro",
         config: {
           temperature: 0.5,
           systemInstruction: system,
