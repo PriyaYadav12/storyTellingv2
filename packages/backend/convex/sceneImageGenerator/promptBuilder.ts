@@ -86,75 +86,69 @@ export function createScenePrompt(
 ): string {
   const genderLabel = getGenderLabel(child.gender);
 
-  // When no child photo is provided, give Gemini a concrete physical anchor
-  // so it doesn't freely reinvent the character each scene
   const childFallbackDescription =
     child.gender === "female"
-      ? `${child.name} is a ${child.age}-year-old Indian girl with warm brown skin, long dark black hair (tied in two pigtails or loose), large expressive dark brown eyes, a small round nose, and a bright friendly smile. She wears a colourful outfit (use the same outfit throughout all scenes — pick one at scene 1 and lock it in).`
+      ? `${child.name} is a ${child.age}-year-old Indian girl with warm brown skin, long dark black hair in two pigtails with pink hair ties, large expressive dark brown eyes, a small round nose, and a bright friendly smile. She wears a bright pink t-shirt with a white star on it and blue shorts — ALWAYS this exact outfit.`
       : child.gender === "male"
-        ? `${child.name} is a ${child.age}-year-old Indian boy with warm brown skin, short neat dark black hair, large expressive dark brown eyes, a small round nose, and a wide friendly smile. He wears a colourful outfit (use the same outfit throughout all scenes — pick one at scene 1 and lock it in).`
-        : `${child.name} is a ${child.age}-year-old Indian child with warm brown skin, dark black hair, large expressive dark brown eyes, and a friendly smile. Maintain the exact same appearance and outfit in every scene.`;
+        ? `${child.name} is a ${child.age}-year-old Indian boy with warm brown skin, short neat dark black hair, large expressive dark brown eyes, a small round nose, and a wide friendly smile. He wears a bright red t-shirt with a white star on it and blue shorts — ALWAYS this exact outfit.`
+        : `${child.name} is a ${child.age}-year-old Indian child with warm brown skin, dark black hair, large expressive dark brown eyes, and a friendly smile. Wears a bright purple t-shirt with a white star and blue shorts — ALWAYS this exact outfit.`;
 
   const childPrompt = hasChildAvatar
     ? `Copy the EXACT appearance from the child reference image — match facial features, skin tone, hair colour/style, clothing colours and patterns, body proportions precisely. Do NOT change their look.`
-    : `${childFallbackDescription} Keep ${child.name}'s appearance IDENTICAL across all scenes.`;
+    : childFallbackDescription;
 
   const continuityPrompt = hasPreviousScene
-    ? `\nVISUAL CONTINUITY: The previous scene image is provided as a reference. Match the art style, colour palette, character designs, proportions, and overall aesthetic EXACTLY from that image. Characters must look identical to how they appeared in the previous scene.`
+    ? `\nVISUAL CONTINUITY: Match the art style, colour palette, and character designs from the previous scene reference image.`
     : "";
 
   return `
+THREE CHARACTERS REQUIRED — THIS IS THE #1 RULE:
+This image MUST show EXACTLY three children standing together:
+1. LALLI (girl in yellow dress) — on the LEFT
+2. ${child.name.toUpperCase()} (${genderLabel} in ${hasChildAvatar ? "outfit from reference" : child.gender === "female" ? "pink t-shirt" : child.gender === "male" ? "red t-shirt" : "purple t-shirt"}) — in the CENTER
+3. FAFA (boy in teal overalls) — on the RIGHT
+If ${child.name} is missing from the image, the image is WRONG. All three must be clearly visible.
+
+---
+
 ${STYLE_LOCK}
 
 ---
 
-SCENE ${scene.sceneNumber} — ILLUSTRATION BRIEF:
+SCENE ${scene.sceneNumber}:
 ${scene.description}
 
 ---
 
-CHARACTER CONSISTENCY (CRITICAL — DO NOT DEVIATE):
+CHARACTERS:
 
-LALLI (girl):
-• Indian girl, warm brown skin, rosy cheeks, large dark expressive eyes, wide warm smile
-• Hair: dark brown, always in TWO HIGH PIGTAILS with orange hair ties — never loose, never in a bun
-• Outfit: yellow short-sleeve dress with orange star print — ALWAYS this exact dress, never a different colour
-• Accessories: small teal/turquoise crossbody shoulder bag
-• Shoes: white ankle socks, orange Mary Jane shoes
-• She is always cheerful, often waving or gesturing
+LALLI (left side):
+• Indian girl, warm brown skin, rosy cheeks, large dark eyes, warm smile
+• Hair: dark brown, TWO HIGH PIGTAILS with orange hair ties
+• Outfit: yellow short-sleeve dress with orange star print
+• Accessories: teal crossbody shoulder bag
+• Shoes: white socks, orange Mary Jane shoes
 
-FAFA (boy):
-• Indian boy, warm brown skin, rosy cheeks, large dark expressive eyes, wide open happy smile
-• Hair: short dark brown, slightly spiky/tousled — never long
-• Outfit: yellow short-sleeve t-shirt UNDER teal/turquoise bib overalls (dungarees) — ALWAYS this exact outfit
-• Signature prop: ALWAYS holding or carrying a light blue bunny plush toy
-• Shoes: yellow socks, orange rounded shoes
-• He is always curious and joyful
-
-These descriptions are ABSOLUTE — do not change Lalli's or Fafa's outfit, hair, or colours under any circumstances.
-Also use the character reference image provided to match their faces and proportions exactly.
-
-${child.name.toUpperCase()} (THE CHILD CHARACTER):
+${child.name.toUpperCase()} (center — THE HERO):
 ${childPrompt}
+
+FAFA (right side):
+• Indian boy, warm brown skin, rosy cheeks, large dark eyes, happy smile
+• Hair: short dark brown, slightly spiky
+• Outfit: yellow t-shirt UNDER teal bib overalls (dungarees)
+• Prop: ALWAYS holding a light blue bunny plush toy
+• Shoes: yellow socks, orange shoes
+
+Use the character reference image to match Lalli and Fafa's faces exactly.
 
 ---
 
-COMPOSITION GUIDELINES:
-• Format: landscape orientation (wider than tall) — compose accordingly
-• Character placement: position characters in the UPPER 60–70% of the frame; leave the lower 30% for ground, grass, floor, or simple background elements — never place faces or important details at the very bottom
-• Engaging, clear focal point — characters well-framed and fully visible
-• Child-friendly, warm lighting — no harsh shadows
-• Colourful, simple background that tells the scene's story without cluttering
-• All characters visible and on-model
-
-MANDATORY CHARACTER PRESENCE — DO NOT SKIP:
-This illustration MUST show ALL THREE characters together: Lalli, Fafa, AND ${child.name}.
-${child.name} must be clearly visible, on-model, and actively part of the scene in this image —
-even if the scene brief above focuses mainly on Lalli and Fafa's actions.
-An image containing only Lalli and Fafa without ${child.name} is INCORRECT and unacceptable.
+COMPOSITION:
+• Landscape orientation (wider than tall)
+• All THREE characters in the upper 60–70% of the frame
+• ${child.name} is positioned between Lalli and Fafa, slightly forward — ${child.name} is the hero
+• Simple, colourful background — warm lighting, no harsh shadows
 ${continuityPrompt}
-
-FINAL CHECK: The style must be flat 2D cartoon, pastel palette, soft cell-shading — matching the character reference image exactly. Any photorealism, 3D rendering, or style drift is unacceptable.
 `.trim();
 }
 
