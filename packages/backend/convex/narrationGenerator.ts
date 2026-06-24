@@ -140,28 +140,34 @@ function applyPronunciationFixes(text: string): string {
   });
 }
 
+const LANGUAGE_CODES: Record<string, string> = {
+  hindi: "hi", bengali: "bn", gujarati: "gu",
+  tamil: "ta", marathi: "mr", telugu: "te",
+};
+
 async function ttsArrayBuffer(voiceId: string, text: string, language: string): Promise<ArrayBuffer> {
   const apiKey = process.env.ELEVEN_LABS_API_KEY;
   if (!apiKey) throw new Error("ELEVENLABS_API_KEY missing");
 
   const client = new ElevenLabsClient({ apiKey });
 
-  // eleven_turbo_v2_5 is English-only (cheaper/faster).
-  // eleven_multilingual_v2 supports all Indian languages — use it for any non-English story.
-  const modelId = isMultilingualLanguage(language)
-    ? "eleven_multilingual_v2"
-    : "eleven_turbo_v2_5";
+  const isMultilingual = isMultilingualLanguage(language);
+  const modelId = isMultilingual ? "eleven_multilingual_v2" : "eleven_turbo_v2_5";
+  const langCode = LANGUAGE_CODES[language.toLowerCase()];
 
   const resp = await client.textToSpeech.convert(voiceId, {
     text,
     modelId,
     outputFormat: "mp3_44100_64",
+    // Force the correct language so the model doesn't flip between
+    // Hindi and English pronunciation on mixed-language text
+    ...(langCode ? { languageCode: langCode } : {}),
     voiceSettings: {
-      stability: 0.62,                   // higher = more consistent pacing, less rushed segments
-      similarityBoost: 0.80,             // faithful to the voice character
-      style: 0.15,                       // low style = cleaner, more natural delivery
-      useSpeakerBoost: true,             // enhances voice clarity
-      speed: 0.82,                       // slightly slower for children's storytelling
+      stability: 0.62,
+      similarityBoost: 0.80,
+      style: 0.15,
+      useSpeakerBoost: true,
+      speed: 0.82,
     },
   });
 
