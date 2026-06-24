@@ -155,13 +155,13 @@ async function ttsArrayBuffer(voiceId: string, text: string, language: string): 
   const resp = await client.textToSpeech.convert(voiceId, {
     text,
     modelId,
-    outputFormat: "mp3_44100_64",        // higher quality: 44kHz, 64kbps
+    outputFormat: "mp3_44100_64",
     voiceSettings: {
-      stability: 0.45,                   // slightly lower = more expressive variation
+      stability: 0.62,                   // higher = more consistent pacing, less rushed segments
       similarityBoost: 0.80,             // faithful to the voice character
-      style: 0.40,                       // style exaggeration for emotional delivery
+      style: 0.15,                       // low style = cleaner, more natural delivery
       useSpeakerBoost: true,             // enhances voice clarity
-      speed: 0.85,                       // slightly slower for children's storytelling
+      speed: 0.82,                       // slightly slower for children's storytelling
     },
   });
 
@@ -253,14 +253,16 @@ export async function generateMergedNarration(
   const lines = parseStoryToSpeakerLines(title, content, childName);
   console.log(`[Narration] ${lines.length} lines to TTS. Language: ${language}. First 3:`, lines.slice(0, 3).map(l => `${l.speaker}: ${l.text.slice(0, 40)}`));
 
-  // Limit concurrency to 2 TTS calls at a time
+  // Limit concurrency to 2 TTS calls at a time.
+  // Append " ..." to each line so TTS inserts a natural breath pause between speakers.
   const results = await mapWithConcurrencyLimit(lines, 2, async (l, _idx) => {
     const voiceId = pickVoiceForSpeaker(voiceMap, l.speaker, childName, childGender, language);
     if (!voiceId) {
       console.error(`[TTS] No voice ID for speaker: ${l.speaker}`);
       return null;
     }
-    const ab = await ttsArrayBuffer(voiceId, applyPronunciationFixes(l.text), language);
+    const textWithPause = applyPronunciationFixes(l.text) + " ...";
+    const ab = await ttsArrayBuffer(voiceId, textWithPause, language);
     return { order: l.order, ab };
   });
 
