@@ -551,7 +551,7 @@ function StoryViewer({
   const [bedtimeMenuOpen, setBedtimeMenuOpen] = useState(false);
   const [sleepRemaining, setSleepRemaining] = useState(0);
   const [showVocab, setShowVocab] = useState(false);
-  const [lightMode, setLightMode] = useState(false);
+  const [lightMode, setLightMode] = useState(true);
 
   const t = lightMode ? {
     bg: "#FFF8E7", headerBg: "rgba(255,248,231,0.95)", panelBg: "#fff",
@@ -1006,6 +1006,52 @@ function StoryViewer({
         transition: "filter 0.8s ease, background 0.4s ease",
       }}
     >
+      {/* ── Sleep timer bottom sheet ── */}
+      {bedtimeMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setBedtimeMenuOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-3xl flex flex-col gap-2 p-5 pb-8"
+            style={{ background: lightMode ? "#fff" : "#1a1730", border: `1px solid ${t.panelBorder}` }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem", color: t.text }}>
+                🌙 Sleep Timer
+              </p>
+              <button onClick={() => setBedtimeMenuOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ color: t.controlColor }}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {[5, 10, 15, 30].map(m => (
+                <button
+                  key={m}
+                  onClick={() => startSleepTimer(m)}
+                  className="flex flex-col items-center gap-1 py-3 rounded-2xl transition-all active:scale-95"
+                  style={{ background: t.panelBg, border: `1.5px solid ${t.panelBorder}`, cursor: "pointer" }}
+                >
+                  <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.1rem", color: t.text }}>{m}</span>
+                  <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", color: t.textSoft }}>min</span>
+                </button>
+              ))}
+            </div>
+            {sleepRemaining > 0 && (
+              <button
+                onClick={() => { setSleepRemaining(0); setBedtimeMode(false); setBedtimeMenuOpen(false); }}
+                className="flex items-center justify-center gap-2 py-2.5 rounded-xl mt-1 transition-all active:scale-95"
+                style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.85rem", border: "1px solid rgba(239,68,68,0.2)" }}
+              >
+                <X size={14} /> Cancel timer ({Math.ceil(sleepRemaining / 60)}m left)
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── Top bar ── */}
       <header
         className="flex items-center justify-between px-4 py-3 flex-shrink-0"
@@ -1039,14 +1085,17 @@ function StoryViewer({
           {/* Light/dark toggle */}
           <button
             onClick={() => setLightMode(m => !m)}
-            className="flex items-center justify-center w-8 h-8 rounded-full transition-all"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-full transition-all"
             title={lightMode ? "Dark mode" : "Light mode"}
-            style={{ color: t.controlColor }}
+            style={{ color: t.controlColor, background: t.panelBg, border: `1px solid ${t.panelBorder}` }}
           >
-            {lightMode ? <Moon size={15} /> : <Sun size={15} />}
+            {lightMode ? <Moon size={13} /> : <Sun size={13} />}
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700 }}>
+              {lightMode ? "Dark" : "Light"}
+            </span>
           </button>
 
-          {/* Bedtime mode button */}
+          {/* Sleep timer button */}
           <div className="relative">
             <button
               onClick={() => setBedtimeMenuOpen(o => !o)}
@@ -1060,37 +1109,6 @@ function StoryViewer({
               <span className="absolute -bottom-1 -right-1 px-1 rounded text-xs font-bold" style={{ background: "var(--lf-sunshine)", color: "#131020", fontSize: "0.55rem", lineHeight: "1.2" }}>
                 {Math.ceil(sleepRemaining / 60)}m
               </span>
-            )}
-            {bedtimeMenuOpen && (
-              <div
-                className="absolute right-0 top-10 flex flex-col gap-1 p-3 rounded-2xl z-50"
-                style={{ background: "#1a1730", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)", minWidth: 170 }}
-              >
-                <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "#fff", marginBottom: 4 }}>
-                  🌙 Sleep Timer
-                </p>
-                {[5, 10, 15, 30].map(m => (
-                  <button
-                    key={m}
-                    onClick={() => startSleepTimer(m)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all hover:bg-white/10"
-                    style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", fontWeight: 600 }}
-                  >
-                    <Clock size={13} style={{ opacity: 0.5 }} />
-                    {m} min
-                  </button>
-                ))}
-                {sleepRemaining > 0 && (
-                  <button
-                    onClick={() => { setSleepRemaining(0); setBedtimeMode(false); setBedtimeMenuOpen(false); }}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all hover:bg-white/10 mt-1"
-                    style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "#f87171", fontWeight: 600, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 8 }}
-                  >
-                    <X size={13} />
-                    Cancel
-                  </button>
-                )}
-              </div>
             )}
           </div>
         </div>
@@ -1338,7 +1356,7 @@ function StoryViewer({
                       fontWeight: speaker ? 700 : 500,
                       fontStyle: speaker ? "normal" : "italic",
                       lineHeight: 1.5,
-                      color: speaker ? speaker.color : "rgba(255,255,255,0.9)",
+                      color: speaker ? speaker.color : t.text,
                       margin: 0,
                     }}
                   >
@@ -1346,7 +1364,7 @@ function StoryViewer({
                   </p>
                 </div>
               ) : (
-                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: "rgba(255,255,255,0.12)", margin: 0 }}>
+                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: t.textFaint, margin: 0 }}>
                   {showSubtitles ? "♪" : "Subtitles off"}
                 </p>
               )}
@@ -1362,7 +1380,7 @@ function StoryViewer({
                 <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: t.textFaint, minWidth: 34, textAlign: "right" }}>
                   {formatTime(currentTime)}
                 </span>
-                <div className="flex-1 relative h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
+                <div className="flex-1 relative h-1.5 rounded-full" style={{ background: lightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.12)" }}>
                   <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%", background: "linear-gradient(90deg,var(--lf-teal),#00a38d)" }} />
                   <input type="range" min={0} max={duration || 0} step={0.1} value={currentTime} onChange={onScrubberChange} onMouseDown={() => setSeeking(true)} onMouseUp={() => setSeeking(false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style={{ margin: 0 }} />
                 </div>
@@ -1441,7 +1459,7 @@ function StoryViewer({
               {showTextPanel && sceneSentences.length > 0 && (
                 <div
                   className="mt-2 flex flex-col gap-1.5 max-h-44 overflow-y-auto rounded-xl px-4 py-3"
-                  style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.07)" }}
+                  style={{ background: lightMode ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.3)", border: `1px solid ${t.panelBorder}` }}
                 >
                   {sceneSentences.map((sentence, i) => (
                     <p
@@ -1451,8 +1469,8 @@ function StoryViewer({
                         fontSize: "0.82rem",
                         lineHeight: 1.6,
                         color: i === activeSubtitleIdx
-                          ? "#fff"
-                          : "rgba(255,255,255,0.3)",
+                          ? t.text
+                          : t.textFaint,
                         fontWeight: i === activeSubtitleIdx ? 700 : 400,
                         background: i === activeSubtitleIdx ? "rgba(0,201,167,0.1)" : "transparent",
                         borderLeft: i === activeSubtitleIdx ? "2.5px solid var(--lf-teal)" : "2.5px solid transparent",
@@ -1468,53 +1486,41 @@ function StoryViewer({
               )}
             </div>
 
-            {/* ── Social sharing strip — 2×2 on mobile, single row on wider screens ── */}
-            <div className="w-full flex flex-col gap-2">
-              <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", fontWeight: 600, color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Share this story
+            {/* ── Primary CTAs — New Story + Sequel ── */}
+            <div className="w-full grid grid-cols-2 gap-2">
+              <Link
+                href="/generate"
+                className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(0,201,167,0.35)" }}
+              >
+                <Sparkles size={16} /> New Story
+              </Link>
+              <Link
+                href={`/generate?theme=${encodeURIComponent(story.params?.theme ?? "")}`}
+                className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                style={{ background: t.panelBg, color: t.text, fontFamily: "'Baloo 2', sans-serif", border: `1.5px solid ${t.panelBorder}` }}
+              >
+                <RefreshCw size={14} /> Sequel
+              </Link>
+            </div>
+
+            {/* ── Compact share row ── */}
+            <div className="w-full flex items-center gap-2 justify-center">
+              <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", fontWeight: 600, color: t.textFaint, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Share
               </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {/* WhatsApp */}
-                <a
-                  href={waShareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs transition-all hover:brightness-110 active:scale-95"
-                  style={{ background: "#25D366", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.05 2.095C6.495 2.095 1.984 6.616 1.984 12.178c0 1.768.47 3.431 1.296 4.875L2.013 22l5.087-1.331a9.924 9.924 0 004.95 1.31c5.555 0 10.066-4.52 10.066-10.083 0-2.697-1.05-5.23-2.958-7.14A9.98 9.98 0 0012.05 2.095zm.003 18.365a8.244 8.244 0 01-4.22-1.156l-.302-.18-3.13.82.834-3.053-.196-.315A8.24 8.24 0 013.67 12.18c0-4.566 3.718-8.28 8.283-8.28 2.213 0 4.29.863 5.854 2.43a8.23 8.23 0 012.422 5.85c0 4.565-3.718 8.28-8.176 8.28z"/></svg>
-                  WhatsApp
-                </a>
-                {/* Facebook */}
-                <a
-                  href={fbShareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs transition-all hover:brightness-110 active:scale-95"
-                  style={{ background: "#1877F2", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  Facebook
-                </a>
-                {/* Instagram — triggers native share sheet on mobile */}
-                <button
-                  onClick={handleShare}
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs transition-all hover:brightness-110 active:scale-95"
-                  style={{ background: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                  Instagram
-                </button>
-                {/* Copy link */}
-                <button
-                  onClick={copyLink}
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95"
-                  style={{ background: "rgba(255,255,255,0.08)", color: shareCopied ? "var(--lf-teal)" : "rgba(255,255,255,0.6)", border: `1px solid ${shareCopied ? "rgba(0,201,167,0.4)" : "rgba(255,255,255,0.12)"}`, fontFamily: "'Nunito', sans-serif" }}
-                >
-                  {shareCopied ? <Check size={13} style={{ flexShrink: 0 }} /> : <span style={{ flexShrink: 0 }}>🔗</span>}
-                  {shareCopied ? "Copied!" : "Copy link"}
-                </button>
-              </div>
+              <a href={waShareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95" style={{ background: "#25D366" }} title="WhatsApp">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.05 2.095C6.495 2.095 1.984 6.616 1.984 12.178c0 1.768.47 3.431 1.296 4.875L2.013 22l5.087-1.331a9.924 9.924 0 004.95 1.31c5.555 0 10.066-4.52 10.066-10.083 0-2.697-1.05-5.23-2.958-7.14A9.98 9.98 0 0012.05 2.095z"/></svg>
+              </a>
+              <a href={fbShareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95" style={{ background: "#1877F2" }} title="Facebook">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <button onClick={handleShare} className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95" style={{ background: "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)" }} title="Instagram">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+              </button>
+              <button onClick={copyLink} className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95" style={{ background: t.panelBg, border: `1px solid ${t.panelBorder}`, color: shareCopied ? "var(--lf-teal)" : t.controlColor }} title="Copy link">
+                {shareCopied ? <Check size={14} /> : <Copy size={14} />}
+              </button>
             </div>
 
             {/* ── Vocabulary Builder ── */}
@@ -1579,18 +1585,9 @@ function StoryViewer({
         <Link href="/library" className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: t.textFaint, fontFamily: "'Nunito', sans-serif" }}>
           <Library size={13} /> Library
         </Link>
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/generate?theme=${encodeURIComponent(story?.params?.theme ?? "")}`}
-            className="flex items-center gap-1.5 text-xs font-bold"
-            style={{ color: t.textSoft, fontFamily: "'Nunito', sans-serif" }}
-          >
-            <RefreshCw size={12} /> Sequel
-          </Link>
-          <Link href="/generate" className="flex items-center gap-1.5 text-xs font-bold" style={{ color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif" }}>
-            <Sparkles size={13} /> New story
-          </Link>
-        </div>
+        <Link href="/dashboard" className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: t.textFaint, fontFamily: "'Nunito', sans-serif" }}>
+          <Sparkles size={13} /> Dashboard
+        </Link>
       </div>
     </div>
   );
