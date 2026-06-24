@@ -3,16 +3,17 @@
  */
 import { Id } from "../_generated/dataModel";
 
-// Reference image of Lalli & Fafa in Convex Storage
-export const LALLI_FAFA_STORAGE_ID = "kg266f69m4h0yy1wzhm3gk36qh7v76p5" as Id<"_storage">;
+// Separate character reference images in Convex Storage
+// Upload the individual Lalli and Fafa cinematic images and update these IDs
+export const LALLI_STORAGE_ID = "kg266f69m4h0yy1wzhm3gk36qh7v76p5" as Id<"_storage">; // TODO: replace with new Lalli cinematic image
+export const FAFA_STORAGE_ID = "kg266f69m4h0yy1wzhm3gk36qh7v76p5" as Id<"_storage">; // TODO: replace with new Fafa cinematic image
 
-// Image/Model constants
 export const PNG_MIME_TYPE = "image/png";
 export const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
 
-// Prompt labels
 export const PROMPT_LABELS = {
-  CHARACTER_REFERENCE: "CRITICAL REFERENCE: This image shows Lalli and Fafa's EXACT appearance. You MUST match their facial features, hair color/style, clothing, body proportions, and overall design EXACTLY in every scene. Copy their appearance precisely - do not reinterpret or modify their looks.",
-  CHILD_REFERENCE: "CRITICAL REFERENCE: This image shows the child character's EXACT appearance. You MUST match their facial features, hair color/style, clothing, body proportions, and overall design EXACTLY in every scene. Copy their appearance precisely - do not reinterpret or modify their looks.",
-  VISUAL_CONTINUITY: "VISUAL CONTINUITY REFERENCE: This previous scene shows the exact art style, color palette, lighting, and character appearances. Match the visual style, character designs, and overall aesthetic EXACTLY. Maintain the same character proportions, facial features, and clothing from this reference.",
+  LALLI_REFERENCE: "REFERENCE IMAGE — LALLI: This shows Lalli's EXACT 3D animated appearance. Copy her facial features, hair style (two pigtails with orange bows), yellow star dress, teal bag, and proportions PRECISELY in the scene. Do not modify her look.",
+  FAFA_REFERENCE: "REFERENCE IMAGE — FAFA: This shows Fafa's EXACT 3D animated appearance. Copy his facial features, hair style (short messy brown), teal overalls over yellow shirt, blue bunny toy, and proportions PRECISELY in the scene. Do not modify his look.",
+  CHILD_REFERENCE: "REFERENCE IMAGE — CHILD HERO: This shows the child character's EXACT appearance. Copy their facial features, hair, clothing, skin tone, and proportions PRECISELY. This child must appear in EVERY scene as the central hero.",
+  VISUAL_CONTINUITY: "VISUAL CONTINUITY: Match the art style, lighting, and character designs from this previous scene exactly.",
 } as const;

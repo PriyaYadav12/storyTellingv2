@@ -4,7 +4,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { ActionCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
-import { LALLI_FAFA_STORAGE_ID, PNG_MIME_TYPE } from "./constants";
+import { LALLI_STORAGE_ID, FAFA_STORAGE_ID, PNG_MIME_TYPE } from "./constants";
 
 /**
  * Converts a Blob to a base64 string
@@ -59,10 +59,14 @@ export async function loadImageFromStorage(
 }
 
 /**
- * Loads the Lalli & Fafa reference image as base64 from Convex storage
+ * Loads Lalli and Fafa reference images separately from Convex storage
  */
-export async function loadReferenceImage(ctx: ActionCtx): Promise<string | undefined> {
-  return loadImageFromStorage(ctx, LALLI_FAFA_STORAGE_ID);
+export async function loadCharacterReferences(ctx: ActionCtx): Promise<{ lalli?: string; fafa?: string }> {
+  const [lalli, fafa] = await Promise.all([
+    loadImageFromStorage(ctx, LALLI_STORAGE_ID),
+    loadImageFromStorage(ctx, FAFA_STORAGE_ID),
+  ]);
+  return { lalli, fafa };
 }
 
 /**

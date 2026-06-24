@@ -17,7 +17,8 @@ export type {
 
 // Export constants
 export {
-  LALLI_FAFA_STORAGE_ID,
+  LALLI_STORAGE_ID,
+  FAFA_STORAGE_ID,
   PNG_MIME_TYPE,
   GEMINI_IMAGE_MODEL,
   PROMPT_LABELS,
@@ -29,7 +30,7 @@ export {
   base64ToBlob,
   getGeminiClient,
   loadImageFromStorage,
-  loadReferenceImage,
+  loadCharacterReferences,
   storeImageFromBase64,
   getGenderLabel,
 } from "./utils";

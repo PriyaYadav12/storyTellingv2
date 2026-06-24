@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Core image generation logic using Gemini AI
  */
 import { ActionCtx } from "../_generated/server";
@@ -15,7 +15,7 @@ import { GEMINI_IMAGE_MODEL } from "./constants";
 import {
   getGeminiClient,
   loadImageFromStorage,
-  loadReferenceImage,
+  loadCharacterReferences,
   storeImageFromBase64,
 } from "./utils";
 import { assemblePromptPartsWithLabels, createScenePrompt, createChildAvatarPrompt } from "./promptBuilder";
@@ -27,7 +27,8 @@ export async function generateSceneImage(
   ctx: ActionCtx,
   scene: SceneMetadata,
   child: ChildInfo,
-  characterReferenceBase64?: string,
+  lalliRefBase64?: string,
+  fafaRefBase64?: string,
   previousSceneBase64?: string,
   childAvatarBase64?: string
 ): Promise<ImageGenerationResult> {
@@ -36,9 +37,10 @@ export async function generateSceneImage(
 
     const promptParts = assemblePromptPartsWithLabels({
       textPrompt,
-      characterRefBase64: characterReferenceBase64,
-      childAvatarBase64: childAvatarBase64,
-      previousSceneBase64: previousSceneBase64,
+      lalliRefBase64,
+      fafaRefBase64,
+      childAvatarBase64,
+      previousSceneBase64,
     });
 
     const ai = getGeminiClient();
@@ -59,7 +61,7 @@ export async function generateSceneImage(
 }
 
 /**
- * Generates a child avatar image
+ * Generates a child avatar image in cinematic 3D style
  */
 export async function generateChildAvatar(
   ctx: ActionCtx,
@@ -69,16 +71,13 @@ export async function generateChildAvatar(
   try {
     const textPrompt = createChildAvatarPrompt(child);
 
-    // If we have a reference image (child's uploaded photo), include it
     const referenceBase64 = referenceStorageId
       ? await loadImageFromStorage(ctx, referenceStorageId)
       : undefined;
 
     const promptParts = assemblePromptPartsWithLabels({
       textPrompt,
-      characterRefBase64: undefined,
       childAvatarBase64: referenceBase64,
-      previousSceneBase64: undefined,
     });
 
     const ai = getGeminiClient();
@@ -90,7 +89,7 @@ export async function generateChildAvatar(
     for (const part of response?.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData && part.inlineData.data) {
         const avatarStorageId = await storeImageFromBase64(ctx, part.inlineData.data);
-        return { avatarStorageId };
+        return { avatarStorageId, avatarBase64: part.inlineData.data };
       }
     }
     return { error: "No image data returned" };
@@ -102,33 +101,26 @@ export async function generateChildAvatar(
 
 /**
  * Processes and stores a single scene image.
- * Returns imageBase64 so the caller can chain it as the next scene's continuity reference.
  */
 async function processSceneImage(
   ctx: ActionCtx,
   scene: SceneMetadata,
   child: ChildInfo,
   storyId: Id<"stories">,
-  characterRefBase64?: string,
+  lalliRefBase64?: string,
+  fafaRefBase64?: string,
   previousSceneBase64?: string,
   childAvatarBase64?: string
 ): Promise<SceneGenerationResult> {
 
   const result = await generateSceneImage(
-    ctx,
-    scene,
-    child,
-    characterRefBase64,
-    previousSceneBase64,
-    childAvatarBase64
+    ctx, scene, child,
+    lalliRefBase64, fafaRefBase64,
+    previousSceneBase64, childAvatarBase64
   );
 
   if (result.error || !result.imageBase64) {
-    return {
-      sceneNumber: scene.sceneNumber,
-      success: false,
-      error: result.error,
-    };
+    return { sceneNumber: scene.sceneNumber, success: false, error: result.error };
   }
 
   const storageId = await storeImageFromBase64(ctx, result.imageBase64);
@@ -138,17 +130,9 @@ async function processSceneImage(
     filePath: storageId,
   });
 
-  return {
-    sceneNumber: scene.sceneNumber,
-    success: true,
-    imageBase64: result.imageBase64, // returned for chaining
-  };
+  return { sceneNumber: scene.sceneNumber, success: true, imageBase64: result.imageBase64 };
 }
 
-/**
- * Runs `fn` over `items` with at most `limit` calls in flight at once,
- * preserving input order in the returned results array.
- */
 async function mapWithConcurrencyLimit<T, R>(
   items: T[],
   limit: number,
@@ -178,10 +162,8 @@ async function mapWithConcurrencyLimit<T, R>(
 }
 
 /**
- * Generates and stores all scene images, up to 3 at a time.
- * Each scene gets the character reference image for consistency,
- * but NOT the previous scene — this prevents composition copying
- * which causes scenes to look identical.
+ * Generates and stores all scene images with separate character references.
+ * Auto-generates a child avatar if none exists.
  */
 export async function generateAllSceneImages(
   ctx: ActionCtx,
@@ -194,38 +176,40 @@ export async function generateAllSceneImages(
 
   const sortedScenes = [...scenes].sort((a, b) => a.sceneNumber - b.sceneNumber);
 
-  // Load the Lalli & Fafa character reference once — used for every scene
-  const characterRefBase64 = await loadReferenceImage(ctx);
+  // Load Lalli and Fafa references separately
+  const charRefs = await loadCharacterReferences(ctx);
 
-  // Load child avatar if available
-  const childAvatarBase64 = childAvatarStorageId
-    ? await loadImageFromStorage(ctx, childAvatarStorageId)
-    : undefined;
+  // Load or auto-generate child avatar
+  let childAvatarBase64: string | undefined;
+  if (childAvatarStorageId) {
+    childAvatarBase64 = await loadImageFromStorage(ctx, childAvatarStorageId);
+  }
+  if (!childAvatarBase64) {
+    console.log(`[generateAllSceneImages] No child avatar — auto-generating for ${child.name}`);
+    const avatarResult = await generateChildAvatar(ctx, child, childAvatarStorageId);
+    if ((avatarResult as any).avatarBase64) {
+      childAvatarBase64 = (avatarResult as any).avatarBase64;
+      console.log(`[generateAllSceneImages] Auto-generated child avatar successfully`);
+    } else {
+      console.warn(`[generateAllSceneImages] Child avatar generation failed: ${avatarResult.error}`);
+    }
+  }
 
   const results = await mapWithConcurrencyLimit(sortedScenes, 3, async (scene) => {
     console.log(`[generateAllSceneImages] Generating scene ${scene.sceneNumber}`);
 
-    // Generate without previous scene — avoids composition copying that makes scenes look identical.
-    // Character consistency is maintained via characterRefBase64 + STYLE_LOCK in the prompt.
     let result = await processSceneImage(
-      ctx,
-      scene,
-      child,
-      storyId,
-      characterRefBase64,
-      undefined, // no previousScene
+      ctx, scene, child, storyId,
+      charRefs.lalli, charRefs.fafa,
+      undefined,
       childAvatarBase64
     );
 
-    // Retry once on failure before giving up
     if (!result.success) {
       console.warn(`[generateAllSceneImages] Scene ${scene.sceneNumber} failed (${result.error}), retrying...`);
       result = await processSceneImage(
-        ctx,
-        scene,
-        child,
-        storyId,
-        characterRefBase64,
+        ctx, scene, child, storyId,
+        charRefs.lalli, charRefs.fafa,
         undefined,
         childAvatarBase64
       );

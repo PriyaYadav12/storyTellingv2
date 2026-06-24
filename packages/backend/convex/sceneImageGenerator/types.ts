@@ -21,6 +21,7 @@ export interface ImageGenerationResult {
 
 export interface AvatarGenerationResult {
   avatarStorageId?: string;
+  avatarBase64?: string;
   error?: string;
 }
 
@@ -32,7 +33,8 @@ export interface SceneGenerationResult {
 }
 
 export interface PromptReferences {
-  characterRefBase64?: string;
+  lalliRefBase64?: string;
+  fafaRefBase64?: string;
   childAvatarBase64?: string;
   previousSceneBase64?: string;
 }

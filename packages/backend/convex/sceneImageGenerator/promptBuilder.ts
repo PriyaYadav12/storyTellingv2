@@ -1,77 +1,64 @@
 /**
- * Prompt building logic for image generation
+ * Prompt building logic for image generation — cinematic 3D animated style
  */
 import { Part } from "@google/genai";
-import { ChildInfo, SceneMetadata, PromptReferences } from "./types";
+import { ChildInfo, SceneMetadata } from "./types";
 import { PROMPT_LABELS, PNG_MIME_TYPE } from "./constants";
 import { getGenderLabel } from "./utils";
 
-/**
- * Universal style lock applied to EVERY scene prompt.
- * This is the single source of truth for the visual language.
- * Gemini must obey these constraints before anything else.
- */
 const STYLE_LOCK = `
 STYLE LOCK — APPLY TO EVERY SCENE, NO EXCEPTIONS:
-• Art style: flat 2D vector cartoon, children's picture book illustration
-• Color palette: warm soft pastels (peach, lavender, mint, soft gold, sky blue) — NO neon, NO dark/gritty tones
-• Linework: clean smooth outlines, consistent stroke weight throughout
-• Rendering: soft cell-shading only — NO photorealism, NO 3D rendering, NO painterly textures
-• Lighting: warm, diffused, even — no harsh shadows or dramatic contrast
-• Proportions: slightly chibi/big-headed for characters (large expressive eyes, small noses)
-• Background: simple, colorful, uncluttered — complements characters without overpowering them
-• Mood: warm, cheerful, safe, joyful — suitable for children aged 2–8
+• Art style: Ultra-high-definition 3D animated characters (Pixar/Disney quality), cinematic storytelling
+• Characters: Stylized 3D animated children with large expressive eyes, smooth skin, soft rounded features
+• Environment: Rich, detailed, vibrant backgrounds — lush and immersive, semi-realistic or stylized
+• Lighting: Warm cinematic lighting with soft shadows, volumetric light rays, golden-hour warmth
+• Rendering: High-quality 3D with subsurface scattering on skin, soft cloth simulation on clothing
+• Proportions: Slightly stylized — large heads, big expressive eyes, small rounded bodies (chibi-adjacent)
+• Color palette: Vibrant and warm — rich greens, warm golds, soft teals, sky blues — never muted or dark
+• Mood: Warm, cheerful, magical, safe — suitable for children aged 2–8
+• Quality: Ultra-high resolution, sharp details, professional animation studio quality
+• DO NOT produce flat 2D, watercolour, sketch, or painterly styles — ONLY 3D cinematic animation
 `.trim();
 
 /**
- * Assembles prompt parts with reference images and labels
+ * Assembles prompt parts with separate Lalli, Fafa, and child reference images
  */
 export function assemblePromptPartsWithLabels({
   textPrompt,
-  characterRefBase64,
+  lalliRefBase64,
+  fafaRefBase64,
   childAvatarBase64,
   previousSceneBase64,
 }: {
   textPrompt: string;
-  characterRefBase64?: string;
+  lalliRefBase64?: string;
+  fafaRefBase64?: string;
   childAvatarBase64?: string;
   previousSceneBase64?: string;
 }): Part[] {
   const parts: Part[] = [];
 
-  if (characterRefBase64) {
-    parts.push({ text: PROMPT_LABELS.CHARACTER_REFERENCE });
-    parts.push({
-      inlineData: {
-        mimeType: PNG_MIME_TYPE,
-        data: characterRefBase64,
-      },
-    });
+  if (lalliRefBase64) {
+    parts.push({ text: PROMPT_LABELS.LALLI_REFERENCE });
+    parts.push({ inlineData: { mimeType: PNG_MIME_TYPE, data: lalliRefBase64 } });
+  }
+
+  if (fafaRefBase64) {
+    parts.push({ text: PROMPT_LABELS.FAFA_REFERENCE });
+    parts.push({ inlineData: { mimeType: PNG_MIME_TYPE, data: fafaRefBase64 } });
   }
 
   if (childAvatarBase64) {
     parts.push({ text: PROMPT_LABELS.CHILD_REFERENCE });
-    parts.push({
-      inlineData: {
-        mimeType: PNG_MIME_TYPE,
-        data: childAvatarBase64,
-      },
-    });
+    parts.push({ inlineData: { mimeType: PNG_MIME_TYPE, data: childAvatarBase64 } });
   }
 
   if (previousSceneBase64) {
     parts.push({ text: PROMPT_LABELS.VISUAL_CONTINUITY });
-    parts.push({
-      inlineData: {
-        mimeType: PNG_MIME_TYPE,
-        data: previousSceneBase64,
-      },
-    });
+    parts.push({ inlineData: { mimeType: PNG_MIME_TYPE, data: previousSceneBase64 } });
   }
 
-  // Add main text prompt last
   parts.push({ text: textPrompt });
-
   return parts;
 }
 
@@ -88,25 +75,25 @@ export function createScenePrompt(
 
   const childFallbackDescription =
     child.gender === "female"
-      ? `${child.name} is a ${child.age}-year-old Indian girl with warm brown skin, long dark black hair in two pigtails with pink hair ties, large expressive dark brown eyes, a small round nose, and a bright friendly smile. She wears a bright pink t-shirt with a white star on it and blue shorts — ALWAYS this exact outfit.`
+      ? `${child.name} is a ${child.age}-year-old Indian girl, 3D animated style. Warm brown skin, long dark black hair in two pigtails with pink hair ties, large expressive dark brown eyes, small round nose, bright friendly smile. Wears a bright pink t-shirt with a white star and blue shorts. Approx ${85 + child.age * 5} cm tall.`
       : child.gender === "male"
-        ? `${child.name} is a ${child.age}-year-old Indian boy with warm brown skin, short neat dark black hair, large expressive dark brown eyes, a small round nose, and a wide friendly smile. He wears a bright red t-shirt with a white star on it and blue shorts — ALWAYS this exact outfit.`
-        : `${child.name} is a ${child.age}-year-old Indian child with warm brown skin, dark black hair, large expressive dark brown eyes, and a friendly smile. Wears a bright purple t-shirt with a white star and blue shorts — ALWAYS this exact outfit.`;
+        ? `${child.name} is a ${child.age}-year-old Indian boy, 3D animated style. Warm brown skin, short neat dark black hair, large expressive dark brown eyes, small round nose, wide friendly smile. Wears a bright red t-shirt with a white star and blue shorts. Approx ${85 + child.age * 5} cm tall.`
+        : `${child.name} is a ${child.age}-year-old Indian child, 3D animated style. Warm brown skin, dark black hair, large expressive dark brown eyes, friendly smile. Wears a bright purple t-shirt with a white star and blue shorts. Approx ${85 + child.age * 5} cm tall.`;
 
   const childPrompt = hasChildAvatar
-    ? `Copy the EXACT appearance from the child reference image — match facial features, skin tone, hair colour/style, clothing colours and patterns, body proportions precisely. Do NOT change their look.`
+    ? `Copy the EXACT appearance from the child reference image — match facial features, skin tone, hair, clothing, and proportions precisely. 3D animated cinematic style. Do NOT change their look.`
     : childFallbackDescription;
 
   const continuityPrompt = hasPreviousScene
-    ? `\nVISUAL CONTINUITY: Match the art style, colour palette, and character designs from the previous scene reference image.`
+    ? `\nVISUAL CONTINUITY: Match the art style, lighting, and character designs from the previous scene reference image.`
     : "";
 
   return `
 THREE CHARACTERS REQUIRED — THIS IS THE #1 RULE:
-This image MUST show EXACTLY three children standing together:
-1. LALLI (girl in yellow dress) — on the LEFT
-2. ${child.name.toUpperCase()} (${genderLabel} in ${hasChildAvatar ? "outfit from reference" : child.gender === "female" ? "pink t-shirt" : child.gender === "male" ? "red t-shirt" : "purple t-shirt"}) — in the CENTER
-3. FAFA (boy in teal overalls) — on the RIGHT
+This image MUST show EXACTLY three children together:
+1. LALLI (girl in yellow star dress) — on the LEFT
+2. ${child.name.toUpperCase()} (${genderLabel}, the hero) — in the CENTER
+3. FAFA (boy in teal overalls with bunny) — on the RIGHT
 If ${child.name} is missing from the image, the image is WRONG. All three must be clearly visible.
 
 ---
@@ -120,40 +107,42 @@ ${scene.description}
 
 ---
 
-CHARACTERS:
+CHARACTERS (3D animated, cinematic quality):
 
-LALLI (left side):
-• Indian girl, warm brown skin, rosy cheeks, large dark eyes, warm smile
-• Hair: dark brown, TWO HIGH PIGTAILS with orange hair ties
-• Outfit: yellow short-sleeve dress with orange star print
-• Accessories: teal crossbody shoulder bag
-• Shoes: white socks, orange Mary Jane shoes
+LALLI (left side, approx 105 cm / 3 ft 5 in):
+• Indian girl, warm brown skin, rosy cheeks, large expressive dark brown eyes, wide warm smile
+• Hair: dark brown/black, TWO HIGH PIGTAILS with orange bow hair ties
+• Outfit: yellow short-sleeve dress with orange star print — ALWAYS this exact outfit
+• Accessories: teal/turquoise crossbody sling bag with gold button clasp
+• Shoes: cream ankle socks, orange Mary Jane shoes
+• Copy her appearance EXACTLY from the Lalli reference image
 
 ${child.name.toUpperCase()} (center — THE HERO):
 ${childPrompt}
 
-FAFA (right side):
-• Indian boy, warm brown skin, rosy cheeks, large dark eyes, happy smile
-• Hair: short dark brown, slightly spiky
-• Outfit: yellow t-shirt UNDER teal bib overalls (dungarees)
-• Prop: ALWAYS holding a light blue bunny plush toy
-• Shoes: yellow socks, orange shoes
-
-Use the character reference image to match Lalli and Fafa's faces exactly.
+FAFA (right side, approx 100 cm / 3 ft 3 in):
+• Indian boy, warm brown skin, rosy cheeks, large expressive dark brown eyes, wide happy open-mouth smile
+• Hair: short dark brown, slightly messy/tousled
+• Outfit: yellow short-sleeve t-shirt UNDER teal/turquoise bib overalls (dungarees) with yellow buttons
+• Prop: ALWAYS holding a light blue sleeping bunny plush toy in one hand
+• Shoes: yellow ankle socks, orange rounded shoes
+• Copy his appearance EXACTLY from the Fafa reference image
 
 ---
 
 COMPOSITION:
-• Landscape orientation (wider than tall)
-• All THREE characters in the upper 60–70% of the frame
+• Landscape orientation (wider than tall), cinematic framing
+• All THREE characters in the scene, naturally interacting with the environment
 • ${child.name} is positioned between Lalli and Fafa, slightly forward — ${child.name} is the hero
-• Simple, colourful background — warm lighting, no harsh shadows
+• Rich, detailed background matching the scene setting — vibrant and immersive
+• Warm cinematic lighting with soft shadows
+• Ultra-high-definition quality — sharp details, professional 3D animation
 ${continuityPrompt}
 `.trim();
 }
 
 /**
- * Creates a prompt for generating a child avatar
+ * Creates a prompt for generating a child avatar in cinematic 3D style
  */
 export function createChildAvatarPrompt(child: ChildInfo): string {
   const genderLabel = getGenderLabel(child.gender);
@@ -163,29 +152,36 @@ ${STYLE_LOCK}
 
 ---
 
-Create a children's storybook CHARACTER PORTRAIT for the following child.
-This portrait will be used as the REFERENCE IMAGE for all story scene illustrations,
-so it must clearly establish the character's fixed, consistent appearance.
+Create a 3D animated CHARACTER PORTRAIT of a child for a children's storybook.
+This portrait will be the REFERENCE IMAGE for all story scenes — it must clearly
+establish the character's fixed, consistent appearance in cinematic 3D animated style.
 
 CHARACTER DETAILS:
 - Name: ${child.name}
 - Age: ${child.age} years old
 - Gender: ${genderLabel}
+- Height: approximately ${85 + child.age * 5} cm
 
-ETHNICITY & APPEARANCE (lock these in — they must not change across scenes):
+APPEARANCE (3D cinematic animated style):
 - Indian/South Asian ethnicity
-- Warm brown/tan skin tone (natural Indian complexion)
+- Warm brown/tan skin tone with subsurface scattering (natural Indian complexion)
 - Dark brown or black hair — clean, styled, age-appropriate
-- Friendly, expressive large dark brown eyes (slightly chibi proportions)
+- Large expressive dark brown eyes (slightly stylized/big, Pixar-like)
 - Natural Indian facial features — round face, small nose, warm smile
-- Colourful, age-appropriate clothing — one specific outfit that will be used throughout the story
+- Colourful, age-appropriate clothing — one specific outfit to use throughout the story
+${child.gender === "female"
+    ? "- Bright pink t-shirt with a white star print, blue shorts"
+    : child.gender === "male"
+      ? "- Bright red t-shirt with a white star print, blue shorts"
+      : "- Bright purple t-shirt with a white star print, blue shorts"}
 
 PORTRAIT REQUIREMENTS:
-- Full character visible from waist up, or full body if space allows
-- Centred composition, neutral or simple colourful background
-- Friendly, welcoming expression — approachable and joyful
-- The character must be recognisably Indian, suitable for a ${child.age}-year-old ${genderLabel}
+- Full body visible, standing pose
+- Clean white or very light background
+- Ultra-high-definition 3D animated style (Pixar/Disney quality)
+- Character must be recognisably Indian, matching the age and gender
+- Friendly, welcoming expression
 
-If a child reference photo is provided: copy the facial features, hair, and clothing precisely.
+If a child reference photo is provided: adapt the facial features into 3D animated style while keeping them recognisable.
 `.trim();
 }
