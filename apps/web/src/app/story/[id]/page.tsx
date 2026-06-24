@@ -27,12 +27,11 @@ import {
   SkipForward,
   Library,
   Sparkles,
-  FlaskConical,
   X,
   Copy,
   Check,
-  Share2,
   Moon,
+  Sun,
   Clock,
   RefreshCw,
 } from "lucide-react";
@@ -344,34 +343,60 @@ function getCurrentSubtitle(
   return sentences[sentences.length - 1] ?? "";
 }
 
-/* ── Vocabulary extraction ── */
-const COMMON_WORDS = new Set([
-  "the","and","was","were","they","their","there","that","this","with","from",
-  "have","been","said","would","could","should","about","which","through",
-  "before","after","around","between","every","other","little","because",
-  "always","never","another","suddenly","looked","started","wanted","called",
-  "really","something","everything","nothing","together","without","herself",
-  "himself","already","behind","inside","outside","thought","turned","walked",
-  "smiled","laughed","whispered","shouted","replied","asked","answered",
-]);
+/* ── Vocabulary extraction with child-friendly definitions ── */
+const CHILD_DICT: Record<string, string> = {
+  adventure:"An exciting journey full of surprises",curious:"Wanting to learn or know more",
+  courage:"Being brave even when you feel scared",discover:"To find something new for the first time",
+  magical:"Having special powers, like in a fairy tale",whispered:"Said something very quietly",
+  enormous:"Very, very big",sparkled:"Shone with tiny flashes of light",
+  treasure:"Something very valuable and special",wonderful:"Something that fills you with joy",
+  mysterious:"Strange and hard to explain",excited:"Feeling very happy and full of energy",
+  journey:"A long trip from one place to another",decided:"Made up your mind about something",
+  carefully:"Doing something slowly with great attention",beautiful:"Very lovely to look at",
+  important:"Something that matters a lot",surprised:"Shocked because something unexpected happened",
+  promise:"Telling someone you will definitely do something",imagine:"Making pictures in your mind",
+  special:"Different from everything else in a good way",protect:"Keeping someone safe from danger",
+  remember:"Thinking about something from the past",explore:"Going to new places to see what's there",
+  kindness:"Being nice and caring to others",friendly:"Warm and welcoming to other people",
+  enchanted:"Made magical by a spell or charm",determined:"Not giving up no matter what",
+  brilliant:"Very bright or very clever",magnificent:"Extremely beautiful or impressive",
+  creature:"Any living animal or being",dangerous:"Something that could hurt you",
+  grateful:"Feeling thankful for something",terrified:"Very, very scared",
+  confident:"Believing in yourself and your abilities",celebrate:"Having fun because something good happened",
+  precious:"Very valuable and deeply loved",peaceful:"Calm and quiet, without trouble",
+  gathered:"Came together in one place",believed:"Thought something was true",
+  disappeared:"Went away so you couldn't see it anymore",giggled:"Laughed in a light, happy way",
+  responsibility:"A job or duty you need to take care of",thundered:"Made a very loud, deep sound",
+  shimmered:"Glowed with a soft, moving light",trembled:"Shook slightly because of fear or cold",
+  astonished:"Very, very surprised",delighted:"Extremely happy and pleased",
+  hesitated:"Paused because you weren't sure",
+  mischievous:"Playfully naughty",scattered:"Spread out in many directions",
+  courageous:"Very brave",exclaimed:"Said something loudly with strong feeling",
+  murmured:"Spoke very softly and quietly",
+  dazzling:"So bright or impressive it amazes you",
+};
 
-function extractVocabulary(content: string, count = 5): { word: string; context: string }[] {
+function extractVocabulary(content: string, count = 5): { word: string; meaning: string; context: string }[] {
   if (!content) return [];
   const sentences = content.match(/[^.!?]+[.!?]+/g) ?? [];
-  const seen = new Map<string, string>();
+  const results: { word: string; meaning: string; context: string }[] = [];
+  const seen = new Set<string>();
   for (const sentence of sentences) {
-    const words = sentence.match(/\b[a-zA-Z]{6,}\b/g) ?? [];
+    const words = sentence.match(/\b[a-zA-Z]{5,}\b/g) ?? [];
     for (const w of words) {
       const lower = w.toLowerCase();
-      if (!COMMON_WORDS.has(lower) && !seen.has(lower)) {
-        seen.set(lower, sentence.trim());
+      if (!seen.has(lower) && CHILD_DICT[lower]) {
+        seen.add(lower);
+        results.push({
+          word: w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
+          meaning: CHILD_DICT[lower],
+          context: sentence.trim(),
+        });
+        if (results.length >= count) return results;
       }
     }
   }
-  return Array.from(seen.entries()).slice(0, count).map(([word, context]) => ({
-    word: word.charAt(0).toUpperCase() + word.slice(1),
-    context,
-  }));
+  return results;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -493,7 +518,6 @@ function StoryViewer({
   const scenes: SceneMeta[] = story?.sceneMetadata ?? [];
   const numScenes = scenes.length;
   const [currentScene, setCurrentSceneRaw] = useState(0);
-  const [debugOpen, setDebugOpen] = useState(false);
 
   /* Audio state */
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -520,7 +544,6 @@ function StoryViewer({
   const [subtitleOffset, setSubtitleOffset] = useState(0); // seconds; + = show subtitles sooner
   const [showSubtitles, setShowSubtitles] = useState(true); // CC toggle
   const [showTextPanel, setShowTextPanel] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
   /* Bedtime mode */
@@ -528,6 +551,21 @@ function StoryViewer({
   const [bedtimeMenuOpen, setBedtimeMenuOpen] = useState(false);
   const [sleepRemaining, setSleepRemaining] = useState(0);
   const [showVocab, setShowVocab] = useState(false);
+  const [lightMode, setLightMode] = useState(false);
+
+  const t = lightMode ? {
+    bg: "#FFF8E7", headerBg: "rgba(255,248,231,0.95)", panelBg: "#fff",
+    panelBorder: "rgba(0,0,0,0.1)", text: "#1a1a2e", textSoft: "rgba(45,45,45,0.55)",
+    textFaint: "rgba(45,45,45,0.25)", controlColor: "rgba(45,45,45,0.5)",
+    footerBg: "rgba(255,248,231,0.97)", footerBorder: "rgba(0,0,0,0.07)",
+    subtitleBg: "rgba(0,0,0,0.04)", hoverBg: "rgba(0,0,0,0.06)",
+  } : {
+    bg: "#0e0c1a", headerBg: "rgba(14,12,26,0.95)", panelBg: "rgba(255,255,255,0.04)",
+    panelBorder: "rgba(255,255,255,0.08)", text: "#fff", textSoft: "rgba(255,255,255,0.55)",
+    textFaint: "rgba(255,255,255,0.25)", controlColor: "rgba(255,255,255,0.5)",
+    footerBg: "rgba(14,12,26,0.97)", footerBorder: "rgba(255,255,255,0.06)",
+    subtitleBg: "rgba(255,255,255,0.03)", hoverBg: "rgba(255,255,255,0.1)",
+  };
   const manualNavRef = useRef(false); // suppress auto-advance briefly after manual nav
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -860,7 +898,7 @@ function StoryViewer({
         });
       } catch { /* user cancelled */ }
     } else {
-      setShareOpen(true);
+      copyLink();
     }
   };
   const copyLink = () => {
@@ -963,145 +1001,70 @@ function StoryViewer({
     <div
       className="min-h-screen flex flex-col"
       style={{
-        background: "#0e0c1a",
+        background: t.bg,
         filter: bedtimeMode ? "brightness(0.65) saturate(0.7)" : "none",
-        transition: "filter 0.8s ease",
+        transition: "filter 0.8s ease, background 0.4s ease",
       }}
     >
-
-      {/* ── Share modal (desktop fallback) ── */}
-      {shareOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
-          onClick={() => setShareOpen(false)}
-        >
-          <div
-            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl flex flex-col gap-5 p-6"
-            style={{ background: "#0e0c1a", border: "1px solid rgba(255,255,255,0.1)" }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.1rem", color: "#fff" }}>
-                ✨ Share this story
-              </h2>
-              <button onClick={() => setShareOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10" style={{ color: "rgba(255,255,255,0.5)" }}>
-                <X size={16} />
-              </button>
-            </div>
-
-            <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.88rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
-              Share <strong style={{ color: "rgba(255,255,255,0.85)" }}>"{story?.title}"</strong> with family and friends.
-            </p>
-
-            {/* Copy link row */}
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <p className="flex-1 truncate text-xs" style={{ fontFamily: "monospace", color: "rgba(255,255,255,0.45)" }}>
-                {shareUrl}
-              </p>
-              <button
-                onClick={copyLink}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs flex-shrink-0 transition-all hover:scale-105"
-                style={{ background: shareCopied ? "rgba(0,201,167,0.25)" : "var(--lf-teal)", color: shareCopied ? "var(--lf-teal)" : "#fff", fontFamily: "'Nunito', sans-serif" }}
-              >
-                {shareCopied ? <Check size={13} /> : <Copy size={13} />}
-                {shareCopied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-
-            {/* WhatsApp */}
-            <a
-              href={waShareUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-105"
-              style={{ background: "#25D366", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.05 2.095C6.495 2.095 1.984 6.616 1.984 12.178c0 1.768.47 3.431 1.296 4.875L2.013 22l5.087-1.331a9.924 9.924 0 004.95 1.31c5.555 0 10.066-4.52 10.066-10.083 0-2.697-1.05-5.23-2.958-7.14A9.98 9.98 0 0012.05 2.095zm.003 18.365a8.244 8.244 0 01-4.22-1.156l-.302-.18-3.13.82.834-3.053-.196-.315A8.24 8.24 0 013.67 12.18c0-4.566 3.718-8.28 8.283-8.28 2.213 0 4.29.863 5.854 2.43a8.23 8.23 0 012.422 5.85c0 4.565-3.718 8.28-8.176 8.28z"/></svg>
-              Share on WhatsApp
-            </a>
-            {/* Facebook */}
-            <a
-              href={fbShareUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-105"
-              style={{ background: "#1877F2", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              Share on Facebook
-            </a>
-          </div>
-        </div>
-      )}
-
-      {/* ── Prompt inspector modal ── */}
-      {debugOpen && (
-        <PromptInspector
-          scenes={scenes}
-          currentScene={currentScene}
-          onClose={() => setDebugOpen(false)}
-        />
-      )}
-
       {/* ── Top bar ── */}
       <header
         className="flex items-center justify-between px-4 py-3 flex-shrink-0"
-        style={{ background: "rgba(14,12,26,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.07)", height: 60 }}
+        style={{ background: t.headerBg, backdropFilter: "blur(12px)", borderBottom: `1px solid ${t.panelBorder}`, height: 56, transition: "background 0.4s" }}
       >
         <Link
           href="/library"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white/10"
-          style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Nunito', sans-serif" }}
+          className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-sm font-semibold transition-all"
+          style={{ color: t.textSoft, fontFamily: "'Nunito', sans-serif" }}
         >
           <ArrowLeft size={15} />
-          <span className="hidden sm:inline">Library</span>
         </Link>
 
-        {/* Title + tags */}
-        <div className="flex flex-col items-center gap-1 min-w-0 px-4">
+        {/* Title + scene counter */}
+        <div className="flex flex-col items-center gap-0.5 min-w-0 px-2">
           <p
-            className="truncate max-w-xs text-center"
-            style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "#fff", lineHeight: 1.2 }}
+            className="truncate max-w-[200px] sm:max-w-xs text-center"
+            style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.88rem", color: t.text, lineHeight: 1.2 }}
           >
             {story.title ?? "Untitled Story"}
           </p>
-          <div className="flex items-center gap-2">
-            {story.params?.theme && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: "rgba(0,201,167,0.2)", color: "#00c9a7" }}>
-                {story.params.theme}
-              </span>
-            )}
-            {story.params?.language && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.55)" }}>
-                {story.params.language === "Hindi" ? "🇮🇳" : "🇬🇧"} {story.params.language}
-              </span>
-            )}
-          </div>
+          {numScenes > 0 && (
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, fontSize: "0.68rem", color: t.textFaint }}>
+              Scene {currentScene + 1} of {numScenes}
+            </span>
+          )}
         </div>
 
-        {/* Right side: bedtime + share + scene counter + debug toggle */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Right side: light mode + bedtime */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Light/dark toggle */}
+          <button
+            onClick={() => setLightMode(m => !m)}
+            className="flex items-center justify-center w-8 h-8 rounded-full transition-all"
+            title={lightMode ? "Dark mode" : "Light mode"}
+            style={{ color: t.controlColor }}
+          >
+            {lightMode ? <Moon size={15} /> : <Sun size={15} />}
+          </button>
+
           {/* Bedtime mode button */}
           <div className="relative">
             <button
               onClick={() => setBedtimeMenuOpen(o => !o)}
-              className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:bg-white/10"
-              title="Bedtime mode"
-              style={{ color: bedtimeMode ? "var(--lf-sunshine)" : "rgba(255,255,255,0.55)" }}
+              className="flex items-center justify-center w-8 h-8 rounded-full transition-all"
+              title="Sleep timer"
+              style={{ color: bedtimeMode ? "var(--lf-sunshine)" : t.controlColor }}
             >
-              <Moon size={15} fill={bedtimeMode ? "currentColor" : "none"} />
+              <Clock size={15} />
             </button>
             {sleepRemaining > 0 && (
               <span className="absolute -bottom-1 -right-1 px-1 rounded text-xs font-bold" style={{ background: "var(--lf-sunshine)", color: "#131020", fontSize: "0.55rem", lineHeight: "1.2" }}>
                 {Math.ceil(sleepRemaining / 60)}m
               </span>
             )}
-            {/* Bedtime menu popover */}
             {bedtimeMenuOpen && (
               <div
                 className="absolute right-0 top-10 flex flex-col gap-1 p-3 rounded-2xl z-50"
-                style={{ background: "#1a1730", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)", minWidth: 180 }}
+                style={{ background: "#1a1730", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)", minWidth: 170 }}
               >
                 <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "#fff", marginBottom: 4 }}>
                   🌙 Sleep Timer
@@ -1114,7 +1077,7 @@ function StoryViewer({
                     style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", fontWeight: 600 }}
                   >
                     <Clock size={13} style={{ opacity: 0.5 }} />
-                    {m} minutes
+                    {m} min
                   </button>
                 ))}
                 {sleepRemaining > 0 && (
@@ -1124,46 +1087,17 @@ function StoryViewer({
                     style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "#f87171", fontWeight: 600, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 8 }}
                   >
                     <X size={13} />
-                    Cancel timer
+                    Cancel
                   </button>
                 )}
               </div>
             )}
           </div>
-
-          {/* Share button */}
-          <button
-            onClick={handleShare}
-            className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:bg-white/10"
-            title="Share this story"
-            style={{ color: "rgba(255,255,255,0.55)" }}
-          >
-            <Share2 size={15} />
-          </button>
-
-          {numScenes > 0 && (
-            <div className="px-3 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", color: "rgba(255,255,255,0.55)" }}>
-                {currentScene + 1} <span style={{ opacity: 0.45 }}>/</span> {numScenes}
-              </span>
-            </div>
-          )}
-          {/* Prompt inspector toggle */}
-          {scenes.length > 0 && (
-            <button
-              onClick={() => setDebugOpen(true)}
-              className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:bg-white/10"
-              title="Inspect image prompts"
-              style={{ color: "rgba(168,85,247,0.7)" }}
-            >
-              <FlaskConical size={15} />
-            </button>
-          )}
         </div>
       </header>
 
-      {/* ── Floating decorations ── */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+      {/* ── Floating decorations (hidden in light mode) ── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0, opacity: lightMode ? 0 : 1, transition: "opacity 0.5s" }}>
         {/* Glow orbs */}
         <div style={{ position: "absolute", top: "15%", left: "5%", width: 220, height: 220, background: "radial-gradient(circle,rgba(0,201,167,0.12) 0%,transparent 70%)", borderRadius: "50%" }} />
         <div style={{ position: "absolute", bottom: "20%", right: "4%", width: 280, height: 280, background: "radial-gradient(circle,rgba(249,199,0,0.1) 0%,transparent 70%)", borderRadius: "50%" }} />
@@ -1375,10 +1309,10 @@ function StoryViewer({
               </div>
             </div>
 
-            {/* ── Subtitle strip — sits in natural dark space below image ── */}
+            {/* ── Subtitle strip ── */}
             <div
               className="w-full flex flex-col items-center justify-center px-4 py-2 rounded-2xl transition-all"
-              style={{ minHeight: 56, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ minHeight: 48, background: t.subtitleBg, border: `1px solid ${t.panelBorder}`, transition: "background 0.4s" }}
             >
               {showSubtitles && cleanSubtitle ? (
                 <div key={subtitleText} className="flex flex-col items-center gap-1 w-full">
@@ -1418,21 +1352,21 @@ function StoryViewer({
               )}
             </div>
 
-            {/* ── Audio controls bar (below image) ── */}
+            {/* ── Audio controls bar ── */}
             <div
               className="w-full flex flex-col gap-2 px-4 py-3 rounded-2xl"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: t.panelBg, border: `1px solid ${t.panelBorder}`, transition: "background 0.4s" }}
             >
               {/* Seek bar */}
               <div className="flex items-center gap-3">
-                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: "rgba(255,255,255,0.4)", minWidth: 34, textAlign: "right" }}>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: t.textFaint, minWidth: 34, textAlign: "right" }}>
                   {formatTime(currentTime)}
                 </span>
                 <div className="flex-1 relative h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
                   <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%", background: "linear-gradient(90deg,var(--lf-teal),#00a38d)" }} />
                   <input type="range" min={0} max={duration || 0} step={0.1} value={currentTime} onChange={onScrubberChange} onMouseDown={() => setSeeking(true)} onMouseUp={() => setSeeking(false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style={{ margin: 0 }} />
                 </div>
-                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: "rgba(255,255,255,0.4)", minWidth: 34 }}>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: t.textFaint, minWidth: 34 }}>
                   {formatTime(duration)}
                 </span>
               </div>
@@ -1441,7 +1375,7 @@ function StoryViewer({
               <div className="flex items-center justify-between">
                 {/* Volume */}
                 <div className="flex items-center gap-2">
-                  <button onClick={toggleMute} className="transition-all hover:scale-110" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  <button onClick={toggleMute} className="transition-all hover:scale-110" style={{ color: t.controlColor }}>
                     {muted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
                   </button>
                   <div className="relative w-16 h-1 rounded-full hidden sm:block" style={{ background: "rgba(255,255,255,0.12)" }}>
@@ -1452,8 +1386,8 @@ function StoryViewer({
 
                 {/* Playback */}
                 <div className="flex items-center gap-3">
-                  <button onClick={() => skip(-10)} className="transition-all hover:scale-110" style={{ color: "rgba(255,255,255,0.45)" }} title="Back 10s"><SkipBack size={16} /></button>
-                  <button onClick={() => setCurrentScene(currentScene - 1, true, titleOffset, sceneTimeline)} disabled={currentScene === 0} className="transition-all hover:scale-110 disabled:opacity-20" style={{ color: "rgba(255,255,255,0.65)" }}><ChevronLeft size={20} /></button>
+                  <button onClick={() => skip(-10)} className="transition-all hover:scale-110" style={{ color: t.controlColor }} title="Back 10s"><SkipBack size={16} /></button>
+                  <button onClick={() => setCurrentScene(currentScene - 1, true, titleOffset, sceneTimeline)} disabled={currentScene === 0} className="transition-all hover:scale-110 disabled:opacity-20" style={{ color: t.textSoft }}><ChevronLeft size={20} /></button>
                   <button
                     onClick={togglePlay}
                     className="flex items-center justify-center rounded-full transition-all hover:scale-110 active:scale-95"
@@ -1461,8 +1395,8 @@ function StoryViewer({
                   >
                     {isPlaying ? <Pause size={20} fill="#fff" /> : <Play size={20} fill="#fff" style={{ marginLeft: 2 }} />}
                   </button>
-                  <button onClick={() => setCurrentScene(currentScene + 1, true, titleOffset, sceneTimeline)} disabled={currentScene === numScenes - 1} className="transition-all hover:scale-110 disabled:opacity-20" style={{ color: "rgba(255,255,255,0.65)" }}><ChevronRight size={20} /></button>
-                  <button onClick={() => skip(10)} className="transition-all hover:scale-110" style={{ color: "rgba(255,255,255,0.45)" }} title="Forward 10s"><SkipForward size={16} /></button>
+                  <button onClick={() => setCurrentScene(currentScene + 1, true, titleOffset, sceneTimeline)} disabled={currentScene === numScenes - 1} className="transition-all hover:scale-110 disabled:opacity-20" style={{ color: t.textSoft }}><ChevronRight size={20} /></button>
+                  <button onClick={() => skip(10)} className="transition-all hover:scale-110" style={{ color: t.controlColor }} title="Forward 10s"><SkipForward size={16} /></button>
                 </div>
 
                 {/* Right: CC toggle + text panel toggle */}
@@ -1477,8 +1411,8 @@ function StoryViewer({
                       fontWeight: 800,
                       fontSize: "0.65rem",
                       letterSpacing: "0.04em",
-                      color: showSubtitles ? "var(--lf-teal)" : "rgba(255,255,255,0.25)",
-                      border: `1px solid ${showSubtitles ? "rgba(0,201,167,0.4)" : "rgba(255,255,255,0.1)"}`,
+                      color: showSubtitles ? "var(--lf-teal)" : t.textFaint,
+                      border: `1px solid ${showSubtitles ? "rgba(0,201,167,0.4)" : t.panelBorder}`,
                       borderRadius: 4,
                       lineHeight: 1,
                       padding: "0.25rem 0.4rem",
@@ -1493,8 +1427,8 @@ function StoryViewer({
                     className="px-2.5 py-1 rounded-full transition-all hover:bg-white/10"
                     style={{
                       fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.72rem",
-                      color: showTextPanel ? "var(--lf-teal)" : "rgba(255,255,255,0.35)",
-                      border: `1px solid ${showTextPanel ? "rgba(0,201,167,0.35)" : "rgba(255,255,255,0.1)"}`,
+                      color: showTextPanel ? "var(--lf-teal)" : t.textFaint,
+                      border: `1px solid ${showTextPanel ? "rgba(0,201,167,0.35)" : t.panelBorder}`,
                     }}
                     title="Toggle full story text"
                   >
@@ -1589,23 +1523,28 @@ function StoryViewer({
                 <button
                   onClick={() => setShowVocab(v => !v)}
                   className="flex items-center gap-2 self-start"
-                  style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", fontWeight: 600, color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.08em", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                  style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: t.textFaint, textTransform: "uppercase", letterSpacing: "0.08em", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
-                  📖 Words from this story {showVocab ? "▾" : "▸"}
+                  📖 Words to learn {showVocab ? "▾" : "▸"}
                 </button>
                 {showVocab && (
                   <div className="flex flex-col gap-2">
-                    {extractVocabulary(story.content!).map(({ word, context }) => (
+                    {extractVocabulary(story.content!).map(({ word, meaning, context }) => (
                       <div
                         key={word}
                         className="flex flex-col gap-1 px-4 py-3 rounded-xl"
-                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                        style={{ background: t.panelBg, border: `1px solid ${t.panelBorder}` }}
                       >
-                        <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "var(--lf-teal)" }}>
-                          {word}
-                        </span>
-                        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.5, fontStyle: "italic", margin: 0 }}>
-                          &ldquo;{context.length > 120 ? context.slice(0, 120) + "…" : context}&rdquo;
+                        <div className="flex items-baseline gap-2">
+                          <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "var(--lf-teal)" }}>
+                            {word}
+                          </span>
+                          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: t.textSoft }}>
+                            — {meaning}
+                          </span>
+                        </div>
+                        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: t.textFaint, lineHeight: 1.5, fontStyle: "italic", margin: 0 }}>
+                          &ldquo;{context.length > 100 ? context.slice(0, 100) + "…" : context}&rdquo;
                         </p>
                       </div>
                     ))}
@@ -1635,16 +1574,16 @@ function StoryViewer({
       {/* ── Minimal footer ── */}
       <div
         className="story-footer flex-shrink-0 flex items-center justify-between px-6 py-3"
-        style={{ background: "rgba(14,12,26,0.97)", borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: t.footerBg, borderTop: `1px solid ${t.footerBorder}`, transition: "background 0.4s" }}
       >
-        <Link href="/library" className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Nunito', sans-serif" }}>
+        <Link href="/library" className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: t.textFaint, fontFamily: "'Nunito', sans-serif" }}>
           <Library size={13} /> Library
         </Link>
         <div className="flex items-center gap-3">
           <Link
             href={`/generate?theme=${encodeURIComponent(story?.params?.theme ?? "")}`}
             className="flex items-center gap-1.5 text-xs font-bold"
-            style={{ color: "rgba(255,255,255,0.45)", fontFamily: "'Nunito', sans-serif" }}
+            style={{ color: t.textSoft, fontFamily: "'Nunito', sans-serif" }}
           >
             <RefreshCw size={12} /> Sequel
           </Link>
@@ -1737,7 +1676,7 @@ function PromptInspector({
           style={{ background: "#0e0c1a", borderBottom: "1px solid rgba(255,255,255,0.08)", zIndex: 10 }}
         >
           <div className="flex items-center gap-2.5">
-            <FlaskConical size={18} style={{ color: "#a855f7" }} />
+            <span style={{ fontSize: "1rem" }}>🔬</span>
             <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem", color: "#fff" }}>
               Image Prompt Inspector
             </h2>
