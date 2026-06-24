@@ -254,15 +254,18 @@ export async function generateMergedNarration(
   console.log(`[Narration] ${lines.length} lines to TTS. Language: ${language}. First 3:`, lines.slice(0, 3).map(l => `${l.speaker}: ${l.text.slice(0, 40)}`));
 
   // Limit concurrency to 2 TTS calls at a time.
-  // Append " ..." to each line so TTS inserts a natural breath pause between speakers.
+  const isEnglish = !isMultilingualLanguage(language);
   const results = await mapWithConcurrencyLimit(lines, 2, async (l, _idx) => {
     const voiceId = pickVoiceForSpeaker(voiceMap, l.speaker, childName, childGender, language);
     if (!voiceId) {
       console.error(`[TTS] No voice ID for speaker: ${l.speaker}`);
       return null;
     }
-    const textWithPause = applyPronunciationFixes(l.text) + " ...";
-    const ab = await ttsArrayBuffer(voiceId, textWithPause, language);
+    // English: fix "Lalli" pronunciation + add Latin ellipsis pause
+    // Hindi/other: leave text as-is + use Devanagari purna viram for pause
+    const fixedText = isEnglish ? applyPronunciationFixes(l.text) : l.text;
+    const pauseSuffix = isEnglish ? " ..." : " ।";
+    const ab = await ttsArrayBuffer(voiceId, fixedText + pauseSuffix, language);
     return { order: l.order, ab };
   });
 
