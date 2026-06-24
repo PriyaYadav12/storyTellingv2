@@ -1,11 +1,13 @@
 "use client";
 
 import { use, useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Lottie from "lottie-react";
 import {
   useQuery,
+  useAction,
   useConvexAuth,
   Authenticated,
   AuthLoading,
@@ -552,6 +554,30 @@ function StoryViewer({
   const [sleepRemaining, setSleepRemaining] = useState(0);
   const [showVocab, setShowVocab] = useState(false);
   const [lightMode, setLightMode] = useState(true);
+  const [storyEnded, setStoryEnded] = useState(false);
+  const [sequelLoading, setSequelLoading] = useState(false);
+
+  const storyRouter = useRouter();
+  const generateStoryAction = useAction(api.generateStory.enqueueStory);
+
+  const handleSequel = async () => {
+    if (sequelLoading || !story) return;
+    setSequelLoading(true);
+    try {
+      const storyIdRaw = typeof window !== "undefined" ? window.location.pathname.split("/").pop() ?? "" : "";
+      const result = await generateStoryAction({
+        params: {
+          theme: story.params?.theme ?? "Magical Forest",
+          lesson: story.params?.lesson,
+          language: story.params?.language,
+          sequelOfId: storyIdRaw as any,
+        },
+      });
+      storyRouter.push(`/story/${result.storyId}`);
+    } catch {
+      setSequelLoading(false);
+    }
+  };
 
   const t = lightMode ? {
     bg: "#FFF8E7", headerBg: "rgba(255,248,231,0.95)", panelBg: "#fff",
@@ -787,7 +813,7 @@ function StoryViewer({
     const d = audioRef.current.duration;
     if (isFinite(d) && d > 0) { setDuration(d); setReliableDuration(d); }
   };
-  const onEnded = () => setIsPlaying(false);
+  const onEnded = () => { setIsPlaying(false); setStoryEnded(true); };
 
   // Remembers exactly where playback was paused, in case the browser drops
   // its buffered position on resume (Convex storage doesn't support range
@@ -1486,23 +1512,47 @@ function StoryViewer({
               )}
             </div>
 
-            {/* ── Primary CTAs — New Story + Sequel ── */}
-            <div className="w-full grid grid-cols-2 gap-2">
-              <Link
-                href="/generate"
-                className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
-                style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(0,201,167,0.35)" }}
+            {/* ── "The End" card — appears when story finishes ── */}
+            {storyEnded && (
+              <div
+                className="w-full flex flex-col items-center gap-4 py-8 px-6 rounded-3xl"
+                style={{
+                  background: lightMode
+                    ? "linear-gradient(135deg, #FFF8E7 0%, #E6FAF6 50%, #F3EEFF 100%)"
+                    : "linear-gradient(135deg, #1a1740 0%, #0d2d26 50%, #1a1040 100%)",
+                  border: `2px solid ${lightMode ? "rgba(0,201,167,0.25)" : "rgba(0,201,167,0.3)"}`,
+                  boxShadow: "0 8px 32px rgba(0,201,167,0.15)",
+                }}
               >
-                <Sparkles size={16} /> New Story
-              </Link>
-              <Link
-                href={`/generate?theme=${encodeURIComponent(story.params?.theme ?? "")}`}
-                className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
-                style={{ background: t.panelBg, color: t.text, fontFamily: "'Baloo 2', sans-serif", border: `1.5px solid ${t.panelBorder}` }}
-              >
-                <RefreshCw size={14} /> Sequel
-              </Link>
-            </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span style={{ fontSize: "2.5rem" }}>✨</span>
+                  <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.6rem", color: "var(--lf-teal)" }}>
+                    The End
+                  </h2>
+                  <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: t.textSoft, textAlign: "center" }}>
+                    {story.title}
+                  </p>
+                </div>
+                <div className="w-full grid grid-cols-2 gap-3 mt-2">
+                  <button
+                    onClick={handleSequel}
+                    disabled={sequelLoading}
+                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                    style={{ background: "linear-gradient(135deg,var(--lf-sunshine),#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(249,199,0,0.35)", opacity: sequelLoading ? 0.7 : 1 }}
+                  >
+                    {sequelLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                    {sequelLoading ? "Creating…" : "Continue Adventure"}
+                  </button>
+                  <Link
+                    href="/generate"
+                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                    style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(0,201,167,0.35)" }}
+                  >
+                    <Sparkles size={16} /> New Story
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* ── Compact share row ── */}
             <div className="w-full flex items-center gap-2 justify-center">
@@ -1970,31 +2020,29 @@ function StoryForgeLoadingScreen({
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 relative overflow-hidden"
-      style={{ background: "#0e0c1a" }}
+      style={{ background: "linear-gradient(160deg, #FFF8E7 0%, #E6FAF6 40%, #F3EEFF 70%, #FFE8EC 100%)" }}
     >
-      {/* Background glow orbs */}
-      <div style={{ position: "absolute", top: "10%", left: "8%",  width: 280, height: 280, background: "radial-gradient(circle,rgba(0,201,167,0.1) 0%,transparent 70%)",  borderRadius: "50%", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "12%", right: "5%", width: 320, height: 320, background: "radial-gradient(circle,rgba(249,199,0,0.09) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", top: "45%", right: "15%", width: 200, height: 200, background: "radial-gradient(circle,rgba(168,85,247,0.08) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+      {/* Soft colorful glow orbs */}
+      <div style={{ position: "absolute", top: "5%", left: "5%", width: 300, height: 300, background: "radial-gradient(circle, rgba(0,201,167,0.2) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "8%", right: "3%", width: 350, height: 350, background: "radial-gradient(circle, rgba(249,199,0,0.18) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "40%", right: "10%", width: 220, height: 220, background: "radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "30%", left: "8%", width: 200, height: 200, background: "radial-gradient(circle, rgba(255,140,105,0.15) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
 
-      {/* Soft ambient music while waiting */}
       <audio ref={loadingMusicRef} src={musicTrack} loop />
 
-      {/* Back link */}
       <Link
         href="/library"
-        className="absolute top-5 left-5 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:bg-white/10"
-        style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Nunito', sans-serif" }}
+        className="absolute top-5 left-5 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:bg-black/5"
+        style={{ color: "rgba(45,45,45,0.45)", fontFamily: "'Nunito', sans-serif" }}
       >
         <ArrowLeft size={13} /> Library
       </Link>
 
-      {/* Music mute toggle */}
       <button
         onClick={toggleMusic}
         aria-label={musicMuted ? "Unmute music" : "Mute music"}
-        className="absolute top-5 right-5 flex items-center justify-center w-9 h-9 rounded-full transition-all hover:bg-white/10"
-        style={{ color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}
+        className="absolute top-5 right-5 flex items-center justify-center w-9 h-9 rounded-full transition-all hover:bg-black/5"
+        style={{ color: "rgba(45,45,45,0.4)", border: "1px solid rgba(0,0,0,0.08)" }}
       >
         {musicMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
       </button>
@@ -2015,10 +2063,10 @@ function StoryForgeLoadingScreen({
 
       {/* Stage title */}
       <div className="flex flex-col items-center gap-1.5 text-center max-w-sm">
-        <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.35rem", color: "#fff", lineHeight: 1.3 }}>
+        <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.35rem", color: "var(--lf-dark)", lineHeight: 1.3 }}>
           {stageTitle}
         </h2>
-        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.88rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.88rem", color: "rgba(45,45,45,0.5)", lineHeight: 1.5 }}>
           {stageDesc}
         </p>
       </div>
@@ -2035,16 +2083,16 @@ function StoryForgeLoadingScreen({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all"
             style={{
               background: stage === n
-                ? "rgba(0,201,167,0.2)"
+                ? "rgba(0,201,167,0.15)"
                 : stage > n
                   ? "rgba(0,201,167,0.08)"
-                  : "rgba(255,255,255,0.05)",
-              border: `1px solid ${stage >= n ? "rgba(0,201,167,0.4)" : "rgba(255,255,255,0.1)"}`,
+                  : "rgba(0,0,0,0.04)",
+              border: `1px solid ${stage >= n ? "rgba(0,201,167,0.4)" : "rgba(0,0,0,0.08)"}`,
               color: stage === n
                 ? "var(--lf-teal)"
                 : stage > n
-                  ? "rgba(0,201,167,0.5)"
-                  : "rgba(255,255,255,0.25)",
+                  ? "rgba(0,201,167,0.6)"
+                  : "rgba(45,45,45,0.3)",
               fontFamily: "'Nunito', sans-serif",
               transform: stage === n ? "scale(1.05)" : "scale(1)",
             }}
@@ -2057,7 +2105,7 @@ function StoryForgeLoadingScreen({
 
       {/* Progress bar */}
       <div className="w-full max-w-sm flex flex-col gap-2">
-        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.08)" }}>
           <div
             className="h-full rounded-full transition-all"
             style={{
@@ -2069,10 +2117,10 @@ function StoryForgeLoadingScreen({
           />
         </div>
         <div className="flex items-center justify-between">
-          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", color: "rgba(255,255,255,0.25)" }}>
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", color: "rgba(45,45,45,0.35)" }}>
             {Math.round(progress)}%
           </span>
-          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", color: "rgba(255,255,255,0.25)" }}>
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", color: "rgba(45,45,45,0.35)" }}>
             This takes 1–2 min
           </span>
         </div>
@@ -2123,14 +2171,15 @@ function StoryForgeLoadingScreen({
         key={msgIdx}
         className="flex items-center gap-2 px-5 py-3 rounded-2xl"
         style={{
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "#fff",
+          border: "1px solid rgba(0,0,0,0.06)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
           animation: "fadeIn 0.5s ease",
           maxWidth: 340,
         }}
       >
         <span style={{ fontSize: "1.2rem" }}>{emoji}</span>
-        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, margin: 0 }}>
+        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.6)", lineHeight: 1.4, margin: 0 }}>
           {funMsg}
         </p>
       </div>
@@ -2138,11 +2187,11 @@ function StoryForgeLoadingScreen({
       {/* Story title preview */}
       {story.title && (
         <div className="flex flex-col items-center gap-1 text-center">
-          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", color: "rgba(255,255,255,0.2)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", color: "rgba(45,45,45,0.3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Your story
           </p>
-          <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.05rem", color: "rgba(255,255,255,0.6)", textAlign: "center", maxWidth: 300 }}>
-            "{story.title}"
+          <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.05rem", color: "rgba(45,45,45,0.7)", textAlign: "center", maxWidth: 300 }}>
+            &ldquo;{story.title}&rdquo;
           </p>
         </div>
       )}

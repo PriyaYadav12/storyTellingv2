@@ -17,6 +17,7 @@ export const _generateContent = internalAction({
     storyTypeName: v.optional(v.string()),
     storyTypePromptHint: v.optional(v.string()),
     creditId: v.id("user_credits"),
+    previousStoryContent: v.optional(v.string()),
     childInfo: v.object({
       id: v.union(v.literal("1"), v.literal("2")),
       name: v.string(),
@@ -27,7 +28,7 @@ export const _generateContent = internalAction({
   },
 
   handler: async (ctx, args) => {
-    const { storyId, theme, lesson, language, storyTypeCode, storyTypeName, storyTypePromptHint, creditId, childInfo } = args;
+    const { storyId, theme, lesson, language, storyTypeCode, storyTypeName, storyTypePromptHint, creditId, previousStoryContent, childInfo } = args;
 
     await ctx.runMutation(api.stories._markStatus, {
       storyId,
@@ -45,6 +46,7 @@ export const _generateContent = internalAction({
         storyType: storyTypeCode,
         storyTypeName,
         storyTypePromptHint,
+        previousStoryContent,
       }
     );
 
@@ -207,6 +209,7 @@ export const enqueueStory: ReturnType<typeof action> = action({
       storyType: v.optional(v.string()),
       language: v.optional(v.string()),
       childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
+      sequelOfId: v.optional(v.id("stories")),
       // Legacy fields — accepted but ignored
       length: v.optional(v.string()),
       textOnly: v.optional(v.boolean()),
@@ -276,15 +279,23 @@ export const enqueueStory: ReturnType<typeof action> = action({
       childName: name || undefined,
     };
 
+    // Load previous story content for sequel continuity
+    let previousStoryContent: string | undefined;
+    if (params.sequelOfId) {
+      const prevStory = await ctx.runQuery(api.stories.get, { storyId: params.sequelOfId });
+      if (prevStory?.content) {
+        const metaIdx = prevStory.content.search(/^SCENE METADATA/mi);
+        previousStoryContent = metaIdx !== -1 ? prevStory.content.slice(0, metaIdx).trim() : prevStory.content;
+      }
+    }
+
     const storyId = await ctx.runMutation(api.stories._create, {
       title: "",
       params: storyParams,
     });
 
-    // Update streak here (needs auth context — can't do this inside internal action)
     await ctx.runMutation(api.userProfiles.updateStreak, {});
 
-    // Schedule heavy generation in background — return immediately after this
     await ctx.scheduler.runAfter(0, internal.generateStory._generateContent, {
       storyId,
       theme: params.theme,
@@ -294,6 +305,7 @@ export const enqueueStory: ReturnType<typeof action> = action({
       storyTypeName: storyTypeRecord?.name,
       storyTypePromptHint: storyTypeRecord?.promptHint,
       creditId,
+      previousStoryContent,
       childInfo: {
         id: childId,
         name: name || "",

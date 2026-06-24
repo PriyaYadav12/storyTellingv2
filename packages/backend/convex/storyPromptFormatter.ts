@@ -12,9 +12,10 @@ type StoryParams = {
   theme: string;
   lesson?: string;
   language?: string;
-  storyType?: string | null;   // "adventure" | "silly" | "cozy"
-  storyTypeName?: string;      // "Big Adventure" | "Silly & Funny" | "Cozy Bedtime"
-  storyTypePromptHint?: string; // The prompt hint from DB
+  storyType?: string | null;
+  storyTypeName?: string;
+  storyTypePromptHint?: string;
+  previousStoryContent?: string;
 };
 
 /**
@@ -56,6 +57,12 @@ export function formatStoryPrompt(
       storyType: storyTypeName,
       storyTypeGuidance: storyTypeHint,
     },
+    ...(params.previousStoryContent ? {
+      sequel: {
+        previousStory: params.previousStoryContent,
+        guidance: `This is a SEQUEL. The previous story is provided above. Continue the adventure from where it ended — reference what happened, keep the same characters and world, but introduce a NEW challenge or discovery. Do not retell the previous story. Start with a brief callback (1-2 sentences), then launch into the new adventure.`,
+      },
+    } : {}),
     instructions: `BEGIN STORY NOW. MANDATORY: The story body must be 430–450 words (title excluded, SCENE METADATA excluded). Count your words before finalising. Each of the 5 scenes must be approximately 85–90 words of story content. Do not go below 430 words and do not exceed 450 words. SCENE METADATA RULE (CRITICAL): Every one of the 5 scene description lines MUST follow this pattern: "Lalli, ${childInfo.name}, and Fafa [doing action together] in [setting]." — ${childInfo.name} must be NAMED and given a SPECIFIC VISIBLE ACTION in every single scene description. A scene description that says only "Lalli and Fafa" without mentioning ${childInfo.name} is WRONG. ${childInfo.name} is the HERO — they should be described as the central figure in each scene, with Lalli on their left and Fafa on their right.`,
   };
 
