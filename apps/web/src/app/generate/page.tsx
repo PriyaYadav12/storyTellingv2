@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -90,7 +90,9 @@ export default function GeneratePage() {
         </div>
       </Unauthenticated>
       <Authenticated>
-        <GenerateForm isAuthenticated={isAuthenticated} />
+        <Suspense>
+          <GenerateForm isAuthenticated={isAuthenticated} />
+        </Suspense>
       </Authenticated>
     </>
   );
@@ -98,6 +100,8 @@ export default function GeneratePage() {
 
 function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prefilledTheme = searchParams.get("theme") ?? "";
 
   const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
   const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
@@ -118,7 +122,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [storyType, setStoryType] = useState<string>("adventure");
   const [length, setLength] = useState<"short" | "medium" | "long">("medium");
   const [languageCode, setLanguageCode] = useState<string>("en");
-  const [theme, setTheme] = useState("");
+  const [theme, setTheme] = useState(prefilledTheme);
   const [lesson, setLesson] = useState("");
   const [generating, setGenerating] = useState(false);
 

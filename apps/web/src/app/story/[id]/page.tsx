@@ -32,6 +32,9 @@ import {
   Copy,
   Check,
   Share2,
+  Moon,
+  Clock,
+  RefreshCw,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────────
@@ -341,6 +344,36 @@ function getCurrentSubtitle(
   return sentences[sentences.length - 1] ?? "";
 }
 
+/* ── Vocabulary extraction ── */
+const COMMON_WORDS = new Set([
+  "the","and","was","were","they","their","there","that","this","with","from",
+  "have","been","said","would","could","should","about","which","through",
+  "before","after","around","between","every","other","little","because",
+  "always","never","another","suddenly","looked","started","wanted","called",
+  "really","something","everything","nothing","together","without","herself",
+  "himself","already","behind","inside","outside","thought","turned","walked",
+  "smiled","laughed","whispered","shouted","replied","asked","answered",
+]);
+
+function extractVocabulary(content: string, count = 5): { word: string; context: string }[] {
+  if (!content) return [];
+  const sentences = content.match(/[^.!?]+[.!?]+/g) ?? [];
+  const seen = new Map<string, string>();
+  for (const sentence of sentences) {
+    const words = sentence.match(/\b[a-zA-Z]{6,}\b/g) ?? [];
+    for (const w of words) {
+      const lower = w.toLowerCase();
+      if (!COMMON_WORDS.has(lower) && !seen.has(lower)) {
+        seen.set(lower, sentence.trim());
+      }
+    }
+  }
+  return Array.from(seen.entries()).slice(0, count).map(([word, context]) => ({
+    word: word.charAt(0).toUpperCase() + word.slice(1),
+    context,
+  }));
+}
+
 /* ────────────────────────────────────────────────────────────────
    Types
 ──────────────────────────────────────────────────────────────── */
@@ -489,6 +522,12 @@ function StoryViewer({
   const [showTextPanel, setShowTextPanel] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+
+  /* Bedtime mode */
+  const [bedtimeMode, setBedtimeMode] = useState(false);
+  const [bedtimeMenuOpen, setBedtimeMenuOpen] = useState(false);
+  const [sleepRemaining, setSleepRemaining] = useState(0);
+  const [showVocab, setShowVocab] = useState(false);
   const manualNavRef = useRef(false); // suppress auto-advance briefly after manual nav
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -549,6 +588,30 @@ function StoryViewer({
       wakeLockRef.current = null;
     };
   }, [isPlaying]);
+
+  /* Sleep timer countdown — when it hits 0, pause everything */
+  useEffect(() => {
+    if (sleepRemaining <= 0) return;
+    const id = setInterval(() => {
+      setSleepRemaining(r => {
+        if (r <= 1) {
+          audioRef.current?.pause();
+          bgAudioRef.current?.pause();
+          setIsPlaying(false);
+          setBedtimeMode(false);
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [sleepRemaining > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const startSleepTimer = (minutes: number) => {
+    setSleepRemaining(minutes * 60);
+    setBedtimeMode(true);
+    setBedtimeMenuOpen(false);
+  };
 
   /* Autoplay narration as soon as the player is ready. Browsers always allow
      *muted* autoplay, so we start muted, then immediately unmute once
@@ -897,7 +960,14 @@ function StoryViewer({
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0e0c1a" }}>
+    <div
+      className="min-h-screen flex flex-col"
+      style={{
+        background: "#0e0c1a",
+        filter: bedtimeMode ? "brightness(0.65) saturate(0.7)" : "none",
+        transition: "filter 0.8s ease",
+      }}
+    >
 
       {/* ── Share modal (desktop fallback) ── */}
       {shareOpen && (
@@ -1010,8 +1080,57 @@ function StoryViewer({
           </div>
         </div>
 
-        {/* Right side: share + scene counter + debug toggle */}
+        {/* Right side: bedtime + share + scene counter + debug toggle */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Bedtime mode button */}
+          <div className="relative">
+            <button
+              onClick={() => setBedtimeMenuOpen(o => !o)}
+              className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:bg-white/10"
+              title="Bedtime mode"
+              style={{ color: bedtimeMode ? "var(--lf-sunshine)" : "rgba(255,255,255,0.55)" }}
+            >
+              <Moon size={15} fill={bedtimeMode ? "currentColor" : "none"} />
+            </button>
+            {sleepRemaining > 0 && (
+              <span className="absolute -bottom-1 -right-1 px-1 rounded text-xs font-bold" style={{ background: "var(--lf-sunshine)", color: "#131020", fontSize: "0.55rem", lineHeight: "1.2" }}>
+                {Math.ceil(sleepRemaining / 60)}m
+              </span>
+            )}
+            {/* Bedtime menu popover */}
+            {bedtimeMenuOpen && (
+              <div
+                className="absolute right-0 top-10 flex flex-col gap-1 p-3 rounded-2xl z-50"
+                style={{ background: "#1a1730", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 8px 32px rgba(0,0,0,0.6)", minWidth: 180 }}
+              >
+                <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "#fff", marginBottom: 4 }}>
+                  🌙 Sleep Timer
+                </p>
+                {[5, 10, 15, 30].map(m => (
+                  <button
+                    key={m}
+                    onClick={() => startSleepTimer(m)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all hover:bg-white/10"
+                    style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", fontWeight: 600 }}
+                  >
+                    <Clock size={13} style={{ opacity: 0.5 }} />
+                    {m} minutes
+                  </button>
+                ))}
+                {sleepRemaining > 0 && (
+                  <button
+                    onClick={() => { setSleepRemaining(0); setBedtimeMode(false); setBedtimeMenuOpen(false); }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all hover:bg-white/10 mt-1"
+                    style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "#f87171", fontWeight: 600, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 8 }}
+                  >
+                    <X size={13} />
+                    Cancel timer
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Share button */}
           <button
             onClick={handleShare}
@@ -1464,6 +1583,37 @@ function StoryViewer({
               </div>
             </div>
 
+            {/* ── Vocabulary Builder ── */}
+            {story.content && extractVocabulary(story.content).length > 0 && (
+              <div className="w-full flex flex-col gap-2">
+                <button
+                  onClick={() => setShowVocab(v => !v)}
+                  className="flex items-center gap-2 self-start"
+                  style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", fontWeight: 600, color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.08em", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  📖 Words from this story {showVocab ? "▾" : "▸"}
+                </button>
+                {showVocab && (
+                  <div className="flex flex-col gap-2">
+                    {extractVocabulary(story.content!).map(({ word, context }) => (
+                      <div
+                        key={word}
+                        className="flex flex-col gap-1 px-4 py-3 rounded-xl"
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      >
+                        <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "var(--lf-teal)" }}>
+                          {word}
+                        </span>
+                        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.5, fontStyle: "italic", margin: 0 }}>
+                          &ldquo;{context.length > 120 ? context.slice(0, 120) + "…" : context}&rdquo;
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
           </>
         ) : story.content ? (
           /* Fallback plain text */
@@ -1490,9 +1640,18 @@ function StoryViewer({
         <Link href="/library" className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Nunito', sans-serif" }}>
           <Library size={13} /> Library
         </Link>
-        <Link href="/dashboard" className="flex items-center gap-1.5 text-xs font-bold" style={{ color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif" }}>
-          <Sparkles size={13} /> New story
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/generate?theme=${encodeURIComponent(story?.params?.theme ?? "")}`}
+            className="flex items-center gap-1.5 text-xs font-bold"
+            style={{ color: "rgba(255,255,255,0.45)", fontFamily: "'Nunito', sans-serif" }}
+          >
+            <RefreshCw size={12} /> Sequel
+          </Link>
+          <Link href="/generate" className="flex items-center gap-1.5 text-xs font-bold" style={{ color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif" }}>
+            <Sparkles size={13} /> New story
+          </Link>
+        </div>
       </div>
     </div>
   );
