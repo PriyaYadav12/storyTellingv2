@@ -5,8 +5,8 @@ import { Id } from "../_generated/dataModel";
 
 // Separate character reference images in Convex Storage
 // Upload the individual Lalli and Fafa cinematic images and update these IDs
-export const LALLI_STORAGE_ID = "kg266f69m4h0yy1wzhm3gk36qh7v76p5" as Id<"_storage">; // TODO: replace with new Lalli cinematic image
-export const FAFA_STORAGE_ID = "kg266f69m4h0yy1wzhm3gk36qh7v76p5" as Id<"_storage">; // TODO: replace with new Fafa cinematic image
+export const LALLI_STORAGE_ID = "kg23bhz4jvpj2kgbdr0cwwgzts89a1fj" as Id<"_storage">;
+export const FAFA_STORAGE_ID = "kg2dth451tnn3awpsk4kw9hm5h89bkrh" as Id<"_storage">;
 
 export const PNG_MIME_TYPE = "image/png";
 export const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
