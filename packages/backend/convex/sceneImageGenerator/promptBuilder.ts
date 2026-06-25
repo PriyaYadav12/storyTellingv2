@@ -73,12 +73,13 @@ export function createScenePrompt(
 ): string {
   const genderLabel = getGenderLabel(child.gender);
 
+  // Child must look VISUALLY DISTINCT from Lalli (pigtails, yellow dress) and Fafa (messy hair, teal overalls)
   const childFallbackDescription =
     child.gender === "female"
-      ? `${child.name} is a ${child.age}-year-old Indian girl, 3D animated style. Warm brown skin, long dark black hair in two pigtails with pink hair ties, large expressive dark brown eyes, small round nose, bright friendly smile. Wears a bright pink t-shirt with a white star and blue shorts. Approx ${85 + child.age * 5} cm tall.`
+      ? `${child.name} is a ${child.age}-year-old Indian girl, 3D animated style. Warm brown skin, long straight dark black hair worn LOOSE past her shoulders with a bright pink headband — NO pigtails (pigtails are Lalli's signature, ${child.name} must look DIFFERENT from Lalli). Large expressive dark brown eyes, small round nose, bright friendly smile. Wears a bright pink t-shirt with a white star and a blue skirt. Approx ${85 + child.age * 5} cm tall. IMPORTANT: ${child.name} must NOT resemble Lalli — different hair, different clothes, different accessories.`
       : child.gender === "male"
-        ? `${child.name} is a ${child.age}-year-old Indian boy, 3D animated style. Warm brown skin, short neat dark black hair, large expressive dark brown eyes, small round nose, wide friendly smile. Wears a bright red t-shirt with a white star and blue shorts. Approx ${85 + child.age * 5} cm tall.`
-        : `${child.name} is a ${child.age}-year-old Indian child, 3D animated style. Warm brown skin, dark black hair, large expressive dark brown eyes, friendly smile. Wears a bright purple t-shirt with a white star and blue shorts. Approx ${85 + child.age * 5} cm tall.`;
+        ? `${child.name} is a ${child.age}-year-old Indian boy, 3D animated style. Warm brown skin, neat dark black hair with a clean side parting — NOT messy or spiky (messy hair is Fafa's signature, ${child.name} must look DIFFERENT from Fafa). Large expressive dark brown eyes, small round nose, wide friendly smile. Wears a bright red t-shirt with a white star and blue shorts. No bunny toy. Approx ${85 + child.age * 5} cm tall. IMPORTANT: ${child.name} must NOT resemble Fafa — different hair, different outfit, no plush toy.`
+        : `${child.name} is a ${child.age}-year-old Indian child, 3D animated style. Warm brown skin, dark black hair with a bright purple headband, large expressive dark brown eyes, friendly smile. Wears a bright purple t-shirt with a white star and blue shorts. Approx ${85 + child.age * 5} cm tall.`;
 
   const childPrompt = hasChildAvatar
     ? `Copy the EXACT appearance from the child reference image — match facial features, skin tone, hair, clothing, and proportions precisely. 3D animated cinematic style. Do NOT change their look.`
@@ -165,15 +166,13 @@ CHARACTER DETAILS:
 APPEARANCE (3D cinematic animated style):
 - Indian/South Asian ethnicity
 - Warm brown/tan skin tone with subsurface scattering (natural Indian complexion)
-- Dark brown or black hair — clean, styled, age-appropriate
 - Large expressive dark brown eyes (slightly stylized/big, Pixar-like)
 - Natural Indian facial features — round face, small nose, warm smile
-- Colourful, age-appropriate clothing — one specific outfit to use throughout the story
 ${child.gender === "female"
-    ? "- Bright pink t-shirt with a white star print, blue shorts"
+    ? "- Long straight dark black hair worn LOOSE past shoulders with a bright PINK HEADBAND — NO pigtails (pigtails belong to a different character called Lalli)\n- Bright pink t-shirt with a white star print, blue skirt"
     : child.gender === "male"
-      ? "- Bright red t-shirt with a white star print, blue shorts"
-      : "- Bright purple t-shirt with a white star print, blue shorts"}
+      ? "- Neat dark black hair with a clean SIDE PARTING — NOT messy or spiky (messy hair belongs to a different character called Fafa)\n- Bright red t-shirt with a white star print, blue shorts — NO bunny toy"
+      : "- Dark black hair with a bright purple headband\n- Bright purple t-shirt with a white star print, blue shorts"}
 
 PORTRAIT REQUIREMENTS:
 - Full body visible, standing pose
