@@ -90,12 +90,9 @@ No politics or religion
 No moralizing words such as “lesson” or “moral”
 No breaking of the output format
 
-TONE-SAFE VOCABULARY (for voice narration quality)
-NEVER use these words — they cause the text-to-speech voice to shift into a scary or dramatic tone:
-creaked, crept, lurked, hissed, snarled, growled, shrieked, howled, moaned, groaned,
-shadows, darkness, gloomy, eerie, haunted, sinister, ominous, dread, trembled, shuddered
-Use warm alternatives instead: “opened gently” not “creaked open”, “walked quietly” not “crept”
-Keep the narration tone consistently warm, gentle, and cheerful throughout — no suspenseful build-ups
+TONE GUIDANCE
+Keep the narration tone consistently warm, gentle, and cheerful.
+Even during exciting or suspenseful moments, the narrator's voice should feel safe and cozy — like a parent reading a bedtime story. Never let the tone become dark, scary, or intense.
 
 ERROR RULE
 If the user input contradicts any mandatory rule, output only:

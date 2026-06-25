@@ -94,32 +94,46 @@ function pickVoiceForSpeaker(
     : (voiceMap.Narrator || "");
 }
 
+/**
+ * Split a narrator paragraph into individual sentences for TTS.
+ * Each sentence becomes its own TTS call, so the voice resets to its
+ * neutral warm tone between sentences — preventing tonal drift from
+ * carrying across an entire paragraph.
+ */
+function splitToSentences(text: string): string[] {
+  const sentences = text.match(/[^.!?।]+[.!?।]+/g);
+  if (!sentences) return [text];
+  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+}
+
 function parseStoryToSpeakerLines(title: string, content: string, childName: string) {
-  // Strip scene metadata block — everything from "SCENE METADATA" onwards is for image
-  // generation only and must not be narrated.
   const metadataIdx = content.search(/^SCENE METADATA/mi);
   const storyOnly = metadataIdx !== -1 ? content.slice(0, metadataIdx) : content;
 
-  // Filter out empty/undefined title so it doesn't become a dead narration line
   const titleLines = title ? [title] : [];
   const lines = [...titleLines, ...storyOnly.split("\n").map(l => l.trim()).filter(Boolean)];
   const childLabel = (childName || "").trim().toLowerCase();
 
   const out: Array<{ order: number; speaker: string; text: string }> = [];
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  let orderIdx = 0;
+  for (const line of lines) {
     const lower = line.toLowerCase();
 
     if (lower.startsWith("lalli:")) {
-      out.push({ order: i, speaker: "Lalli", text: line.replace(/^lalli:/i, "").trim() });
+      out.push({ order: orderIdx++, speaker: "Lalli", text: line.replace(/^lalli:/i, "").trim() });
     } else if (lower.startsWith("fafa:")) {
-      out.push({ order: i, speaker: "Fafa", text: line.replace(/^fafa:/i, "").trim() });
+      out.push({ order: orderIdx++, speaker: "Fafa", text: line.replace(/^fafa:/i, "").trim() });
     } else if (childLabel && lower.startsWith(childLabel + ":")) {
-      out.push({ order: i, speaker: childName, text: line.slice(childName.length + 1).trim() });
+      out.push({ order: orderIdx++, speaker: childName, text: line.slice(childName.length + 1).trim() });
     } else if (lower.startsWith("child:") || lower.startsWith("girl child:") || lower.startsWith("boy child:")) {
-      out.push({ order: i, speaker: "Child", text: line.replace(/^(child|girl child|boy child):/i, "").trim() });
+      out.push({ order: orderIdx++, speaker: "Child", text: line.replace(/^(child|girl child|boy child):/i, "").trim() });
     } else {
-      out.push({ order: i, speaker: "Narrator", text: line });
+      // Narrator: split long paragraphs into individual sentences.
+      // Each sentence gets its own TTS call so the voice resets between them.
+      const sentences = splitToSentences(line);
+      for (const sentence of sentences) {
+        out.push({ order: orderIdx++, speaker: "Narrator", text: sentence });
+      }
     }
   }
   return out;
