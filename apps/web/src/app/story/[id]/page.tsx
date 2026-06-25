@@ -1941,6 +1941,27 @@ function StoryForgeLoadingScreen({
   const [dots, setDots] = useState(".");
   const [writingElapsed, setWritingElapsed] = useState(0);
 
+  // Screen Wake Lock — keep screen on while story generates
+  useEffect(() => {
+    if (!("wakeLock" in navigator)) return;
+    let lock: WakeLockSentinel | null = null;
+    let released = false;
+    const acquire = async () => {
+      try {
+        lock = await navigator.wakeLock.request("screen");
+        if (released) { lock.release().catch(() => {}); lock = null; }
+      } catch { /* unsupported or denied */ }
+    };
+    acquire();
+    const onVisible = () => { if (document.visibilityState === "visible" && !lock) acquire(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      released = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      lock?.release().catch(() => {});
+    };
+  }, []);
+
   // Soft ambient music while waiting — picks one track at random and loops it quietly.
   const loadingMusicRef = useRef<HTMLAudioElement>(null);
   const [musicTrack] = useState(() => BG_TRACKS[Math.floor(Math.random() * BG_TRACKS.length)]);
