@@ -36,6 +36,8 @@ import {
   Sun,
   Clock,
   RefreshCw,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────────
@@ -556,6 +558,22 @@ function StoryViewer({
   const [lightMode, setLightMode] = useState(true);
   const [storyEnded, setStoryEnded] = useState(false);
   const [sequelLoading, setSequelLoading] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const fullscreenRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      fullscreenRef.current?.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
 
   const storyRouter = useRouter();
   const generateStoryAction = useAction(api.generateStory.enqueueStory);
@@ -1025,6 +1043,7 @@ function StoryViewer({
 
   return (
     <div
+      ref={fullscreenRef}
       className="min-h-screen flex flex-col"
       style={{
         background: t.bg,
@@ -1477,6 +1496,16 @@ function StoryViewer({
                     title="Toggle full story text"
                   >
                     📖
+                  </button>
+
+                  {/* Fullscreen toggle */}
+                  <button
+                    onClick={toggleFullscreen}
+                    className="flex items-center justify-center w-7 h-7 rounded transition-all hover:bg-white/10"
+                    title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                    style={{ color: t.controlColor }}
+                  >
+                    {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
                   </button>
                 </div>
               </div>
