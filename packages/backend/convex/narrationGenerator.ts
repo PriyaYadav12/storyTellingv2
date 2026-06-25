@@ -163,9 +163,9 @@ async function ttsArrayBuffer(voiceId: string, text: string, language: string): 
     // Hindi and English pronunciation on mixed-language text
     ...(langCode ? { languageCode: langCode } : {}),
     voiceSettings: {
-      stability: 0.62,
+      stability: 0.78,
       similarityBoost: 0.80,
-      style: 0.15,
+      style: 0.10,
       useSpeakerBoost: true,
       speed: 0.82,
     },
