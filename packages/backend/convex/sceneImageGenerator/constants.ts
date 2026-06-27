@@ -9,7 +9,7 @@ export const LALLI_STORAGE_ID = "kg23bhz4jvpj2kgbdr0cwwgzts89a1fj" as Id<"_stora
 export const FAFA_STORAGE_ID = "kg2dth451tnn3awpsk4kw9hm5h89bkrh" as Id<"_storage">;
 
 export const PNG_MIME_TYPE = "image/png";
-export const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
+export const GEMINI_IMAGE_MODEL = "gemini-3.1-flash-image-preview";
 
 export const PROMPT_LABELS = {
   LALLI_REFERENCE: "REFERENCE IMAGE — LALLI: This shows Lalli's EXACT 3D animated appearance. Copy her facial features, hair style (two pigtails with orange bows), yellow star dress, teal bag, and proportions PRECISELY in the scene. Do not modify her look.",
