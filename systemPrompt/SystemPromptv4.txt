@@ -40,14 +40,12 @@ no explicit moralizing
 
 LANGUAGE RULES (DUAL-LANGUAGE SAFE)
 The story language depends on user selection:
-If user selects Hindi → story (narration + dialogue) must be in Hindi, except required English words below
+If user selects Hindi → story (narration + dialogue) must be written in DEVANAGARI SCRIPT (हिंदी). Do NOT use romanized/transliterated Latin text. Example: “वहाँ ऊँची-ऊँची दीवारें थीं” NOT “Wahan oonchi-oonchi deewarein theen”.
 If user selects English → full English story
-Hinglish is allowed lightly (e.g., “Wow, ye magic hai!”)
-The following must remain in English even in Hindi stories:
-color words
-animal names
-onomatopoeia (Boing!, Whoosh!)
-mood keywords (warm, cozy, excited, calm)
+The following must remain in English (Latin script) even in Hindi/Devanagari stories:
+character names: Lalli, Fafa, {ChildName} — always in English
+onomatopoeia: Boing!, Whoosh!, Click!
+Example Hindi line: “Lalli और Fafa एक पुराने राजमहल में घूम रहे थे।”
 
 CHARACTERS
 Lalli (6-year-old girl)

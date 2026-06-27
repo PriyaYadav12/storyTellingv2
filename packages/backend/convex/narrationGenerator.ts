@@ -101,9 +101,21 @@ function pickVoiceForSpeaker(
  * carrying across an entire paragraph.
  */
 function splitToSentences(text: string): string[] {
-  const sentences = text.match(/[^.!?।]+[.!?।]+/g);
-  if (!sentences) return [text];
-  return sentences.map(s => s.trim()).filter(s => s.length > 0);
+  const raw = text.match(/[^.!?।]+[.!?।]+/g);
+  if (!raw) return [text];
+  // Merge very short segments (like "Boing!", "Click!") into the next or previous sentence
+  // to avoid choppy single-word TTS calls
+  const merged: string[] = [];
+  for (const s of raw) {
+    const trimmed = s.trim();
+    if (!trimmed) continue;
+    if (trimmed.length < 15 && merged.length > 0) {
+      merged[merged.length - 1] += " " + trimmed;
+    } else {
+      merged.push(trimmed);
+    }
+  }
+  return merged.filter(s => s.length > 0);
 }
 
 function parseStoryToSpeakerLines(title: string, content: string, childName: string) {
@@ -147,11 +159,17 @@ function parseStoryToSpeakerLines(title: string, content: string, childName: str
  * voice says it correctly. Preserves the original capitalisation.
  */
 function applyPronunciationFixes(text: string): string {
-  return text.replace(/\bLalli\b/gi, (match) => {
-    if (match === match.toUpperCase()) return "LAALLI";
-    if (match[0] === match[0].toUpperCase()) return "Laalli";
-    return "laalli";
+  let result = text.replace(/\bLalli\b/gi, (match) => {
+    if (match === match.toUpperCase()) return "LAALI";
+    if (match[0] === match[0].toUpperCase()) return "Laali";
+    return "laali";
   });
+  result = result.replace(/\bFafa\b/gi, (match) => {
+    if (match === match.toUpperCase()) return "FAAFA";
+    if (match[0] === match[0].toUpperCase()) return "Faafa";
+    return "faafa";
+  });
+  return result;
 }
 
 const LANGUAGE_CODES: Record<string, string> = {
@@ -281,9 +299,8 @@ export async function generateMergedNarration(
       console.error(`[TTS] No voice ID for speaker: ${l.speaker}`);
       return null;
     }
-    // English: fix "Lalli" pronunciation + add Latin ellipsis pause
-    // Hindi/other: leave text as-is + use Devanagari purna viram for pause
-    const fixedText = isEnglish ? applyPronunciationFixes(l.text) : l.text;
+    // Pronunciation fixes apply to all languages (names stay in English in Hindi text)
+    const fixedText = applyPronunciationFixes(l.text);
     const pauseSuffix = isEnglish ? " ..." : " ।";
     const ab = await ttsArrayBuffer(voiceId, fixedText + pauseSuffix, language);
     return { order: l.order, ab };
