@@ -28,7 +28,7 @@ export function trackOnboardingComplete() {
   const conversionLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL;
   if (typeof window !== "undefined" && typeof window.gtag === "function" && conversionLabel) {
     window.gtag("event", "conversion", {
-      send_to: `AW-1001532703/${conversionLabel}`,
+      send_to: `AW-17812500793/${conversionLabel}`,
       value: 0,
       currency: "INR",
     });
