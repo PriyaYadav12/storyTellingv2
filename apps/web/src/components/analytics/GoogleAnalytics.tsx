@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-const GOOGLE_ADS_ID = "AW-17812500793";
+const GOOGLE_ADS_ID = "AW-1001532703";
 
 /* ── Page-view tracker (must be inside Suspense for useSearchParams) ── */
 function PageViewTracker() {

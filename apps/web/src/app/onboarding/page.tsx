@@ -14,6 +14,7 @@ import {
 } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
+import { trackOnboardingComplete } from "@/lib/analytics";
 import { toast } from "sonner";
 import { Loader2, ChevronRight, ChevronLeft, Sparkles, Camera } from "lucide-react";
 
@@ -213,6 +214,7 @@ function OnboardingForm() {
         }
       }
 
+      trackOnboardingComplete();
       toast.success("Welcome to Lalli Fafa! 🎉");
       router.replace("/dashboard");
     } catch {

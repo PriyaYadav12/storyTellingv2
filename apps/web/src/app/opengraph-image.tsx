@@ -76,9 +76,14 @@ export default async function OGImage() {
               color: "#0E0A1F",
               lineHeight: 1.0,
               letterSpacing: "-2px",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "baseline",
+              gap: "0 16px",
             }}
           >
-            Lalli <span style={{ color: "#00C9A7" }}>Fafa</span>
+            <span>Lalli</span>
+            <span style={{ color: "#00C9A7" }}>Fafa</span>
           </div>
 
           {/* Primary tagline */}
@@ -88,11 +93,15 @@ export default async function OGImage() {
               fontWeight: 800,
               color: "#0E0A1F",
               lineHeight: 1.2,
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "baseline",
+              gap: "0 8px",
             }}
           >
-            Your child.{" "}
-            <span style={{ color: "#F9C700" }}>The hero.</span>{" "}
-            Every story.
+            <span>Your child.</span>
+            <span style={{ color: "#F9C700" }}>The hero.</span>
+            <span>Every story.</span>
           </div>
 
           {/* Sub-tagline */}
