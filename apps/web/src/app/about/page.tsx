@@ -329,21 +329,49 @@ export default function AboutPage() {
             Built by a parent, for parents
           </h2>
           <div
-            className="flex flex-col md:flex-row items-start gap-6 p-7 rounded-3xl"
+            className="flex flex-col md:flex-row items-start gap-8 p-7 rounded-3xl"
             style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)" }}
           >
-            <div
-              className="flex items-center justify-center rounded-2xl flex-shrink-0 text-3xl"
-              style={{ width: 64, height: 64, background: "rgba(0,201,167,0.1)" }}
-            >
-              👋
+            <div className="flex-shrink-0 flex flex-col items-center gap-3">
+              <Image
+                src="/raj-kothari.jpg"
+                alt="Raj Kothari, Founder of Lalli Fafa"
+                width={120}
+                height={120}
+                className="rounded-2xl"
+                style={{ objectFit: "cover", width: 120, height: 120 }}
+              />
+              <a
+                href="https://www.linkedin.com/in/raj-kothari-3262b918/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5"
+                style={{
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: "0.82rem",
+                  fontWeight: 700,
+                  color: "#0a66c2",
+                  textDecoration: "none",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#0a66c2" aria-hidden="true">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+                LinkedIn
+              </a>
             </div>
             <div>
-              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "1.05rem", color: "var(--lf-dark)", marginBottom: "0.4rem" }}>
-                Raj Kothari — Founder
+              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.1rem", color: "var(--lf-dark)", marginBottom: "0.15rem" }}>
+                Raj Kothari
               </p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.7)", lineHeight: 1.8 }}>
-                Lalli Fafa was built by an Indian parent who grew up on stories — and found that the best ones available for his own child either weren&apos;t in Hindi, weren&apos;t personalised, or were designed to keep children awake rather than help them sleep. So he built what he wished existed: a platform that puts every child at the centre of their own bedtime story, in the language of their home.
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", fontWeight: 700, color: "var(--lf-teal)", marginBottom: "0.9rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Founder
+              </p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.75rem" }}>
+                I&apos;m an Indian parent, and like most Indian parents, I grew up in a home where stories were everywhere — told by grandparents at night, woven into festivals, passed down without ever being written down. When my daughter Vanya was born, I wanted to give her that same feeling: a story just for her, in the languages she&apos;d grow up speaking.
+              </p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85 }}>
+                What I found instead were platforms that were generic, English-only, or filled with ads and autoplay. So I built Lalli Fafa — a place where Vanya (and every child like her) could step into a story where <em>she</em> was the brave one, the clever one, the one Lalli and Fafa turned to when things got tricky. I hope it becomes part of your bedtime ritual the way I always hoped it would be for ours.
               </p>
             </div>
           </div>
