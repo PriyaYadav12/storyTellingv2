@@ -19,20 +19,15 @@ export function trackSignUp(method: "email" | "google") {
   trackEvent("sign_up", { method });
 }
 
-/** Fired when onboarding is completed — also sends a Google Ads conversion if the label is configured */
+/** Fired when onboarding is completed — also sends a Google Ads conversion */
 export function trackOnboardingComplete() {
   trackEvent("onboarding_complete");
-  // Fire Google Ads conversion for "Free Trial Sign Up"
-  // Set NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL in Vercel env vars once you create
-  // the conversion action in Google Ads (Goals → Conversions → New conversion action).
-  const conversionLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL;
-  if (typeof window !== "undefined" && typeof window.gtag === "function" && conversionLabel) {
-    window.gtag("event", "conversion", {
-      send_to: `AW-17812500793/${conversionLabel}`,
-      value: 0,
-      currency: "INR",
-    });
-  }
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  window.gtag("event", "conversion", {
+    send_to: "AW-17812500793/zz6UCNW4j88cELni1K1C",
+    value: 0,
+    currency: "INR",
+  });
 }
 
 /** Fired every time a story is generated */
