@@ -233,14 +233,29 @@ function StoryModal({ story, users, onClose, onDeleted }: { story: any; users: a
         {/* Header */}
         <div style={{ background: "var(--lf-dark)", padding: "20px 28px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderRadius: "1.2rem 1.2rem 0 0", flexShrink: 0 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.25rem", color: "#fff", margin: "0 0 6px", lineHeight: 1.3 }}>
-              {story.title ?? "Untitled"}
-            </p>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.25rem", color: "#fff", margin: "0 0 6px", lineHeight: 1.3 }}>
+                {story.title ?? "Untitled"}
+              </p>
+              <a
+                href={`/story/${story._id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ flexShrink: 0, marginTop: 4, fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.75rem", color: "var(--lf-teal)", background: "rgba(0,201,167,0.15)", padding: "2px 10px", borderRadius: "999px", textDecoration: "none", whiteSpace: "nowrap" }}
+              >
+                Open ↗
+              </a>
+            </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
               <StatusBadge status={story.status} />
               {story.params?.theme && (
                 <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.08)", padding: "2px 10px", borderRadius: "999px" }}>
                   {story.params.theme}
+                </span>
+              )}
+              {story.params?.storyType && (
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.08)", padding: "2px 10px", borderRadius: "999px" }}>
+                  {story.params.storyType}
                 </span>
               )}
               <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>
@@ -286,15 +301,19 @@ function StoryModal({ story, users, onClose, onDeleted }: { story: any; users: a
 
         <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
           {/* User + params */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
-            <InfoCard label="User" value={user ? `${user.name ?? "—"} (${user.email})` : story.userId} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
+            <InfoCard label="Parent" value={user?.name ?? "—"} />
+            <InfoCard label="Email" value={user?.email ?? story.userId} />
             <InfoCard label="Child" value={user?.profile ? `${user.profile.childName}, age ${user.profile.childAge}` : "—"} />
             <InfoCard label="Theme" value={story.params?.theme ?? "—"} />
             <InfoCard label="Lesson" value={story.params?.lesson ?? "—"} />
+            <InfoCard label="Story type" value={story.params?.storyType ?? "—"} />
             <InfoCard label="Length" value={story.params?.length ?? "—"} />
-            <InfoCard label="Language" value={story.params?.language ?? "EN"} />
-            <InfoCard label="Voice narration" value={story.narrationFilePath ? "Yes" : "No"} />
+            <InfoCard label="Language" value={(story.params?.language ?? "EN").toUpperCase()} />
+            <InfoCard label="Audio narration" value={story.narrationFilePath ? "✓ Yes" : "✗ No"} />
             <InfoCard label="Scenes" value={String(story.sceneMetadata?.length ?? 0)} />
+            <InfoCard label="Word count" value={story.content ? `~${story.content.split(/\s+/).filter(Boolean).length} words` : "—"} />
+            <InfoCard label="Story ID" value={story._id?.slice(-12)} />
           </div>
 
           {/* Scene images */}
@@ -461,10 +480,12 @@ function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undef
               <thead>
                 <tr>
                   <th style={TH_STYLE}>Title</th>
-                  <th style={TH_STYLE}>User · Child</th>
-                  <th style={TH_STYLE}>Theme</th>
-                  <th style={TH_STYLE}>Length</th>
-                  <th style={TH_STYLE}>Language</th>
+                  <th style={TH_STYLE}>User</th>
+                  <th style={TH_STYLE}>Child</th>
+                  <th style={TH_STYLE}>Theme · Lesson</th>
+                  <th style={TH_STYLE}>Type · Length</th>
+                  <th style={TH_STYLE}>Lang</th>
+                  <th style={TH_STYLE}>Media</th>
                   <th style={TH_STYLE}>Status</th>
                   <th style={TH_STYLE}>Date</th>
                   <th style={{ ...TH_STYLE, textAlign: "right" }}></th>
@@ -473,37 +494,88 @@ function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undef
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ ...TD_STYLE, textAlign: "center", color: "rgba(45,45,45,0.4)", padding: 32 }}>
+                    <td colSpan={10} style={{ ...TD_STYLE, textAlign: "center", color: "rgba(45,45,45,0.4)", padding: 32 }}>
                       No stories found
                     </td>
                   </tr>
                 ) : (
                   filtered.map((s: any, i: number) => {
                     const user = users?.find((u: any) => u.id === s.userId);
+                    const storyTypeLabel: Record<string, string> = { adventure: "🗺 Adventure", silly: "🌀 Silly", cozy: "🌙 Cozy" };
+                    const lengthLabel: Record<string, string> = { short: "Short", medium: "Medium", long: "Long" };
+                    const imageCount = s.sceneMetadata?.filter((sc: any) => sc.filePath)?.length ?? 0;
+                    const hasAudio = !!s.narrationFilePath;
                     return (
                       <tr
                         key={s._id}
                         style={{ background: i % 2 === 0 ? "#fff" : "rgba(0,0,0,0.02)", cursor: "pointer" }}
                         onClick={() => setSelectedStory(s)}
                       >
-                        <td style={{ ...TD_STYLE, fontWeight: 600, maxWidth: 220 }}>
-                          {s.title ?? "Untitled"}
+                        <td style={{ ...TD_STYLE, fontWeight: 600, maxWidth: 200 }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <span style={{ lineHeight: 1.3 }}>{s.title ?? "Untitled"}</span>
+                            <a
+                              href={`/story/${s._id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              style={{ fontSize: "0.72rem", color: "var(--lf-teal)", textDecoration: "none", fontWeight: 600 }}
+                            >
+                              Open ↗
+                            </a>
+                          </div>
                         </td>
                         <td style={TD_STYLE}>
                           {user ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                              <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{user.name ?? user.email}</span>
-                              <span style={{ fontSize: "0.75rem", color: "rgba(45,45,45,0.5)" }}>{user.profile?.childName}</span>
+                              <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{user.name ?? "—"}</span>
+                              <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)", wordBreak: "break-all" }}>{user.email}</span>
                             </div>
                           ) : (
-                            <span style={{ fontSize: "0.75rem", color: "rgba(45,45,45,0.4)", fontFamily: "monospace" }}>
+                            <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.4)", fontFamily: "monospace" }}>
                               {s.userId?.slice(-8)}
                             </span>
                           )}
                         </td>
-                        <td style={TD_STYLE}>{s.params?.theme ?? "—"}</td>
-                        <td style={TD_STYLE}>{s.params?.length ?? "—"}</td>
-                        <td style={TD_STYLE}>{s.params?.language ?? "EN"}</td>
+                        <td style={TD_STYLE}>
+                          {user?.profile ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                              <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{user.profile.childName}</span>
+                              <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)" }}>Age {user.profile.childAge} · {user.profile.childGender}</span>
+                            </div>
+                          ) : (
+                            <span style={{ color: "rgba(45,45,45,0.3)", fontSize: "0.82rem" }}>—</span>
+                          )}
+                        </td>
+                        <td style={TD_STYLE}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{s.params?.theme ?? "—"}</span>
+                            {s.params?.lesson && <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)" }}>{s.params.lesson}</span>}
+                          </div>
+                        </td>
+                        <td style={TD_STYLE}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <span style={{ fontSize: "0.83rem" }}>{storyTypeLabel[s.params?.storyType] ?? s.params?.storyType ?? "—"}</span>
+                            {s.params?.length && <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)" }}>{lengthLabel[s.params.length] ?? s.params.length}</span>}
+                          </div>
+                        </td>
+                        <td style={{ ...TD_STYLE, fontSize: "0.83rem" }}>{(s.params?.language ?? "EN").toUpperCase()}</td>
+                        <td style={TD_STYLE}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                            {imageCount > 0 && (
+                              <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#6366f1", background: "rgba(99,102,241,0.1)", padding: "1px 7px", borderRadius: "999px", whiteSpace: "nowrap" }}>
+                                🖼 {imageCount} img
+                              </span>
+                            )}
+                            {hasAudio ? (
+                              <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#0d7a6e", background: "rgba(0,184,166,0.1)", padding: "1px 7px", borderRadius: "999px", whiteSpace: "nowrap" }}>
+                                🔊 audio
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: "0.72rem", color: "rgba(45,45,45,0.3)", whiteSpace: "nowrap" }}>no audio</span>
+                            )}
+                          </div>
+                        </td>
                         <td style={TD_STYLE}><StatusBadge status={s.status} /></td>
                         <td style={{ ...TD_STYLE, whiteSpace: "nowrap", fontSize: "0.82rem" }}>{formatDate(s.createdAt)}</td>
                         <td style={{ ...TD_STYLE, textAlign: "right" }}>
