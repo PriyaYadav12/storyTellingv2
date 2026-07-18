@@ -195,14 +195,36 @@ export async function generateAllSceneImages(
     }
   }
 
-  const results = await mapWithConcurrencyLimit(sortedScenes, 3, async (scene) => {
+  // Generate scene 1 first — its output becomes the visual anchor for all later scenes.
+  // This ensures consistent character appearance, lighting, and art style across the story.
+  const [firstScene, ...remainingScenes] = sortedScenes;
+
+  console.log(`[generateAllSceneImages] Generating scene ${firstScene.sceneNumber} (anchor)`);
+  let firstResult = await processSceneImage(
+    ctx, firstScene, child, storyId,
+    charRefs.lalli, charRefs.fafa,
+    undefined, childAvatarBase64
+  );
+  if (!firstResult.success) {
+    console.warn(`[generateAllSceneImages] Scene ${firstScene.sceneNumber} failed (${firstResult.error}), retrying...`);
+    firstResult = await processSceneImage(
+      ctx, firstScene, child, storyId,
+      charRefs.lalli, charRefs.fafa,
+      undefined, childAvatarBase64
+    );
+  }
+  console.log(`[generateAllSceneImages] Scene ${firstScene.sceneNumber} done (success: ${firstResult.success})`);
+
+  // Use scene 1 as visual continuity reference for all remaining scenes
+  const anchorBase64 = firstResult.imageBase64;
+
+  const remainingResults = await mapWithConcurrencyLimit(remainingScenes, 3, async (scene) => {
     console.log(`[generateAllSceneImages] Generating scene ${scene.sceneNumber}`);
 
     let result = await processSceneImage(
       ctx, scene, child, storyId,
       charRefs.lalli, charRefs.fafa,
-      undefined,
-      childAvatarBase64
+      anchorBase64, childAvatarBase64
     );
 
     if (!result.success) {
@@ -210,8 +232,7 @@ export async function generateAllSceneImages(
       result = await processSceneImage(
         ctx, scene, child, storyId,
         charRefs.lalli, charRefs.fafa,
-        undefined,
-        childAvatarBase64
+        anchorBase64, childAvatarBase64
       );
     }
 
@@ -219,6 +240,7 @@ export async function generateAllSceneImages(
     return result;
   });
 
+  const results = [firstResult, ...remainingResults];
   const failed = results.filter((r) => !r.success);
   if (failed.length) console.warn("Failed scenes:", failed);
 

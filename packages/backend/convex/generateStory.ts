@@ -24,6 +24,9 @@ export const _generateContent = internalAction({
       gender: v.union(v.literal("male"), v.literal("female"), v.literal("other")),
       age: v.number(),
       avatarStorageId: v.optional(v.string()),
+      nickname: v.optional(v.string()),
+      favoriteAnimal: v.optional(v.string()),
+      favoriteColor: v.optional(v.string()),
     }),
   },
 
@@ -38,7 +41,14 @@ export const _generateContent = internalAction({
     const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
     const formattedPrompt = formatStoryPrompt(
-      { name: childInfo.name, gender: childInfo.gender, age: childInfo.age },
+      {
+        name: childInfo.name,
+        gender: childInfo.gender,
+        age: childInfo.age,
+        nickname: childInfo.nickname,
+        favoriteAnimal: childInfo.favoriteAnimal,
+        favoriteColor: childInfo.favoriteColor,
+      },
       {
         theme,
         lesson: lesson || undefined,
@@ -243,6 +253,19 @@ export const enqueueStory: ReturnType<typeof action> = action({
         ? profile.childAvatarStorageId
         : profile.child2AvatarStorageId;
 
+    const nickname =
+      childId === "1"
+        ? profile.childNickName?.trim() || undefined
+        : profile.child2NickName?.trim() || undefined;
+    const favoriteAnimal =
+      childId === "1"
+        ? profile.favoriteAnimal?.trim() || undefined
+        : profile.child2FavoriteAnimal?.trim() || undefined;
+    const favoriteColor =
+      childId === "1"
+        ? profile.favoriteColor?.trim() || undefined
+        : profile.child2FavoriteColor?.trim() || undefined;
+
     // Validate credits early so we fail before creating the story
     const userId = String((user as any)._id);
     const userCredit = await ctx.runQuery(api.credit.list, {});
@@ -312,6 +335,9 @@ export const enqueueStory: ReturnType<typeof action> = action({
         gender: gender as "male" | "female" | "other",
         age,
         avatarStorageId,
+        nickname,
+        favoriteAnimal,
+        favoriteColor,
       },
     });
 
