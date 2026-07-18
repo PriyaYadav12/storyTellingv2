@@ -304,3 +304,53 @@ export const getContentOnly = query({
 		};
 	},
 });
+
+// Admin-only: delete a story and all its associated storage files (images + audio).
+// Called from the admin panel to free up Convex storage.
+export const adminDeleteStory = mutation({
+	args: { storyId: v.id("stories") },
+	handler: async (ctx, { storyId }) => {
+		const user = await authComponent.getAuthUser(ctx);
+		if (!user) throw new Error("Not authenticated");
+
+		const userIdentifier = (user as any).userId || (user as any)._id;
+		const userRole = await ctx.db
+			.query("user_roles")
+			.withIndex("by_user", (q) => q.eq("userId", userIdentifier))
+			.first();
+		if (userRole?.role !== "admin") throw new Error("Admin access required");
+
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+
+		// Delete all scene images from Convex storage
+		if (story.sceneMetadata) {
+			for (const scene of story.sceneMetadata) {
+				if (scene.filePath) {
+					try {
+						await ctx.storage.delete(scene.filePath as any);
+					} catch {
+						// File may already be gone — continue
+					}
+				}
+			}
+		}
+
+		// Delete narration audio from Convex storage
+		if (story.narrationFilePath) {
+			try {
+				await ctx.storage.delete(story.narrationFilePath as any);
+			} catch {
+				// File may already be gone — continue
+			}
+		}
+
+		// Delete child avatar storage if present (per-story scope guard)
+		// Note: avatars are on user_profiles, not stories — skip here.
+
+		// Delete the story document
+		await ctx.db.delete(storyId);
+
+		return { deleted: storyId };
+	},
+});

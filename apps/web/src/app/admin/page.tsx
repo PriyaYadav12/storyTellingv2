@@ -190,11 +190,28 @@ class TabErrorBoundary extends Component<
 
 // ─── Story Modal ──────────────────────────────────────────────────────────────
 
-function StoryModal({ story, users, onClose }: { story: any; users: any[] | undefined; onClose: () => void }) {
+function StoryModal({ story, users, onClose, onDeleted }: { story: any; users: any[] | undefined; onClose: () => void; onDeleted?: () => void }) {
   const sceneUrls = useQuery(
     (api as any).stories.getSceneImageUrls,
     story?.sceneMetadata?.length > 0 ? { storyId: story._id } : "skip"
   ) as any[] | undefined;
+  const deleteStory = useMutation((api as any).stories.adminDeleteStory);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function handleDelete() {
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setDeleting(true);
+    try {
+      await deleteStory({ storyId: story._id });
+      onDeleted?.();
+      onClose();
+    } catch (err: any) {
+      alert("Delete failed: " + (err?.message ?? "Unknown error"));
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
 
   // Correlate userId → user info
   const user = users?.find((u: any) => u.id === story.userId);
@@ -231,12 +248,40 @@ function StoryModal({ story, users, onClose }: { story: any; users: any[] | unde
               </span>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "rgba(255,255,255,0.8)", borderRadius: "0.5rem", padding: "6px 14px", cursor: "pointer", fontFamily: "'Nunito', sans-serif", fontWeight: 700, marginLeft: 16, flexShrink: 0 }}
-          >
-            ✕ Close
-          </button>
+          <div style={{ display: "flex", gap: 8, marginLeft: 16, flexShrink: 0 }}>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{
+                background: confirmDelete ? "#dc2626" : "rgba(220,38,38,0.18)",
+                border: "none",
+                color: confirmDelete ? "#fff" : "#ef4444",
+                borderRadius: "0.5rem",
+                padding: "6px 14px",
+                cursor: "pointer",
+                fontFamily: "'Nunito', sans-serif",
+                fontWeight: 700,
+                fontSize: "0.82rem",
+                transition: "all 0.15s",
+              }}
+            >
+              {deleting ? "Deleting…" : confirmDelete ? "Confirm delete" : "🗑 Delete"}
+            </button>
+            {confirmDelete && !deleting && (
+              <button
+                onClick={() => setConfirmDelete(false)}
+                style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "rgba(255,255,255,0.6)", borderRadius: "0.5rem", padding: "6px 10px", cursor: "pointer", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem" }}
+              >
+                Cancel
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "rgba(255,255,255,0.8)", borderRadius: "0.5rem", padding: "6px 14px", cursor: "pointer", fontFamily: "'Nunito', sans-serif", fontWeight: 700 }}
+            >
+              ✕ Close
+            </button>
+          </div>
         </div>
 
         <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
@@ -338,9 +383,26 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 
 function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undefined }) {
   const stories = useQuery(api.stories.listAll, isAdmin ? {} : "skip") as any[] | undefined;
+  const deleteStory = useMutation((api as any).stories.adminDeleteStory);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedStory, setSelectedStory] = useState<any | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  async function handleQuickDelete(e: React.MouseEvent, storyId: string) {
+    e.stopPropagation();
+    if (confirmId !== storyId) { setConfirmId(storyId); return; }
+    setDeletingId(storyId);
+    setConfirmId(null);
+    try {
+      await deleteStory({ storyId: storyId as any });
+    } catch (err: any) {
+      alert("Delete failed: " + (err?.message ?? "Unknown error"));
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const filtered = useMemo(() => {
     const list = stories ?? [];
@@ -362,7 +424,7 @@ function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undef
   return (
     <>
       {selectedStory && (
-        <StoryModal story={selectedStory} users={users} onClose={() => setSelectedStory(null)} />
+        <StoryModal story={selectedStory} users={users} onClose={() => setSelectedStory(null)} onDeleted={() => setSelectedStory(null)} />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -445,12 +507,39 @@ function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undef
                         <td style={TD_STYLE}><StatusBadge status={s.status} /></td>
                         <td style={{ ...TD_STYLE, whiteSpace: "nowrap", fontSize: "0.82rem" }}>{formatDate(s.createdAt)}</td>
                         <td style={{ ...TD_STYLE, textAlign: "right" }}>
-                          <button
-                            onClick={e => { e.stopPropagation(); setSelectedStory(s); }}
-                            style={{ background: "rgba(0,184,166,0.1)", border: "none", color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", padding: "4px 12px", borderRadius: "0.5rem", cursor: "pointer", whiteSpace: "nowrap" }}
-                          >
-                            View →
-                          </button>
+                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", alignItems: "center" }}>
+                            {confirmId === s._id ? (
+                              <>
+                                <button
+                                  onClick={e => { e.stopPropagation(); handleQuickDelete(e, s._id); }}
+                                  disabled={deletingId === s._id}
+                                  style={{ background: "#dc2626", border: "none", color: "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.78rem", padding: "4px 10px", borderRadius: "0.5rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                                >
+                                  {deletingId === s._id ? "…" : "Yes, delete"}
+                                </button>
+                                <button
+                                  onClick={e => { e.stopPropagation(); setConfirmId(null); }}
+                                  style={{ background: "rgba(0,0,0,0.07)", border: "none", color: "rgba(45,45,45,0.6)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.78rem", padding: "4px 8px", borderRadius: "0.5rem", cursor: "pointer" }}
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={e => { e.stopPropagation(); handleQuickDelete(e, s._id); }}
+                                disabled={deletingId === s._id}
+                                style={{ background: "rgba(220,38,38,0.08)", border: "none", color: "#ef4444", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.78rem", padding: "4px 10px", borderRadius: "0.5rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                              >
+                                🗑
+                              </button>
+                            )}
+                            <button
+                              onClick={e => { e.stopPropagation(); setSelectedStory(s); }}
+                              style={{ background: "rgba(0,184,166,0.1)", border: "none", color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", padding: "4px 12px", borderRadius: "0.5rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                            >
+                              View →
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
