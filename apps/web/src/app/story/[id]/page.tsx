@@ -602,13 +602,13 @@ function StoryViewer({
     panelBorder: "rgba(0,0,0,0.1)", text: "#1a1a2e", textSoft: "rgba(45,45,45,0.55)",
     textFaint: "rgba(45,45,45,0.25)", controlColor: "rgba(45,45,45,0.5)",
     footerBg: "rgba(255,248,231,0.97)", footerBorder: "rgba(0,0,0,0.07)",
-    subtitleBg: "rgba(0,0,0,0.04)", hoverBg: "rgba(0,0,0,0.06)",
+    subtitleBg: "linear-gradient(135deg, rgba(255,255,255,0.97) 0%, rgba(255,248,220,0.93) 100%)", hoverBg: "rgba(0,0,0,0.06)",
   } : {
     bg: "#0e0c1a", headerBg: "rgba(14,12,26,0.95)", panelBg: "rgba(255,255,255,0.04)",
     panelBorder: "rgba(255,255,255,0.08)", text: "#fff", textSoft: "rgba(255,255,255,0.55)",
     textFaint: "rgba(255,255,255,0.25)", controlColor: "rgba(255,255,255,0.5)",
     footerBg: "rgba(14,12,26,0.97)", footerBorder: "rgba(255,255,255,0.06)",
-    subtitleBg: "rgba(255,255,255,0.03)", hoverBg: "rgba(255,255,255,0.1)",
+    subtitleBg: "linear-gradient(135deg, rgba(14,12,26,0.92) 0%, rgba(22,18,42,0.88) 100%)", hoverBg: "rgba(255,255,255,0.1)",
   };
   const manualNavRef = useRef(false); // suppress auto-advance briefly after manual nav
   const touchStartX = useRef(0);
@@ -1514,7 +1514,7 @@ function StoryViewer({
               {showTextPanel && sceneSentences.length > 0 && (
                 <div
                   className="mt-2 flex flex-col gap-1.5 max-h-44 overflow-y-auto rounded-xl px-4 py-3"
-                  style={{ background: lightMode ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.3)", border: `1px solid ${t.panelBorder}` }}
+                  style={{ background: lightMode ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.4)", border: `1px solid ${t.panelBorder}` }}
                 >
                   {sceneSentences.map((sentence, i) => (
                     <p
