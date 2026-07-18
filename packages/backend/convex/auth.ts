@@ -1,7 +1,7 @@
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { crossDomain } from "@convex-dev/better-auth/plugins";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { DataModel, Id } from "./_generated/dataModel";
 import { query, mutation } from "./_generated/server";
 import { betterAuth } from "better-auth";
@@ -10,6 +10,70 @@ import { v } from "convex/values";
 import { Resend } from "resend";
 
 const siteUrl = process.env.SITE_URL!;
+
+/* ── Email template helpers ── */
+function buildWelcomeEmail(name?: string) {
+  const first = name ? name.split(" ")[0] : "there";
+  return `
+<div style="font-family:'Nunito',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:20px;overflow:hidden;border:1.5px solid rgba(0,0,0,0.06)">
+  <div style="background:#1a1a2e;padding:32px;text-align:center">
+    <h1 style="color:#fff;font-size:26px;margin:0;font-weight:800">Lalli <span style="color:#4ecdc4">Fafa</span></h1>
+    <p style="color:rgba(255,255,255,0.45);font-size:13px;margin:6px 0 0">Personalised AI stories for your little one</p>
+  </div>
+  <div style="padding:40px 32px">
+    <h2 style="color:#1a1a2e;font-size:24px;font-weight:800;margin:0 0 8px">Hi ${first}, welcome to Lalli Fafa! 🎉</h2>
+    <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 28px">
+      You've just unlocked a world of magical, personalised bedtime stories for your child — starring <strong>Lalli</strong> (the curious big sister) and <strong>Fafa</strong> (her adventurous little brother).
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px">
+      <tr>
+        <td width="48%" style="vertical-align:top;padding:16px;background:#f5fffe;border-radius:14px;border:1px solid rgba(0,201,167,0.15)">
+          <div style="font-size:26px;margin-bottom:6px">👂</div>
+          <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Listening Skills</div>
+          <div style="font-size:12px;color:#666;line-height:1.5">Rich narration and dialogue train children to follow stories with focus and comprehension.</div>
+        </td>
+        <td width="4%"></td>
+        <td width="48%" style="vertical-align:top;padding:16px;background:#fffdf0;border-radius:14px;border:1px solid rgba(249,199,0,0.2)">
+          <div style="font-size:26px;margin-bottom:6px">🎯</div>
+          <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Attention &amp; Focus</div>
+          <div style="font-size:12px;color:#666;line-height:1.5">Personalised stories featuring your child's name keep them engaged far longer than generic books.</div>
+        </td>
+      </tr>
+      <tr><td colspan="3" style="height:12px"></td></tr>
+      <tr>
+        <td width="48%" style="vertical-align:top;padding:16px;background:#fdf5ff;border-radius:14px;border:1px solid rgba(160,80,200,0.12)">
+          <div style="font-size:26px;margin-bottom:6px">🌈</div>
+          <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Creativity</div>
+          <div style="font-size:12px;color:#666;line-height:1.5">Imaginative worlds and vivid scenes spark original thinking and a lifelong love of stories.</div>
+        </td>
+        <td width="4%"></td>
+        <td width="48%" style="vertical-align:top;padding:16px;background:#f0faff;border-radius:14px;border:1px solid rgba(0,150,220,0.12)">
+          <div style="font-size:26px;margin-bottom:6px">🧠</div>
+          <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Cognitive Growth</div>
+          <div style="font-size:12px;color:#666;line-height:1.5">Story structure, cause-and-effect, and moral lessons strengthen memory and reasoning skills.</div>
+        </td>
+      </tr>
+    </table>
+    <p style="color:#555;font-size:14px;line-height:1.7;margin:0 0 28px">
+      Children who enjoy regular story time develop <strong>vocabulary 2–3× faster</strong> and show stronger empathy. Every story is a small investment in your child's future. 💛
+    </p>
+    <div style="text-align:center;margin-bottom:28px">
+      <a href="https://www.lallifafa.com/dashboard" style="display:inline-block;background:linear-gradient(135deg,#f9c700,#ffab00);color:#1a1a2e;text-decoration:none;font-weight:800;font-size:15px;padding:16px 40px;border-radius:50px;box-shadow:0 4px 20px rgba(249,199,0,0.35)">
+        ✨ Create your first story →
+      </a>
+    </div>
+    <p style="color:#888;font-size:13px;line-height:1.6;margin:0">Your account starts with <strong>320 free credits</strong> — enough for several stories. Each personalised story costs 80 credits. Happy storytelling! 🌙</p>
+  </div>
+  <div style="padding:24px 32px;background:#f9f6ef;text-align:center">
+    <p style="color:#aaa;font-size:11px;margin:0">© ${new Date().getFullYear()} Lalli Fafa · <a href="https://www.lallifafa.com" style="color:#4ecdc4;text-decoration:none">lallifafa.com</a></p>
+  </div>
+</div>`;
+}
+
+function buildWelcomeText(name?: string) {
+  const first = name ? name.split(" ")[0] : "there";
+  return `Hi ${first}, welcome to Lalli Fafa!\n\nYou've unlocked personalised bedtime stories for your child featuring Lalli and Fafa.\n\nOur stories help children:\n• Build listening skills through rich narration\n• Improve attention and focus with personalised content\n• Spark creativity through imaginative worlds\n• Develop cognitive abilities via story structure and moral lessons\n\nYour account starts with 320 free credits. Create your first story at https://www.lallifafa.com/dashboard\n\n— The Lalli Fafa team`;
+}
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
@@ -122,6 +186,31 @@ function createAuth(
         prompt: "select_account",
         clientId: process.env.GOOGLE_CLIENT_ID as string,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            const resendKey = process.env.RESEND_API_KEY;
+            if (!resendKey || !user.email) return;
+            try {
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  from: "Lalli Fafa <raj@lallifafa.com>",
+                  to: [user.email],
+                  subject: "Welcome to Lalli Fafa — your child's story journey begins 🌙",
+                  html: buildWelcomeEmail(user.name ?? undefined),
+                  text: buildWelcomeText(user.name ?? undefined),
+                }),
+              });
+            } catch (err) {
+              console.error("Failed to send welcome email:", err);
+            }
+          },
+        },
       },
     },
     plugins: [
@@ -460,48 +549,14 @@ export const adminAddCredits = mutation({
       });
     }
 
-    // Send email notification when credits are added (opt-in)
-    const shouldEmail = sendEmail !== false && credits > 0;
-    const resendKey = process.env.RESEND_API_KEY;
-    if (shouldEmail && resendKey && userEmail) {
-      try {
-        await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${resendKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: "Lalli Fafa <raj@lallifafa.com>",
-            to: [userEmail],
-            subject: `🌟 ${credits} credits added to your Lalli Fafa account!`,
-            html: `
-              <div style="font-family:'Nunito',Arial,sans-serif;max-width:520px;margin:0 auto;background:#fffef9;border-radius:16px;overflow:hidden;border:1.5px solid rgba(0,0,0,0.06)">
-                <div style="background:#1a1a2e;padding:32px;text-align:center">
-                  <h1 style="color:#fff;font-size:24px;margin:0;font-weight:800">Lalli <span style="color:#4ecdc4">Fafa</span></h1>
-                  <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:6px 0 0">Personalised stories for your little one</p>
-                </div>
-                <div style="padding:40px 32px">
-                  <h2 style="color:#1a1a2e;font-size:22px;font-weight:800;margin:0 0 12px">✨ Credits added!</h2>
-                  <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 24px">
-                    Great news! <strong>${credits} credits</strong> have been added to your Lalli Fafa account.${note ? `<br/><br/><em>Note from team: ${note}</em>` : ""}
-                  </p>
-                  <div style="background:#f5f5f4;border-radius:12px;padding:20px 24px;margin-bottom:28px">
-                    <p style="margin:0;font-size:13px;color:rgba(45,45,45,0.6);font-weight:700;text-transform:uppercase;letter-spacing:0.05em">New credit balance</p>
-                    <p style="margin:4px 0 0;font-size:32px;font-weight:800;color:#1a1a2e">${newAvailable}</p>
-                  </div>
-                  <a href="https://www.lallifafa.com/dashboard" style="display:inline-block;background:#f9c700;color:#1a1a2e;text-decoration:none;font-weight:800;font-size:15px;padding:14px 36px;border-radius:50px">
-                    Go to Storyboard →
-                  </a>
-                </div>
-              </div>
-            `,
-            text: `${credits} credits have been added to your Lalli Fafa account! Your new balance is ${newAvailable} credits.${note ? ` Note: ${note}` : ""} Go to https://www.lallifafa.com/dashboard`,
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to send credit notification email:", err);
-      }
+    // Schedule credit email via internal action (mutations cannot call fetch directly)
+    if (sendEmail !== false && credits > 0 && userEmail) {
+      await ctx.scheduler.runAfter(0, internal.emailActions.sendCreditAddedEmail, {
+        email: userEmail,
+        credits,
+        newBalance: newAvailable,
+        note,
+      });
     }
 
     return { success: true, newBalance: newAvailable };

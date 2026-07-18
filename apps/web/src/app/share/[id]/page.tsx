@@ -54,7 +54,10 @@ function ShareView({ storyId }: { storyId: string }) {
   const contentData = useQuery(api.stories.getContentOnly, story ? { storyId: storyId as Id<"stories"> } : "skip");
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const storyPageUrl = shareUrl.replace("/share/", "/story/");
+  // Use a path-only redirect so SignInForm doesn't double-prepend the origin
+  const storyPageUrl = typeof window !== "undefined"
+    ? window.location.pathname.replace("/share/", "/story/")
+    : `/story/${storyId}`;
 
   const firstImage = imageUrls?.[0]?.url ?? null;
   const preview = contentData?.content

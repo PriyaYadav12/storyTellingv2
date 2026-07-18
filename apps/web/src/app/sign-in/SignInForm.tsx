@@ -39,7 +39,9 @@ export function SignInForm() {
       // callbackURL must be a URL in the Convex backend's trustedOrigins list.
       // Use the production domain so the callbackURL is always trusted,
       // regardless of which Vercel preview URL we're running on.
-      const callbackURL = `https://www.lallifafa.com${redirect}`;
+      const callbackURL = redirect.startsWith("http")
+        ? redirect
+        : `https://www.lallifafa.com${redirect}`;
 
       // Fetch the Google OAuth URL directly — avoids the crossDomainClient popup
       // which gets blocked by browsers after an async await (user-gesture expiry).
