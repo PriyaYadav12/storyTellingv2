@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Lock, ShieldCheck, RotateCcw } from "lucide-react";
 import { useConvexAuth, useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 
@@ -123,6 +123,36 @@ export function CheckoutClient() {
       <p style={{ color: "rgba(45,45,45,0.55)", fontSize: "0.9rem" }}>
         Redirecting you to secure checkout
       </p>
+
+      {/* Trust badges */}
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 8 }}>
+        {/* Razorpay */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 12, background: "#072654", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <Lock size={12} style={{ color: "#3395FF" }} />
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", fontWeight: 700, color: "#fff" }}>
+            Secured by{" "}
+          </span>
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", fontWeight: 800, color: "#3395FF" }}>
+            Razorpay
+          </span>
+        </div>
+
+        {/* SSL */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 12, background: "rgba(0,201,167,0.08)", border: "1px solid rgba(0,201,167,0.2)" }}>
+          <ShieldCheck size={12} style={{ color: "#00c9a7" }} />
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", fontWeight: 700, color: "#00875a" }}>
+            256-bit SSL
+          </span>
+        </div>
+
+        {/* Cancel anytime */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 12, background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" }}>
+          <RotateCcw size={12} style={{ color: "rgba(45,45,45,0.45)" }} />
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", fontWeight: 700, color: "rgba(45,45,45,0.55)" }}>
+            Cancel anytime
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
