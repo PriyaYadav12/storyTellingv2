@@ -75,9 +75,10 @@ export function SignInForm() {
     <div className="min-h-screen flex" style={{ background: "var(--lf-cream)" }}>
       {/* Left panel — branding */}
       <div
-        className="hidden lg:flex flex-col justify-between p-12 w-[420px] flex-shrink-0"
+        className="hidden lg:flex flex-col p-12 w-[460px] flex-shrink-0"
         style={{ background: "var(--lf-dark)" }}
       >
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="relative" style={{ width: 40, height: 40 }}>
             <Image src="/logoNoBg.png" alt="Lalli Fafa" fill className="object-contain" />
@@ -87,37 +88,71 @@ export function SignInForm() {
           </span>
         </Link>
 
-        <div className="flex flex-col gap-6">
-          <h2
-            style={{
-              fontFamily: "'Baloo 2', sans-serif",
-              fontSize: "1.8rem",
-              fontWeight: 800,
-              color: "#fff",
-              lineHeight: 1.2,
-            }}
+        {/* Characters + welcome copy */}
+        <div className="flex flex-col items-center flex-1 justify-center gap-0" style={{ marginTop: "-24px" }}>
+          {/* Lalli & Fafa illustration */}
+          <div className="relative" style={{ width: 280, height: 300 }}>
+            <Image
+              src="/lf-hero.png"
+              alt="Lalli and Fafa"
+              fill
+              className="object-contain object-bottom"
+              priority
+            />
+          </div>
+
+          {/* Speech bubble */}
+          <div
+            className="relative px-5 py-3 rounded-2xl text-center"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", maxWidth: 320 }}
           >
-            Welcome back!<br />
-            <span className="text-gradient-sunshine">The stories await.</span>
-          </h2>
-          <div className="flex flex-col gap-4">
-            {[
-              "Your child's stories are waiting",
-              "New story themes added weekly",
-              "Listen in English or Hindi anytime",
-            ].map((text) => (
-              <div key={text} className="flex items-center gap-3">
-                <div
-                  className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ background: "var(--lf-teal)" }}
-                >
-                  <svg width="10" height="8" fill="none" viewBox="0 0 10 8">
-                    <path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+            {/* Bubble pointer */}
+            <div style={{
+              position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)",
+              width: 0, height: 0,
+              borderLeft: "8px solid transparent",
+              borderRight: "8px solid transparent",
+              borderBottom: "8px solid rgba(255,255,255,0.08)",
+            }} />
+            <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.9rem", color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>
+              We missed you! Your child&apos;s next story is ready. ✨
+            </p>
+          </div>
+
+          {/* Welcome text */}
+          <div className="mt-6 text-center">
+            <h2
+              style={{
+                fontFamily: "'Baloo 2', sans-serif",
+                fontSize: "1.6rem",
+                fontWeight: 800,
+                color: "#fff",
+                lineHeight: 1.2,
+                marginBottom: "1rem",
+              }}
+            >
+              Welcome back!<br />
+              <span className="text-gradient-sunshine">The stories await.</span>
+            </h2>
+            <div className="flex flex-col gap-3">
+              {[
+                "Your child's stories are waiting",
+                "New story themes added weekly",
+                "Listen in English or Hindi anytime",
+              ].map((text) => (
+                <div key={text} className="flex items-center gap-3">
+                  <div
+                    className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                    style={{ background: "var(--lf-teal)" }}
+                  >
+                    <svg width="10" height="8" fill="none" viewBox="0 0 10 8">
+                      <path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.88rem" }}>{text}</p>
                 </div>
-                <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.9rem" }}>{text}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
@@ -129,7 +164,7 @@ export function SignInForm() {
       {/* Right panel — form */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Mobile logo */}
-        <Link href="/" className="flex items-center gap-2 mb-10 lg:hidden">
+        <Link href="/" className="flex items-center gap-2 mb-6 lg:hidden">
           <div className="relative" style={{ width: 36, height: 36 }}>
             <Image src="/logoNoBg.png" alt="Lalli Fafa" fill className="object-contain" />
           </div>
@@ -137,6 +172,13 @@ export function SignInForm() {
             Lalli <span style={{ color: "var(--lf-teal)" }}>Fafa</span>
           </span>
         </Link>
+
+        {/* Mobile characters strip */}
+        <div className="lg:hidden flex items-end justify-center mb-4" style={{ height: 110 }}>
+          <div className="relative" style={{ width: 130, height: 110 }}>
+            <Image src="/lf-hero.png" alt="Lalli and Fafa" fill className="object-contain object-bottom" priority />
+          </div>
+        </div>
 
         <div className="w-full" style={{ maxWidth: 420 }}>
           <h1
