@@ -18,6 +18,7 @@ function createAuth(
   { optionsOnly }: { optionsOnly?: boolean } = { optionsOnly: false },
 ) {
   return betterAuth({
+    baseURL: "https://www.lallifafa.com",
     logger: {
       disabled: optionsOnly,
     },
