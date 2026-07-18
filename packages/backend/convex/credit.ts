@@ -27,7 +27,8 @@ export const _updateCredit = mutation({
         const userCredit = await ctx.db.get(creditId);
         if (!userCredit) return { success: false, error: "User credit not found" };
         const availableCredits = userCredit.availableCredits - usedCredits;
-        await ctx.db.patch(creditId, { usedCredits, availableCredits, updatedAt: Date.now() });
+        const totalUsed = userCredit.usedCredits + usedCredits;
+        await ctx.db.patch(creditId, { usedCredits: totalUsed, availableCredits, updatedAt: Date.now() });
         return { success: true };
     },
 });
