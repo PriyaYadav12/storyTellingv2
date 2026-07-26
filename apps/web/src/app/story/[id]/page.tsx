@@ -554,7 +554,7 @@ function StoryViewer({
   const [bedtimeMode, setBedtimeMode] = useState(false);
   const [bedtimeMenuOpen, setBedtimeMenuOpen] = useState(false);
   const [sleepRemaining, setSleepRemaining] = useState(0);
-  const [showVocab, setShowVocab] = useState(false);
+  const [showVocab, setShowVocab] = useState(true);
   const [lightMode, setLightMode] = useState(true);
   const [storyEnded, setStoryEnded] = useState(false);
   const [sequelLoading, setSequelLoading] = useState(false);
@@ -1051,6 +1051,82 @@ function StoryViewer({
         transition: "filter 0.8s ease, background 0.4s ease",
       }}
     >
+      {/* ── "The End" overlay — fixed modal that appears when narration finishes ── */}
+      {storyEnded && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-5"
+          style={{ background: "rgba(0,0,0,0.78)", backdropFilter: "blur(10px)" }}
+        >
+          <div
+            className="w-full max-w-sm flex flex-col items-center gap-5 p-7 rounded-3xl relative"
+            style={{
+              background: lightMode
+                ? "linear-gradient(135deg,#FFF8E7 0%,#E6FAF6 50%,#F3EEFF 100%)"
+                : "linear-gradient(135deg,#1a1740 0%,#0d2d26 50%,#1a1040 100%)",
+              border: `2px solid ${lightMode ? "rgba(0,201,167,0.3)" : "rgba(0,201,167,0.4)"}`,
+              boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+            }}
+          >
+            {/* Dismiss */}
+            <button
+              onClick={() => setStoryEnded(false)}
+              className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:bg-black/10"
+              style={{ color: t.controlColor }}
+              aria-label="Dismiss"
+            >
+              <X size={14} />
+            </button>
+
+            {/* End graphic */}
+            <div className="flex flex-col items-center gap-1.5">
+              <span style={{ fontSize: "3rem", lineHeight: 1 }}>✨</span>
+              <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.9rem", color: "var(--lf-teal)", lineHeight: 1 }}>
+                The End
+              </h2>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: t.textSoft, textAlign: "center", maxWidth: 260 }}>
+                {story.title}
+              </p>
+            </div>
+
+            {/* CTAs */}
+            <div className="w-full grid grid-cols-2 gap-3">
+              <button
+                onClick={handleSequel}
+                disabled={sequelLoading}
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                style={{ background: "linear-gradient(135deg,var(--lf-sunshine),#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(249,199,0,0.35)", opacity: sequelLoading ? 0.7 : 1 }}
+              >
+                {sequelLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                {sequelLoading ? "Creating…" : "Next Adventure"}
+              </button>
+              <Link
+                href="/generate"
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(0,201,167,0.35)" }}
+              >
+                <Sparkles size={16} /> New Story
+              </Link>
+            </div>
+
+            {/* Share row */}
+            <div className="flex items-center gap-2">
+              <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", fontWeight: 700, color: t.textSoft, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Share
+              </span>
+              <a href={waShareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95" style={{ background: "#25D366" }} title="WhatsApp">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.05 2.095C6.495 2.095 1.984 6.616 1.984 12.178c0 1.768.47 3.431 1.296 4.875L2.013 22l5.087-1.331a9.924 9.924 0 004.95 1.31c5.555 0 10.066-4.52 10.066-10.083 0-2.697-1.05-5.23-2.958-7.14A9.98 9.98 0 0012.05 2.095z"/></svg>
+              </a>
+              <a href={fbShareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95" style={{ background: "#1877F2" }} title="Facebook">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <button onClick={copyLink} className="flex items-center justify-center w-9 h-9 rounded-full transition-all hover:scale-110 active:scale-95" style={{ background: t.panelBg, border: `1px solid ${t.panelBorder}`, color: shareCopied ? "var(--lf-teal)" : t.controlColor }} title="Copy link">
+                {shareCopied ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Sleep timer bottom sheet ── */}
       {bedtimeMenuOpen && (
         <div
@@ -1541,47 +1617,6 @@ function StoryViewer({
               )}
             </div>
 
-            {/* ── "The End" card — appears when story finishes ── */}
-            {storyEnded && (
-              <div
-                className="w-full flex flex-col items-center gap-4 py-8 px-6 rounded-3xl"
-                style={{
-                  background: lightMode
-                    ? "linear-gradient(135deg, #FFF8E7 0%, #E6FAF6 50%, #F3EEFF 100%)"
-                    : "linear-gradient(135deg, #1a1740 0%, #0d2d26 50%, #1a1040 100%)",
-                  border: `2px solid ${lightMode ? "rgba(0,201,167,0.25)" : "rgba(0,201,167,0.3)"}`,
-                  boxShadow: "0 8px 32px rgba(0,201,167,0.15)",
-                }}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <span style={{ fontSize: "2.5rem" }}>✨</span>
-                  <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.6rem", color: "var(--lf-teal)" }}>
-                    The End
-                  </h2>
-                  <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: t.textSoft, textAlign: "center" }}>
-                    {story.title}
-                  </p>
-                </div>
-                <div className="w-full grid grid-cols-2 gap-3 mt-2">
-                  <button
-                    onClick={handleSequel}
-                    disabled={sequelLoading}
-                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
-                    style={{ background: "linear-gradient(135deg,var(--lf-sunshine),#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(249,199,0,0.35)", opacity: sequelLoading ? 0.7 : 1 }}
-                  >
-                    {sequelLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                    {sequelLoading ? "Creating…" : "Continue Adventure"}
-                  </button>
-                  <Link
-                    href="/generate"
-                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
-                    style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(0,201,167,0.35)" }}
-                  >
-                    <Sparkles size={16} /> New Story
-                  </Link>
-                </div>
-              </div>
-            )}
 
             {/* ── Compact share row ── */}
             <div className="w-full flex items-center gap-2 justify-center">
@@ -1607,10 +1642,13 @@ function StoryViewer({
               <div className="w-full flex flex-col gap-2">
                 <button
                   onClick={() => setShowVocab(v => !v)}
-                  className="flex items-center gap-2 self-start"
-                  style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: t.textFaint, textTransform: "uppercase", letterSpacing: "0.08em", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                  className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl transition-all"
+                  style={{ background: lightMode ? "rgba(0,201,167,0.08)" : "rgba(0,201,167,0.1)", border: `1px solid ${lightMode ? "rgba(0,201,167,0.2)" : "rgba(0,201,167,0.25)"}`, cursor: "pointer" }}
                 >
-                  📖 Words to learn {showVocab ? "▾" : "▸"}
+                  <span style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: "0.85rem", fontWeight: 800, color: "var(--lf-teal)" }}>
+                    📖 Words to Learn
+                  </span>
+                  <span style={{ fontSize: "0.7rem", color: "var(--lf-teal)", fontWeight: 700 }}>{showVocab ? "▾" : "▸"}</span>
                 </button>
                 {showVocab && (
                   <div className="flex flex-col gap-2">
