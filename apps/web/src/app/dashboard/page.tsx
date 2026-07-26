@@ -107,6 +107,7 @@ export default function DashboardPage() {
         .stat-card{animation:fade-in 0.5s ease both;}
         .story-card{animation:fade-in 0.4s ease both;}
         .drawer-panel{animation:slide-in-right 0.35s cubic-bezier(0.34,1.2,0.64,1) both;}
+        .story-img-skel{background:linear-gradient(90deg,rgba(0,0,0,0.06) 25%,rgba(0,0,0,0.1) 50%,rgba(0,0,0,0.06) 75%);background-size:400px 100%;animation:shimmer 1.4s ease-in-out infinite;}
       `}</style>
 
       <AuthLoading>
@@ -501,7 +502,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
                       style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.07)", animationDelay: `${idx * 0.06}s` }}
                     >
                       {/* Story scene image */}
-                      <div className="relative overflow-hidden" style={{ height: 140 }}>
+                      <div className="relative overflow-hidden story-img-skel" style={{ height: 140 }}>
                         <Image
                           src={sceneImg}
                           alt={story.title ?? "Story"}

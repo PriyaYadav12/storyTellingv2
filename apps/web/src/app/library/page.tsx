@@ -502,7 +502,7 @@ export default function LibraryPage() {
                       }}
                     >
                       {/* Scene image */}
-                      <div className="relative overflow-hidden flex-shrink-0" style={{ height: 160 }}>
+                      <div className="relative overflow-hidden flex-shrink-0 shimmer-card" style={{ height: 160 }}>
                         <Image
                           src={sceneImg}
                           alt={story.title ?? "Story"}
