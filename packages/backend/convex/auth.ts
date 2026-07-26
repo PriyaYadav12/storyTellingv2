@@ -3,7 +3,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { crossDomain } from "@convex-dev/better-auth/plugins";
 import { components, internal } from "./_generated/api";
 import { DataModel, Id } from "./_generated/dataModel";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { v } from "convex/values";
@@ -192,6 +192,17 @@ function createAuth(
       user: {
         create: {
           after: async (user) => {
+            // Create a user_roles entry immediately at signup so the admin
+            // tool shows all signups, not just users who completed onboarding.
+            try {
+              await (ctx as any).runMutation(internal.auth.initUserRoleRecord, {
+                userId: user.id,
+                email: user.email ?? "",
+              });
+            } catch (err) {
+              console.error("Failed to initialize user role record:", err);
+            }
+
             const resendKey = process.env.RESEND_API_KEY;
             if (!resendKey || !user.email) return;
             try {
@@ -560,5 +571,26 @@ export const adminAddCredits = mutation({
     }
 
     return { success: true, newBalance: newAvailable };
+  },
+});
+
+// Called immediately on account creation (via databaseHooks) so every signup
+// appears in the admin tool regardless of whether the user completes onboarding.
+export const initUserRoleRecord = internalMutation({
+  args: { userId: v.string(), email: v.string() },
+  handler: async (ctx, { userId, email }) => {
+    const existing = await ctx.db
+      .query("user_roles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+    if (existing) return; // idempotent
+    const now = Date.now();
+    await ctx.db.insert("user_roles", {
+      userId,
+      role: "user",
+      email,
+      createdAt: now,
+      updatedAt: now,
+    });
   },
 });
