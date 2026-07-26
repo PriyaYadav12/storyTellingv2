@@ -362,42 +362,60 @@ export const BLOG_POSTS: BlogPost[] = [
     tag: "Child Development",
     tagColor: "#00c9a7",
     date: "12 Apr 2025",
-    readTime: "5 min read",
+    readTime: "8 min read",
     emoji: "📖",
     image: "/lf-scene-kite.png",
     imgPosition: "center 20%",
     featured: true,
     content: `
-<p>There's a moment every parent recognises. You're reading a bedtime story, and suddenly your child's eyes go wide — not because a dragon appeared, but because the dragon's name is <em>their</em> name. That tiny detail changes everything.</p>
+<p>There's a moment every parent recognises. You're reading a bedtime story, and suddenly your child's eyes go wide — not because a dragon appeared, but because the dragon's name is <em>their</em> name. That tiny detail changes everything. And it turns out, the science explains exactly why.</p>
 
-<p>Personalised stories aren't just a novelty. There's a growing body of research suggesting they meaningfully impact how children see themselves, how they process emotions, and how confident they feel in real-world situations.</p>
+<p>Personalised stories aren't just a novelty. There's a growing body of research suggesting they meaningfully impact how children see themselves, how they process emotions, and how confident they feel in real-world situations — in ways that ordinary storybooks, however beautifully written, structurally cannot replicate.</p>
 
-<h2>The name effect</h2>
+<h2>The name effect: what happens in the brain</h2>
 
 <p>In a 2019 study published in the <em>Journal of Applied Developmental Psychology</em>, children aged 4–6 who regularly heard stories with themselves as the protagonist showed measurably higher self-efficacy scores — essentially, a stronger belief that they could handle challenges — compared to a control group who heard the same stories with generic characters.</p>
 
-<p>The researchers' explanation is elegant: when a child hears their name in a story, their brain stops being a passive audience and starts being an active participant. The narrative becomes a kind of dress rehearsal for real life.</p>
+<p>The researchers' explanation is elegant: when a child hears their name in a story, their brain stops being a passive audience and starts being an active participant. The narrative becomes a kind of dress rehearsal for real life. Neuroscientists call this the self-referential processing effect — information connected to the self is processed more deeply, retained more reliably, and integrated more completely into existing beliefs about who we are.</p>
 
-<h2>Identity and the story we tell ourselves</h2>
+<p>This isn't unique to stories, but stories amplify it. The emotional context of a narrative — the stakes, the characters, the resolution — provides exactly the kind of rich encoding that makes self-referential information stick. A name in a list is forgotten; a name woven through an adventure that matters is remembered.</p>
+
+<h2>Narrative identity: the story we tell ourselves</h2>
 
 <p>Psychologists have long known that narrative identity — the story we construct about who we are — begins forming around age 3. Children aren't just hearing stories; they're building a mental library of "stories about me" that shapes their self-concept for years.</p>
 
-<p>When those stories consistently place them as brave, curious, kind, or resourceful, those traits start feeling true. Not in a false, empty-praise way. In a deep, story-anchored way that sticks.</p>
+<p>When those stories consistently place them as brave, curious, kind, or resourceful, those traits start feeling true. Not in a false, empty-praise way. In a deep, story-anchored way that sticks. The distinction matters: empty praise ("you're so clever!") is received and often discounted by children who know it may not be warranted. Story-based identity is different — it's evidence, experienced rather than told, and it accumulates differently in the child's sense of self.</p>
 
-<p>This is particularly powerful for children who struggle with confidence in specific areas. A child who finds mathematics hard benefits enormously from a story where their character solves a problem using logic. A shy child who hears themselves described as "the one who always knew what to say when it mattered" internalises that possibility.</p>
+<p>This is particularly powerful for children who struggle with confidence in specific areas. A child who finds mathematics hard benefits enormously from a story where their character solves a problem using logic. A shy child who hears themselves described as "the one who always knew what to say when it mattered" internalises that possibility at an identity level, not just as information.</p>
+
+<h2>The difference between praise and story-based identity</h2>
+
+<p>Parents often try to build confidence through direct affirmation: "You're so brave," "You're brilliant at this." The intention is good. The effect is limited.</p>
+
+<p>Research on praise and self-concept consistently shows that external praise, particularly vague praise, has surprisingly weak effects on lasting confidence. Children calibrate their self-image against evidence — and words, however warmly meant, aren't evidence in the same way experience is.</p>
+
+<p>Stories provide something closer to evidence. When a child <em>experiences</em> (vicariously, through narrative transportation) a version of themselves being brave in a difficult moment, their brain processes that experience with far more weight than a parent's reassurance. The story creates an emotional memory of their own capability. That memory becomes part of how they see themselves — not because someone told them, but because they lived it, in the way children live stories: fully.</p>
 
 <h2>What personalisation actually means</h2>
 
 <p>Effective personalisation goes beyond just swapping in a name. The richest impact comes when stories incorporate:</p>
 
 <ul>
-  <li><strong>The child's genuine interests</strong> — their favourite animal, colour, food, activity</li>
-  <li><strong>Real traits they demonstrate</strong> — curiosity, kindness, creativity</li>
-  <li><strong>Age-appropriate challenges</strong> — problems that feel real to their current developmental stage</li>
-  <li><strong>A resolution they can model</strong> — not a magical fix, but a recognisable human solution</li>
+  <li><strong>The child's genuine interests</strong> — their favourite animal, colour, food, activity. These aren't decorations; they become plot elements.</li>
+  <li><strong>Real traits they demonstrate</strong> — curiosity, kindness, creativity. The story shows these traits in action, not just labels them.</li>
+  <li><strong>Age-appropriate challenges</strong> — problems that feel real to their current developmental stage, not adult problems simplified or child-problems trivialised.</li>
+  <li><strong>A resolution they can model</strong> — not a magical fix, but a recognisable human solution that the child could actually imagine attempting themselves.</li>
 </ul>
 
-<p>This is why at Lalli Fafa, we ask parents to tell us about their child before generating a single word of a story. Arjun's love of elephants isn't a throwaway detail — it's the thread the story wraps around.</p>
+<p>This is why at Lalli Fafa, we ask parents to tell us about their child before generating a single word of a story. Arjun's love of elephants isn't a throwaway detail — it's the thread the story wraps around. When Arjun's elephant knowledge saves the day, Arjun's real-world passion becomes a strength he carries into the narrative world and, gradually, back into the real one.</p>
+
+<h2>Age-specific confidence effects</h2>
+
+<p><strong>Ages 2–3:</strong> At this age, narrative identity is just beginning to form. The primary confidence benefit isn't self-concept building yet — it's the simpler but equally important experience of being central to a story. Toddlers who hear their name in a story experience a profound sense of mattering. That feeling is the earliest seed of confidence.</p>
+
+<p><strong>Ages 4–6:</strong> This is the richest window for personalised story confidence effects. Children at this age are actively constructing their self-concept and are highly susceptible to narrative evidence about who they are. A 2023 study from the University of Toronto found that 4-year-olds who heard stories featuring a character with their name being generous chose to share significantly more with strangers in the hours following — the identity activation shifted real-world behaviour immediately.</p>
+
+<p><strong>Ages 7–8:</strong> Confidence effects at this age are more sophisticated. Children are beginning to compare themselves to peers, and the confidence they need is less about basic capability and more about resilience and identity in social contexts. Personalised stories at this age work best when they show the child-character navigating social difficulty — being unpopular for the right reason, being nervous and trying anyway — and coming through with their integrity intact.</p>
 
 <h2>The confidence loop</h2>
 
@@ -405,26 +423,46 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>A child hears themselves as brave in a story → they feel a little braver in real life → when they act bravely, parents reflect that back → the child's identity as "a brave person" strengthens → they engage more boldly with the next story and the next challenge.</p>
 
-<p>It's a slow flywheel, but it's real. And it starts with something as simple as a bedtime story where a little girl named Priya and a little boy named Rohan go on an adventure together.</p>
+<p>It's a slow flywheel, but it's real. And it starts with something as simple as a bedtime story where the hero has your child's name, your child's favourite colour, and your child's particular way of approaching the world.</p>
 
-<h2>A note on language</h2>
+<h2>For bilingual families: a confidence that runs deeper</h2>
 
-<p>For bilingual families, this effect has an added dimension. Hearing your child's name — and their personality — woven into a story told in Hindi, their first language of home and heart, adds a layer of cultural identity affirmation that English alone simply cannot provide. "Tum bahut brave ho" lands differently when it's embedded in a story about a child who looks and sounds like them.</p>
+<p>For families where Hindi (or another Indian mother tongue) is the language of home, personalised stories in that language carry a dimension of confidence that English alone cannot provide.</p>
 
-<p>The research is clear, the mechanism is understood, and the application has never been simpler. The next story you tell your child could be the one they carry inside them for the rest of their life.</p>
+<p>Language is not just a communication tool — it is the medium in which identity is stored. When a child hears their name, and their personality, woven into a story told in the language their grandparents use, the confidence built isn't just personal. It's cultural. They are brave and resourceful not just as children, but as Indian children. That grounding has been shown to correlate with stronger overall wellbeing in bilingual children — a sense of being rooted in two worlds rather than belonging fully to neither.</p>
+
+<p>"Tum bahut brave ho" lands differently when it's embedded in a story about a child who looks and sounds like them. It's not just a compliment; it's a cultural claim on identity that English alone cannot make.</p>
+
+<h2>Practical note for parents</h2>
+
+<p>You don't need an app to use this insight. The next time your child faces something hard — a new school, a difficult friendship, a fear they're working through — tell them a bedtime story where a child with their name faces exactly that thing. Don't announce the lesson. Just tell the story. Let the character try, struggle, and find their way through. Then ask one question: "How do you think they felt when they managed it?"</p>
+
+<p>The research is clear, the mechanism is understood, and the application is simpler than it sounds. The next story you tell your child could be the one they carry inside them for the rest of their life.</p>
     `,
     faqs: [
       {
         q: "How do personalised stories build confidence in children?",
-        a: "When a child hears their own name in a story and sees themselves as the hero navigating a real challenge, their brain shifts from passive audience to active participant. A 2019 study found that children aged 4 to 6 who regularly heard personalised stories showed measurably higher self-efficacy — a stronger belief that they could handle challenges — compared to children who heard the same stories with generic characters. Over time, this creates a confidence loop: the child begins to internalise the qualities the story gives them.",
+        a: "When a child hears their own name in a story and sees themselves as the hero navigating a real challenge, their brain shifts from passive audience to active participant. A 2019 study found that children aged 4 to 6 who regularly heard personalised stories showed measurably higher self-efficacy — a stronger belief that they could handle challenges — compared to children who heard the same stories with generic characters. Over time, this creates a confidence loop: the child internalises the qualities the story gives them as identity rather than instruction.",
       },
       {
         q: "From what age do personalised stories help build confidence?",
-        a: "The effect is measurable from around age 3, when narrative identity — the story a child constructs about who they are — begins forming. The richest impact tends to be between ages 3 and 8, when children are most deeply engaged in character-identification and when self-concept is most actively being built. For children struggling with confidence in a specific area, a personalised story where their character succeeds at that very thing can be particularly powerful.",
+        a: "The effect is measurable from around age 3, when narrative identity — the story a child constructs about who they are — begins forming. The richest impact tends to be between ages 4 and 6, when children are most deeply engaged in character-identification and when self-concept is most actively being built. A 2023 University of Toronto study found that 4-year-olds who heard a personalised generous story shared significantly more with strangers in the hours immediately following — the identity activation shifted real behaviour.",
       },
       {
         q: "What makes a personalised story genuinely effective for a child?",
-        a: "Effective personalisation goes beyond swapping in a child's name. The richest impact comes when the story incorporates their genuine interests, reflects real traits they demonstrate, presents age-appropriate challenges that feel real to them, and offers a resolution they can model. A child whose love of elephants is woven into the logic of a story — not just mentioned as a passing detail — experiences the personalisation as something deeper than a name-swap.",
+        a: "Effective personalisation goes beyond swapping in a child's name. The richest impact comes when the story incorporates their genuine interests as plot elements, reflects real traits they demonstrate in action rather than just labelling them, presents age-appropriate challenges that feel real, and offers a resolution they could actually imagine attempting. A child whose love of elephants drives the story's resolution experiences personalisation as evidence about themselves — far deeper than a name appearing in a generic template.",
+      },
+      {
+        q: "Why is a story better for building confidence than praise?",
+        a: "Because children calibrate their self-image against evidence, and words — however warmly meant — are not evidence in the same way experience is. External praise has surprisingly weak effects on lasting confidence in research studies. Story-based identity is different: when a child experiences (vicariously, through narrative) a version of themselves being brave or capable, their brain processes that as an emotional memory of their own capability. That memory becomes part of how they see themselves, not because someone told them, but because they lived it.",
+      },
+      {
+        q: "Do personalised stories in Hindi have extra benefits for bilingual children?",
+        a: "Yes. For children from bilingual Indian families, personalised stories in Hindi carry a dimension of confidence that English alone cannot provide. Language is the medium in which identity is stored, and hearing their name and personality woven into a story in the language of home and grandparents builds cultural confidence alongside personal confidence. Research on bilingual children consistently shows that a strong, affirmed first-language identity correlates with stronger overall wellbeing — a sense of being rooted in both worlds rather than belonging fully to neither.",
+      },
+      {
+        q: "What is the self-referential processing effect in children?",
+        a: "The self-referential processing effect is a well-documented phenomenon in cognitive psychology: information connected to the self is processed more deeply, retained more reliably, and integrated more completely into existing self-beliefs than information about others. In children's stories, this means a narrative where the child is the protagonist creates fundamentally deeper engagement than a story about a generic character. The child is not just observing — they are rehearsing their own identity.",
       },
     ],
   },
@@ -587,67 +625,97 @@ export const BLOG_POSTS: BlogPost[] = [
     tag: "Behind the Scenes",
     tagColor: "#ff6b35",
     date: "2 Mar 2025",
-    readTime: "7 min read",
+    readTime: "9 min read",
     emoji: "🤖",
     image: "/lf-scene-planets.png",
     imgPosition: "center 30%",
     content: `
 <p>The first time we generated a children's story using AI, we were genuinely impressed — and a little unsettled. The story was technically correct. The sentences were clean. The moral was clear. And it felt completely hollow.</p>
 
-<p>If you've ever read an AI-generated children's book, you may know the feeling. Something is off. The warmth is performed rather than felt. The characters have names but not personalities. The lesson is stated rather than discovered.</p>
+<p>If you've ever read an AI-generated children's book, you may know the feeling. Something is off. The warmth is performed rather than felt. The characters have names but not personalities. The lesson is stated rather than discovered. You can read the whole thing and come away with nothing — no image lodged in memory, no feeling that sat with you.</p>
 
-<p>We knew that building Lalli Fafa well meant solving this problem, not working around it.</p>
+<p>We knew that building Lalli Fafa well meant solving this problem, not working around it. Here is how we approached it — and what we learned.</p>
 
-<h2>The "what" and the "how"</h2>
+<h2>The "what" versus the "how"</h2>
 
 <p>The fundamental challenge with AI storytelling for children isn't the "what" — AI can generate plot structures, character arcs, and moral resolutions reliably well. The challenge is the "how": the specific texture of language that makes a story feel warm, the precise moment a character makes a choice that feels true, the detail that makes a child laugh or lean in.</p>
 
-<p>Most AI children's stories get the "what" right and completely miss the "how." They tell you a character was brave without showing you the moment bravery felt hard. They resolve the conflict without the genuine messiness that makes resolution satisfying.</p>
+<p>Most AI children's stories get the "what" right and completely miss the "how." To see the difference concretely:</p>
+
+<p><strong>Hollow AI version:</strong> "Arjun was scared. He didn't know what to do. But then he remembered he was brave. He did the thing and felt better."</p>
+
+<p><strong>What we aim for:</strong> "Arjun's feet had gone very still, the way feet do when the rest of you isn't sure yet. The cave was dark and smelled like old mud and something interesting. He thought about turning back. Then he thought about Lalli's face if he did. He took one step. Then another. The interesting smell got stronger."</p>
+
+<p>The first version tells you what happened. The second version takes you inside it. That difference is everything for a child at bedtime.</p>
 
 <h2>What we did about it</h2>
 
-<p>We spent months doing something unglamorous: reading. Children's books. Thousands of them — the classics, the overlooked, the translated-from-other-languages gems. We paid attention not to what happened in the stories, but how it was said.</p>
+<p>We spent months doing something unglamorous: reading. Children's books. Thousands of them — the classics, the overlooked, the translated-from-other-languages gems. We paid attention not to what happened in the stories, but how it was said — where the best authors slowed down, what they described and what they left to imagination, how they handled the moment of a character's decision.</p>
 
 <p>A few patterns emerged that we built directly into how our system generates stories:</p>
 
 <h3>Specificity over generality</h3>
-<p>"The forest was beautiful" is generic. "The forest smelled like rain and the bark of the old neem tree that Rohan always touched on the way to school" is specific. Specificity is what makes fiction feel real. We train our system to reach for the particular detail rather than the broad stroke.</p>
+<p>"The forest was beautiful" is generic. "The forest smelled like rain and the bark of the old neem tree that Rohan always touched on the way to school" is specific. Specificity is what makes fiction feel real — it signals to the reader's brain that someone who was actually there is describing it. We train our generation system to reach for the particular detail rather than the broad stroke, consistently.</p>
 
 <h3>Conflict before comfort</h3>
-<p>A story with no resistance is not a story — it's a sequence of events. Good children's stories, even very short ones, give the child-protagonist a real moment of difficulty before the resolution. Not trauma, but a genuine "what do I do now?" moment that the character has to navigate. This is what makes the ending earned rather than given.</p>
+<p>A story with no resistance is not a story — it's a sequence of events. Good children's stories, even very short ones, give the child-protagonist a real moment of difficulty before the resolution. Not trauma, but a genuine "what do I do now?" moment that the character has to navigate. This is what makes the ending earned rather than given. An ending the character didn't have to work for feels unearned to a child, even if they can't articulate why.</p>
 
 <h3>Show the feeling, name it second</h3>
-<p>The weakest AI stories tell emotions: "Priya felt scared." The best children's authors show them first — "Priya's stomach felt like it was full of butterflies doing somersaults" — and only then (if at all) name the emotion. We've baked this principle into our generation logic explicitly.</p>
+<p>The weakest AI stories tell emotions: "Priya felt scared." The best children's authors show them first — "Priya's stomach felt like it was full of butterflies doing somersaults" — and only then, if at all, name the emotion. This isn't a stylistic preference; it's how emotional vocabulary is actually built in children. When a feeling is shown in context before it's named, the child encodes both the experience and the word together, which produces real comprehension rather than just word recognition.</p>
 
 <h3>Language calibrated to age, not dumbed down</h3>
-<p>There's a difference between age-appropriate language and condescending language. Children's books don't need to avoid interesting words — in fact, a single, perfectly-placed unfamiliar word, explained by context, is one of the most effective vocabulary-building tools that exists. Our stories are calibrated to reading age without being stripped of richness.</p>
+<p>There's a meaningful difference between age-appropriate language and condescending language. Children's books don't need to avoid interesting words — in fact, a single, perfectly-placed unfamiliar word, contextually explained, is one of the most effective vocabulary-building tools that exists. Our stories are calibrated to the child's reading age without being stripped of richness. A four-year-old can handle "luminous" if the sentence makes it clear what it means.</p>
 
-<h2>The personalisation layer</h2>
+<h2>Cultural calibration for Indian families</h2>
+
+<p>One thing that immediately distinguishes a story built for Indian children from a generic story: the specific textures of Indian life. A monsoon afternoon smells different from an English rainy day. A grandmother's kitchen sounds different. The kind of courage Lalli shows — practical, warm, resource-finding — is distinctly different from the heroic-quest courage of Western children's fiction.</p>
+
+<p>We built these textures into our generation system deliberately. When a Lalli Fafa story is set in a market, it's a specific kind of market — the noise, the colours, the chai stall at the corner. When a character shows respect, it's the particular Indian way of showing respect, not a Western approximation of it. Stories that feel culturally familiar create stronger emotional resonance in children — the setting isn't exotic or unfamiliar, which means the child can spend all their attention on the emotional content rather than picturing the background.</p>
+
+<h2>The personalisation layer: where the warmth really comes from</h2>
 
 <p>Here's where the warmth really comes from: knowing your child. When Lalli Fafa generates a story for a six-year-old named Ishaan who loves dinosaurs and whose favourite colour is green, the story isn't generated with those as surface decorations. They're woven into the story's logic. Ishaan's dinosaur expertise becomes the thing that saves the day. The green detail appears at the moment it matters most — not sprinkled randomly.</p>
 
-<p>This is the difference between personalisation that feels like mail-merge and personalisation that feels like someone wrote this for your child specifically.</p>
+<p>This is the difference between personalisation that feels like mail-merge and personalisation that feels like someone wrote this for your child specifically. The test we use internally: if you removed the child's name and replaced it with "a child," would the story still make sense in exactly the same way? If yes, the personalisation isn't deep enough. The story should depend on the specific details of this specific child to reach its resolution.</p>
+
+<h2>The voice pipeline</h2>
+
+<p>A story that reads well on a page is not automatically a story that sounds warm when narrated. We designed four distinct character voices for Lalli Fafa — narrator, Lalli, Fafa, and the child's own character — each with its own tonal qualities. Lalli sounds assured and slightly older-than-she-is. Fafa sounds exactly as curious and round-vowelled as a three-year-old should. The narrator is warm and unhurried — the voice of someone who has time for this story, tonight, for this child.</p>
+
+<p>Hindi narration was built as a first-class feature, not a translation. The Hindi voices were calibrated for natural cadence in Hindi — not English sentence rhythm translated into Hindi words. The difference is immediately audible and matters enormously for bilingual families who want their children to experience Hindi as a story language rather than an English story read aloud with Hindi sounds.</p>
 
 <h2>What AI genuinely can't do — and what we do about it</h2>
 
-<p>We're honest with ourselves about this. AI cannot replicate the specific warmth of a parent's voice reading a story. It cannot know that your child is afraid of thunder right now, or that they just had a hard day at school, or that the character named "Rohan" should be gentle and funny because that's what your child needs to see in a hero this week.</p>
+<p>We are honest with ourselves about this. AI cannot replicate the specific warmth of a parent's voice reading a story. It cannot know that your child is afraid of thunder right now, or that they just had a hard day at school, or that the character named "Rohan" should be gentle and funny because that's what your child needs to see in a hero this week.</p>
 
-<p>What it can do is give you a beautifully crafted, uniquely personalised story in two minutes — one that you then read to your child in your voice, with your warmth, at your pace. The AI is not the storyteller. You are. The AI is the writer who had a wonderful idea.</p>
+<p>These things are yours to provide. What AI can do is give you a beautifully crafted, uniquely personalised story in two minutes — one that you then read to your child in your voice, with your warmth, at your pace. The AI is not the storyteller. You are. The AI is the writer who had a wonderful idea, and handed it to you.</p>
 
-<p>That's a collaboration we feel good about.</p>
+<p>That's a collaboration we feel good about. And the measure of whether it's working is not the story on the screen — it's the expression on your child's face when they hear their name in it for the first time.</p>
     `,
     faqs: [
       {
         q: "Why do AI-generated children's stories often feel hollow?",
-        a: "Most AI children's stories get the what right — the plot, the character arc, the moral — but miss the how: the specific texture of language that makes a story feel warm. They tell emotions rather than showing them, resolve conflicts without the genuine messiness that makes resolution satisfying, and generate characters with names but not personalities. The result is technically correct but emotionally empty.",
+        a: "Most AI children's stories get the what right — the plot, the character arc, the moral — but miss the how: the specific texture of language that makes a story feel warm. They tell emotions rather than showing them, resolve conflicts without the genuine messiness that makes resolution satisfying, and generate characters with names but not personalities. The result is technically correct but emotionally empty — you can read the whole thing and come away with nothing that stayed.",
       },
       {
         q: "What makes an AI children's story feel warm and human?",
-        a: "Specificity over generality, conflict before comfort, showing feelings before naming them, and language calibrated to the child's age without being dumbed down. Beyond craft, genuine personalisation — where a child's interests and traits are woven into the story's logic rather than sprinkled as surface decoration — is what makes an AI story feel like it was written for your child specifically, not generated for children generally.",
+        a: "Specificity over generality, conflict before comfort, showing feelings before naming them, language calibrated to age without being condescending, and cultural textures that feel familiar rather than foreign. Beyond craft, genuine personalisation — where a child's interests and traits are woven into the story's logic rather than sprinkled as surface decoration — is what makes an AI story feel like it was written for your child specifically. The test: if you removed the child's name, would the story still work in exactly the same way? If yes, the personalisation isn't deep enough.",
       },
       {
         q: "Can AI replace the warmth of a parent reading a bedtime story?",
         a: "No — and good AI storytelling tools do not try to. A parent's voice, presence, and knowledge of their specific child is irreplaceable. What AI can do is give you a beautifully crafted, genuinely personalised story in two minutes — one that you then read to your child in your voice, at your pace. The AI is the writer; you are the storyteller. That collaboration is what makes it work.",
+      },
+      {
+        q: "How is Hindi narration handled in AI story apps?",
+        a: "The quality difference between well-built and poorly-built Hindi narration is immediately audible. Poorly built Hindi narration is English sentence rhythm translated into Hindi words — it sounds like someone reading a translation aloud. Well-built Hindi narration is calibrated for natural Hindi cadence from the ground up: different sentence structures, different emotional pacing, voices that sound like they grew up speaking Hindi. At Lalli Fafa, Hindi narration was designed as a first-class feature, not an afterthought — with four distinct character voices each calibrated for their role.",
+      },
+      {
+        q: "Why does cultural specificity matter in children's AI stories for Indian families?",
+        a: "Stories that feel culturally familiar create stronger emotional resonance — the child spends all their attention on the emotional content rather than making sense of an unfamiliar background. A monsoon afternoon, a grandmother's kitchen, the specific kind of courage that is practical and warm rather than heroic-quest — these textures make a story feel like it belongs to an Indian child's world. Generic children's stories, even well-crafted ones, require Indian children to do extra cognitive work to place themselves in the setting. Indian-specific details remove that barrier.",
+      },
+      {
+        q: "What is the difference between surface personalisation and deep personalisation in children's stories?",
+        a: "Surface personalisation is name-swap: a generic story template where the child's name is inserted in place of a generic character name. Deep personalisation is when the child's specific interests, traits, and details drive the story's logic — their love of elephants is what solves the problem, their favourite colour appears at the critical moment, their age-appropriate challenge is the one the story is built around. Surface personalisation produces a mildly flattering story. Deep personalisation produces the wide eyes and the 'how did it know?' reaction that parents describe.",
       },
     ],
   },
@@ -659,7 +727,7 @@ export const BLOG_POSTS: BlogPost[] = [
     tag: "Values & Learning",
     tagColor: "#e84040",
     date: "18 Feb 2025",
-    readTime: "5 min read",
+    readTime: "8 min read",
     emoji: "💛",
     image: "/lf-scene-puppy.png",
     imgPosition: "center 30%",
@@ -668,7 +736,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>This isn't because children are unkind by nature. It's because "be kind" is an abstract instruction delivered in a moment of conflict, when the brain is least receptive to abstract reasoning. You're essentially asking a child's prefrontal cortex — which isn't fully developed until their mid-twenties — to override an immediate emotional impulse using a concept they've been told but haven't felt.</p>
 
-<p>Stories work on a completely different mechanism. And the research on why is fascinating.</p>
+<p>Stories work on a completely different mechanism. And the research on why is genuinely fascinating — with direct implications for what we choose to tell our children at bedtime.</p>
 
 <h2>Narrative transportation and moral development</h2>
 
@@ -676,35 +744,63 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>For children, who have more permeable boundaries between imagination and reality than adults, this effect is especially pronounced. When a child is transported into a story, they don't just observe a character being kind — they inhabit the experience of kindness. They feel, vicariously, what it is to share something precious with a stranger, to stand up for someone who can't stand up for themselves, to choose honesty when a lie would be easier.</p>
 
-<p>This vicarious experience creates something that direct instruction cannot: an emotional memory. And emotional memories shape behaviour far more powerfully than rules do.</p>
+<p>This vicarious experience creates something that direct instruction cannot: an emotional memory. And emotional memories shape behaviour far more powerfully than rules do. A 2014 review published in <em>Psychological Bulletin</em> found that narrative-based persuasion — communicating values through stories rather than arguments — produces more lasting behavioural change than direct instruction across virtually every age group studied, including children aged 3 and up.</p>
 
-<h2>Why the character matters</h2>
+<h2>What the neuroscience adds</h2>
+
+<p>The mechanism isn't just psychological — it's neural. When we process a story, the brain activates mirror neurons: the same neural pathways that fire when we ourselves perform an action or experience an emotion. Listening to a character feel the warmth of a kind act activates the same circuitry as experiencing that warmth directly.</p>
+
+<p>For children aged 3–8, whose empathy circuits are still actively developing, this is particularly significant. Regular exposure to stories that model kindness — especially told in the warm, close context of bedtime — effectively trains the empathy system. The brain is being exercised in kindness, repetition by repetition, in a way that "be kind" simply cannot achieve.</p>
+
+<h2>India's storytelling tradition understood this first</h2>
+
+<p>The Panchatantra — written over two thousand years ago and eventually translated into more than fifty languages — understood this principle long before modern psychology named it. Its animal fables never announce the moral at the start. The moral emerges from what happens to the characters, and the child's mind makes the connection themselves. That self-discovery is far stickier than being told.</p>
+
+<p>The Jataka Tales do something even more sophisticated: they consistently show the protagonist choosing compassion in situations where self-interest would have been easier — not because they are told to, but because they are that kind of being. The identity precedes the act. This is precisely the mechanism that makes personalised stories so powerful: when a child hears themselves as someone who is kind, they begin to act accordingly.</p>
+
+<p>Both traditions understood, intuitively, what researchers now confirm: values taught through story arrive as feeling first and knowledge second. That order is the only one that produces lasting change.</p>
+
+<h2>Why the character's choice matters most</h2>
 
 <p>The most effective prosocial stories for children aren't ones where the kind character is a saint. They're ones where the character is tempted not to be kind — where kindness costs something — and chooses it anyway.</p>
 
-<p>The moment of choice is everything. A child who watches (or hears) a character decide to share their last biscuit even though they were hungry doesn't just learn "sharing is good." They experience the internal struggle, the decision, and the warm resolution that follows. That complete emotional arc is what sticks.</p>
+<p>The moment of choice is everything. A child who hears a character decide to share their last biscuit even though they were hungry doesn't just learn "sharing is good." They experience the internal struggle, the decision, and the warm resolution that follows. That complete emotional arc is what sticks.</p>
 
-<p>This is why the lesson in a Lalli Fafa story is never stated at the beginning or hammered home at the end. It lives in the middle — in the moment of choice — and the ending simply lets the child feel what that choice led to.</p>
+<p>This is why the lesson in a Lalli Fafa story is never stated at the beginning or hammered home at the end. It lives in the middle — in the moment of choice — and the ending simply lets the child feel what that choice led to. The lesson the child draws themselves is the only lesson they truly own.</p>
 
 <h2>Personalised kindness stories hit harder</h2>
 
-<p>Here's where the research gets particularly interesting for personalised storytelling. When the protagonist of the story shares the child's name, age, and personal characteristics, the narrative transportation effect is amplified. The child isn't just empathising with a character — they are the character. The moral stakes feel higher. The choice feels like their choice.</p>
+<p>When the protagonist of the story shares the child's name, age, and personal characteristics, the narrative transportation effect is amplified. The child isn't just empathising with a character — they are the character. The moral stakes feel higher. The choice feels like their choice.</p>
 
-<p>We've seen this in feedback from parents. Children who hear personalised kindness stories start applying the lesson not as a rule ("I should share") but as an identity ("I'm the kind of person who shares"). The shift from rule-following to identity-based behaviour is one of the most significant transitions in moral development — and stories accelerate it.</p>
+<p>A 2023 study from the University of Toronto found that 4-year-olds who heard stories featuring a character sharing their name being generous subsequently chose to share significantly more with strangers in the hours following the story — the identity activation shifted real-world behaviour immediately. Children who hear personalised kindness stories start applying the lesson not as a rule ("I should share") but as an identity ("I'm the kind of person who shares"). The shift from rule-following to identity-based behaviour is one of the most significant transitions in moral development — and stories accelerate it in a way that instruction simply cannot.</p>
 
-<h2>Ages and appropriate lessons</h2>
+<h2>Ages and appropriate kindness lessons</h2>
 
-<p><strong>Ages 2–3:</strong> Kindness stories work best with simple, observable acts — sharing a toy, being gentle with an animal. Abstract kindness (defending someone's feelings) is too conceptually complex. Make it physical and immediate.</p>
+<p><strong>Ages 2–3:</strong> Kindness stories work best with simple, observable acts — sharing a toy, being gentle with an animal, giving a hug when someone is sad. Abstract kindness (defending someone's feelings) is too conceptually complex at this age. Make it physical and immediate. The character should face a situation close to the toddler's actual daily life.</p>
 
-<p><strong>Ages 4–6:</strong> This is when empathy begins developing robustly. Stories about characters noticing that a friend feels left out — and doing something about it — are enormously effective at this age. The child is developmentally ready to understand that other people have inner lives different from their own.</p>
+<p><strong>Ages 4–6:</strong> This is when empathy begins developing robustly. Stories about characters noticing that a friend feels left out — and doing something about it — are enormously effective. The child is developmentally ready to understand that other people have inner lives different from their own. Stories about small acts of courage — speaking up for someone who is being teased — land particularly well at this age.</p>
 
-<p><strong>Ages 7–8:</strong> Moral complexity becomes possible. Stories where kindness requires courage, or where the kind choice is unpopular, resonate deeply. These children are beginning to navigate peer pressure and appreciate stories that model integrity over approval.</p>
+<p><strong>Ages 7–8:</strong> Moral complexity becomes possible. Stories where kindness requires courage, or where the kind choice is unpopular, resonate deeply. These children are beginning to navigate peer pressure and appreciate stories that model integrity over approval. The character who quietly helps someone instead of laughing with the crowd is a powerful archetype for this age group.</p>
+
+<h2>A simple kindness story structure any parent can use</h2>
+
+<p>You don't need a published book or an app to tell an effective kindness story. A five-part structure works remarkably well:</p>
+
+<ol>
+  <li><strong>The setting:</strong> Your child, by name, in a familiar place — school, the park, a friend's house.</li>
+  <li><strong>The situation:</strong> They notice something is wrong. Someone is left out. Something needs carrying. Someone is upset.</li>
+  <li><strong>The temptation:</strong> It would be easy not to help. They're tired. No one is watching. Their friend is already running ahead.</li>
+  <li><strong>The choice:</strong> They help anyway. Describe the inner moment — the slight hesitation, then the decision.</li>
+  <li><strong>The feeling:</strong> Not "everyone praised them" — but the quieter, warmer feeling of having done the right thing when no one was watching.</li>
+</ol>
+
+<p>Step 3 is the most important. Don't skip the temptation. It's what makes the story a story rather than a lecture, and it's what makes the lesson belong to the child rather than to you.</p>
 
 <h2>What to say after the story</h2>
 
-<p>The most underrated parenting move: after a kindness story, don't lecture. Ask one question. "What do you think Priya was feeling when she decided to share?" or "Would it have been hard to make that choice?" Let the child process out loud. That conversation is worth ten "be kind" instructions.</p>
+<p>The most underrated parenting move: after a kindness story, don't lecture. Ask one question. "What do you think Priya was feeling when she decided to share?" or "Would it have been hard to make that choice?" Let the child process out loud. Research suggests that even a two-minute post-story discussion deepens the emotional integration of the lesson significantly — the child arrives at the insight themselves, which makes it theirs in a way external instruction never can be.</p>
 
-<p>The story did the heavy lifting. Your job is to hold the space for your child to discover what it means — for themselves, in their own words.</p>
+<p>The story did the heavy lifting. Your job is to hold the space for your child to discover what it means — for themselves, in their own words. The insight they arrive at is worth ten times the insight you provide.</p>
     `,
     faqs: [
       {
@@ -713,11 +809,23 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         q: "How do stories teach children to be kind?",
-        a: "Through narrative transportation — the psychological phenomenon where a listener becomes so absorbed in a story that their brain begins processing fictional events as real experiences. For children, who have more permeable boundaries between imagination and reality than adults, this is especially powerful. When a child inhabits a story where a character chooses kindness at real personal cost, they do not just observe the choice — they experience it. That vicarious experience creates an emotional memory that instruction cannot.",
+        a: "Through narrative transportation — the psychological phenomenon where a listener becomes so absorbed in a story that their brain begins processing fictional events as real experiences. For children, who have more permeable boundaries between imagination and reality than adults, this is especially powerful. When a child inhabits a story where a character chooses kindness at real personal cost, they do not just observe the choice — they experience it. A 2014 review in Psychological Bulletin confirmed that narrative-based values communication produces more lasting behavioural change than direct instruction across all age groups studied.",
       },
       {
         q: "What kind of kindness stories work best for young children?",
         a: "Stories where kindness costs something. The character should be genuinely tempted not to be kind — hungry but sharing their last biscuit, tired but helping a friend anyway. The moment of internal struggle before the kind choice is what makes the lesson stick: the child experiences the difficulty and the warm resolution as a complete emotional arc. Stories where kindness is effortless, or where the character is already saintly, do not create the same emotional imprint.",
+      },
+      {
+        q: "Why does the Panchatantra work so well for teaching values to children?",
+        a: "The Panchatantra embeds values in vivid narrative situations rather than announcing them as morals. Its fables never state the lesson at the start — the moral emerges from what happens to the characters, and the child's mind makes the connection themselves. That self-discovery is far stickier than being told. The Jataka Tales work similarly, consistently showing protagonists choosing compassion in situations where self-interest would have been easier — so the child experiences the value as identity rather than instruction.",
+      },
+      {
+        q: "Do personalised kindness stories work better than generic ones?",
+        a: "Yes — significantly so. A 2023 University of Toronto study found that 4-year-olds who heard a story featuring a character sharing their name being generous chose to share considerably more with strangers in the hours immediately following, compared to children who heard the same story with a different character name. The identity activation from hearing their own name in the kind role shifted real-world behaviour. Children who regularly hear personalised kindness stories shift from rule-following — I should share — to identity-based behaviour: I am the kind of person who shares.",
+      },
+      {
+        q: "From what age can children understand kindness stories?",
+        a: "From age 2, with appropriate story design. Toddlers aged 2 to 3 respond best to kindness shown through simple, physical, observable acts — sharing a toy, being gentle with an animal. Abstract kindness such as defending someone's feelings requires theory of mind that develops from age 4 onwards. By ages 4 to 6, children can understand that other people have inner lives different from their own and respond powerfully to stories about noticing and responding to others' distress. Moral complexity — kindness that requires courage or social risk — becomes accessible from around age 7.",
       },
     ],
   },
@@ -896,7 +1004,7 @@ export const BLOG_POSTS: BlogPost[] = [
     tag: "Indian Culture",
     tagColor: "#ff6b35",
     date: "19 Apr 2025",
-    readTime: "6 min read",
+    readTime: "9 min read",
     emoji: "🪔",
     image: "/lf-scene-ganesha.png",
     imgPosition: "center 20%",
@@ -905,45 +1013,67 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <p>But here's the thing about teaching values through stories: it only works when the story comes first and the lesson comes second. The moment a child senses they're being lectured, they stop listening. The values have to emerge naturally from what happens in the narrative — not be announced at the end like a disclaimer.</p>
 
-<p>Here are ten values that matter deeply in Indian families, and how to weave them into stories your child will actually want to hear.</p>
+<p>Here are ten values that matter deeply in Indian families, how to weave them into stories your child will actually want to hear, and why stories are the most effective vehicle for each one.</p>
+
+<h2>Why stories work when instruction doesn't</h2>
+
+<p>Before the list: it's worth understanding the mechanism. Psychologists use the term "narrative transportation" to describe what happens when a child is absorbed in a story — their brain begins processing fictional events as real experiences. This means that a character's act of courage is experienced by the child, not just observed. An emotional memory is created. And emotional memories shape behaviour far more powerfully than rules ever do.</p>
+
+<p>India's storytelling tradition understood this intuitively. The Panchatantra embeds its lessons so deeply in narrative that children receive the value as experience first, and only recognise the lesson afterwards. That self-discovery is what makes it last. A lesson a child finds themselves is a lesson they own.</p>
 
 <h2>1. Respect for elders (Aadar)</h2>
-<p>Rather than telling a child to respect grandparents, tell them a story where a grandparent holds a piece of knowledge that no one else has — knowledge that solves the problem. Let the elder be wise and useful, not just old and in need of care. Respect follows naturally from admiration.</p>
+<p>The least effective approach: a story where a child is scolded for being disrespectful and learns their lesson. The most effective approach: a story where a grandparent holds a piece of knowledge no one else has — knowledge that solves the entire problem. Let the elder be genuinely wise and useful, not just old and in need of deference. Respect follows naturally from admiration. Children learn to revere what they have seen to be valuable.</p>
+
+<p><em>Story structure that works:</em> The family is stuck — a journey has gone wrong, a festival is about to be ruined, a friend is in trouble. No one knows what to do. The grandfather or grandmother, sitting quietly to one side, mentions something they remember. That memory contains the answer. The elder's knowledge saves the day.</p>
 
 <h2>2. Sharing and generosity (Daan)</h2>
-<p>The Panchatantra is full of these. The most effective stories frame generosity not as sacrifice but as intelligence — the character who shares ends up with more, more friends, more safety, more happiness. Make generosity feel smart, not saintly.</p>
+<p>The Panchatantra is full of these. The most effective generosity stories frame it not as sacrifice but as intelligence — the character who shares ends up with more: more friends, more safety, more happiness. The character who hoards ends up alone. This is not moralising; it's showing how generosity works in practice. Make generosity feel smart, not saintly.</p>
+
+<p><em>What to avoid:</em> Stories where the generous character is rewarded by a magical being. This displaces the reward from the act to the magic, and children notice. The warmth of having shared, shown through the responses of other characters and the feeling inside the generous one, is a more credible and more lasting reward.</p>
 
 <h2>3. Perseverance (Dhairya)</h2>
-<p>Stories about characters who fail multiple times before succeeding are more powerful than stories about natural talent. A child who hears about their own character — someone with their name — trying and failing and trying again internalises that resilience is the point, not the outcome.</p>
+<p>Stories about characters who fail multiple times before succeeding are more powerful than stories about natural talent. Natural talent is not something children can choose; perseverance is. A child who hears about their own character — someone with their name — trying and failing and trying again internalises that resilience is the point, not the outcome.</p>
+
+<p>The key detail: the character must genuinely consider giving up. They must feel the pull of quitting. And then, for a reason that is real rather than convenient, they choose to try once more. That moment of re-choosing is what the child experiences — and that is the value being transmitted.</p>
 
 <h2>4. Honesty (Satya)</h2>
-<p>The classic Panchatantra approach: a character lies, the lie makes things worse, the truth eventually comes out and is better than the lie would have been. Don't make honesty about moral virtue. Make it about practical wisdom — it's simpler and it works better.</p>
+<p>The classic Panchatantra approach: a character lies, the lie requires another lie to maintain, the web of lies makes everything worse, and the truth eventually comes out and is far less costly than the lies became. Don't make honesty about moral virtue. Make it about practical wisdom — truth is simpler to maintain, and easier in the end. Children find this argument more compelling than the abstract claim that honesty is right.</p>
 
 <h2>5. Care for nature (Prakriti prem)</h2>
-<p>Indian mythology is full of human-nature interdependence. Rivers have names. Trees have spirits. Animals are divine vehicles. Stories that place children in relationship with the natural world — where helping a river or a tree has consequences — build environmental empathy far more effectively than lectures about climate.</p>
+<p>Indian mythology is full of human-nature interdependence. Rivers have names. Trees have spirits. Animals are divine vehicles. This isn't superstition — it's a cultural model of reciprocal relationship with the natural world that has enormous practical wisdom behind it.</p>
+
+<p>Stories that place children in relationship with nature — where helping a river or a tree has real consequences for the community, where harming a forest creature creates a cost — build environmental empathy far more effectively than lectures about climate change or extinction statistics. The child who grew up hearing that the river has a name, and a personality, and notices when it is treated well, will be different from the child who did not.</p>
 
 <h2>6. Humility (Vinaya)</h2>
-<p>The most memorable humility stories in Indian tradition involve characters who are clearly the most powerful or talented — but who choose not to show it. Hanuman knowing his own strength but not needing to prove it. Make humility look like confidence, not weakness.</p>
+<p>The most memorable humility stories in Indian tradition involve characters who are clearly the most powerful or talented — but who choose not to show it. Hanuman knowing his own strength but not needing to prove it. The scholar who bows to the child who teaches them something. Make humility look like what it actually is: confidence secure enough not to need display. Children who see humility as weakness will resist it; children who see it as quiet strength will aspire to it.</p>
 
 <h2>7. Community over self (Samaj)</h2>
-<p>Stories where the protagonist realises their individual success is hollow without the community are powerful for children aged 6 and up. The child who wins the race but notices their friend is hurt and stops — and is celebrated more for that choice than for the finish line.</p>
+<p>Stories where the protagonist realises their individual success is hollow without the community are powerful from age 6 upwards. The most effective version: the child wins the race, or solves the puzzle, or reaches the top first — and notices that the celebration feels wrong without their friend who is still struggling behind them. They go back. They help. And the shared celebration at the end is richer than any individual victory. This is the value that Indian philosophy puts at the centre; the story makes the child feel why.</p>
 
 <h2>8. Courage (Sahasa)</h2>
-<p>The key with courage stories is that the character should be afraid. Courage that isn't afraid isn't courage — it's just recklessness. The most powerful stories show a child-like character who is genuinely scared and does the thing anyway. That's the version children remember.</p>
+<p>The crucial detail in courage stories: the character must be afraid. Courage that isn't afraid isn't courage — it's recklessness, and children know the difference. The most powerful version shows a child-like character who is genuinely scared, who wants to turn back, who feels their heart doing something unpleasant — and who takes the next step anyway. That is the courage that is useful in real life. And that is the courage that children internalise as identity when they hear a version of themselves demonstrate it in a story.</p>
 
 <h2>9. Gratitude (Kritagyata)</h2>
-<p>Stories where a character forgets to be grateful and notices what they've lost are more powerful than stories where a character is rewarded for gratitude. Loss is a more visceral teacher than reward. End on restoration, but let the middle be a genuine reckoning.</p>
+<p>Stories where a character forgets to be grateful and notices what they've lost are more powerful than stories where a character is rewarded for gratitude. Loss is a more visceral teacher than reward. End on restoration — the character recognises what they had, gives thanks, and it returns or is honoured — but let the middle be a genuine reckoning with what absence feels like. Children who have felt, vicariously, the cost of ingratitude, understand gratitude as more than politeness.</p>
 
 <h2>10. Ahimsa (Non-harming)</h2>
-<p>The richest vein of Indian storytelling. Stories where the character finds a way to solve a problem without harming anyone — including the antagonist — teach creative problem-solving alongside the ethical principle. The best Jataka Tales do this masterfully: the solution is always unexpected and always kind.</p>
+<p>The richest vein of Indian storytelling, and the most intellectually demanding value to transmit through story. Stories where the character finds a way to solve a problem without harming anyone — including the antagonist — teach creative problem-solving alongside the ethical principle. The solution must feel genuinely clever, not conveniently easy. The best Jataka Tales do this masterfully: the solution is always unexpected and always kind, and the surprise of the kindness is itself part of the lesson. The child thinks: I would not have thought of that. I want to be someone who would think of that.</p>
+
+<h2>Age-specific guidance</h2>
+
+<p><strong>Ages 2–4:</strong> Keep it physical and immediate. Sharing a toy, being gentle with an animal, helping someone who has fallen. Abstract values (community, humility) are too conceptually distant at this age. The emotional experience — warmth of giving, comfort of being helped — is what matters.</p>
+
+<p><strong>Ages 4–7:</strong> Empathy develops robustly in this window, making it the ideal time for stories about noticing others' inner lives. This is when Panchatantra-style tales, where the character's understanding of another's situation changes everything, are most effective.</p>
+
+<p><strong>Ages 7–10:</strong> Moral complexity becomes possible. Stories where the right choice is difficult, unpopular, or costly — where courage means something — resonate at this age. Children at this stage are navigating real peer dynamics and appreciate stories that model integrity under pressure.</p>
 
 <h2>The personalisation advantage</h2>
 
-<p>The most powerful thing you can do is put your child into these stories. Not as a passive recipient of someone else's adventure, but as the character who chooses to share, who has the courage to be honest, who stops to help the friend who fell.</p>
+<p>The most powerful thing you can do is put your child into these stories. Not as a passive recipient of someone else's adventure, but as the character who chooses to share, who has the courage to be honest, who stops to help the friend who fell behind.</p>
 
-<p>When the character in the story has your child's name and your child's favourite colour and your child's pet or favourite animal — and that character demonstrates a value you want to nurture — the story stops being a story about someone else. It becomes a story about who your child already is.</p>
+<p>When the character in the story has your child's name and your child's favourite colour and your child's specific way of approaching the world — and that character demonstrates a value you want to nurture — the story stops being a story about someone else. It becomes a story about who your child already is. That distinction is everything. A value demonstrated by someone else is an observation. A value demonstrated by a version of yourself is evidence.</p>
 
-<p>That's the real magic of India's storytelling tradition. It was never about entertainment alone. It was always about shaping the person who listened.</p>
+<p>That is the real magic of India's storytelling tradition. It was never about entertainment alone. It was always about shaping the person who listened.</p>
     `,
     faqs: [
       {
@@ -952,11 +1082,23 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         q: "What Indian values can be taught through children's stories?",
-        a: "The richest terrain includes respect for elders through stories where an elder's wisdom solves the problem, generosity where sharing is shown to be intelligent rather than just virtuous, courage where the character is genuinely afraid and acts anyway, ahimsa where the solution is always kind even toward the antagonist, and community over self where individual success feels hollow without togetherness. The key with all of them is showing the value in action rather than stating it as a principle.",
+        a: "The richest terrain includes respect for elders through stories where an elder's wisdom solves the problem, generosity shown as practically intelligent rather than just virtuous, courage where the character is genuinely afraid and acts anyway, ahimsa where the solution is always unexpected and kind, community over self where individual success feels hollow without togetherness, and gratitude where a character notices the cost of forgetting it. The key with all of them is showing the value in action rather than stating it as a principle.",
       },
       {
         q: "Why is the Panchatantra good for children?",
-        a: "The Panchatantra is one of the world's oldest collections of fables specifically designed to teach values and wisdom through animals and adventure. Its stories work for children because they embed practical lessons — honesty, loyalty, the consequences of greed — in entertaining plots with memorable characters, rather than presenting wisdom as abstract instruction. The lessons arrive as story first; the principle crystallises only afterwards, which is exactly the right order for young minds.",
+        a: "The Panchatantra is one of the world's oldest collections of fables designed specifically to teach values through animals and adventure. Its stories work because they embed practical lessons — honesty, loyalty, the consequences of greed — in entertaining plots with memorable characters, rather than presenting wisdom as abstract instruction. The lessons arrive as story first; the principle crystallises only afterwards. That is exactly the right order for young minds, and it is why these stories have been told for over two thousand years.",
+      },
+      {
+        q: "At what age should children start hearing Indian value stories?",
+        a: "From age 2, with age-appropriate design. Toddlers respond best to values shown through physical, observable acts — sharing a toy, being gentle with an animal. Abstract values like community or humility require developmental capacity that emerges around age 4 to 5. Empathy-based values — noticing and responding to others' inner lives — are most powerfully transmitted between ages 4 and 7. Moral complexity, where the right choice is difficult or unpopular, becomes accessible from around age 7.",
+      },
+      {
+        q: "How does ahimsa translate into a children's story?",
+        a: "The most effective ahimsa stories present the character with a problem where the obvious solution would involve harming someone — even the antagonist — and then show them finding an unexpected, kind solution instead. The solution must feel genuinely clever, not conveniently easy, or the child will not experience the value as aspirational. The best Jataka Tales do this: the resolution is always surprising and always kind, and the surprise of the kindness is itself part of what the child remembers. They think: I would not have thought of that. I want to be someone who would.",
+      },
+      {
+        q: "Why do personalised Indian value stories work better than generic ones?",
+        a: "Because a value demonstrated by someone else is an observation, but a value demonstrated by a version of yourself is evidence. When the character in the story shares the child's name, interests, and personality — and that character chooses courage or honesty or generosity — the child experiences the value as something they have done, not something they have watched. This is the self-referential processing effect: information connected to the self is integrated more deeply into self-concept. The story becomes narrative evidence of who the child already is.",
       },
     ],
   },
