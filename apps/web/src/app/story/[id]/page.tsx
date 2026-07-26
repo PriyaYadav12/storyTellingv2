@@ -558,6 +558,7 @@ function StoryViewer({
   const [lightMode, setLightMode] = useState(true);
   const [storyEnded, setStoryEnded] = useState(false);
   const [sequelLoading, setSequelLoading] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const fullscreenRef = useRef<HTMLDivElement>(null);
 
@@ -611,6 +612,7 @@ function StoryViewer({
     subtitleBg: "linear-gradient(135deg, rgba(14,12,26,0.92) 0%, rgba(22,18,42,0.88) 100%)", hoverBg: "rgba(255,255,255,0.1)",
   };
   const manualNavRef = useRef(false); // suppress auto-advance briefly after manual nav
+  const manualSceneRef = useRef(-1);  // user-selected scene index; -1 = no override active
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
@@ -725,10 +727,19 @@ function StoryViewer({
   const seekToScene = useCallback(
     (idx: number, titleOffset: number, sceneTimeline: Array<{ startFrac: number; endFrac: number }>) => {
       const seekDur = reliableDuration || duration;
-      if (!audioRef.current || !seekDur || numScenes === 0) return;
+      const audio = audioRef.current;
+      if (!audio || !seekDur || numScenes === 0) return;
       const contentDuration = Math.max(1, seekDur - titleOffset);
       const startFrac = sceneTimeline[idx]?.startFrac ?? (idx / numScenes);
-      audioRef.current.currentTime = titleOffset + startFrac * contentDuration;
+      const targetTime = titleOffset + startFrac * contentDuration;
+      audio.currentTime = targetTime;
+      // Apply the same Convex-streaming guard used for pause/resume: if the
+      // browser snaps currentTime back (no range-request support), onTimeUpdate
+      // will keep correcting it until it reaches targetTime.
+      resumeGuardRef.current = { target: targetTime, until: performance.now() + 6000 };
+      // Track which scene was manually selected so auto-advance won't snap back
+      // until the audio actually reaches that scene's time range.
+      manualSceneRef.current = idx;
     },
     [reliableDuration, duration, numScenes]
   );
@@ -740,7 +751,7 @@ function StoryViewer({
       if (seekAudio) {
         manualNavRef.current = true;
         seekToScene(clamped, titleOffset, sceneTimeline);
-        setTimeout(() => { manualNavRef.current = false; }, 600);
+        setTimeout(() => { manualNavRef.current = false; }, 1500);
       }
     },
     [numScenes, seekToScene]
@@ -762,6 +773,13 @@ function StoryViewer({
     const timeline = buildSceneTimeline(story.content, numScenes);
     const expected = timeline.findIndex(slot => contentProgress < slot.endFrac);
     const clamped = expected === -1 ? numScenes - 1 : Math.max(0, expected);
+
+    // Once audio arrives in the manually-selected scene's range, clear the override
+    if (manualSceneRef.current !== -1 && manualSceneRef.current === clamped) {
+      manualSceneRef.current = -1;
+    }
+    // Don't snap back to audio position while a manual seek is still in flight
+    if (manualSceneRef.current !== -1) return;
 
     if (clamped !== currentScene) {
       setCurrentSceneRaw(clamped);
@@ -819,11 +837,17 @@ function StoryViewer({
     lastPositionRef.current = audio.currentTime;
     if (!seeking) setCurrentTime(audio.currentTime);
   };
+  // Keep playbackRate in sync with the audio element whenever it changes
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = playbackRate;
+  }, [playbackRate]);
+
   // Accept a finite duration from the audio element; ignore Infinity (no Accept-Ranges on Convex).
   const onLoadedMetadata = () => {
     if (!audioRef.current) return;
     const d = audioRef.current.duration;
     if (isFinite(d) && d > 0) { setDuration(d); setReliableDuration(d); }
+    audioRef.current.playbackRate = playbackRate;
   };
   // durationchange fires later as the browser buffers more — catch it too.
   const onDurationChange = () => {
@@ -1538,8 +1562,31 @@ function StoryViewer({
                   <button onClick={() => skip(10)} className="transition-all hover:scale-110" style={{ color: t.controlColor }} title="Forward 10s"><SkipForward size={16} /></button>
                 </div>
 
-                {/* Right: CC toggle + text panel toggle */}
+                {/* Right: speed + CC + text panel + fullscreen */}
                 <div className="flex items-center gap-2">
+                  {/* Speed control */}
+                  <div className="flex items-center rounded overflow-hidden flex-shrink-0" style={{ border: `1px solid ${t.panelBorder}` }}>
+                    {[1, 1.25, 1.5].map(rate => (
+                      <button
+                        key={rate}
+                        onClick={() => setPlaybackRate(rate)}
+                        style={{
+                          fontFamily: "'Nunito', sans-serif",
+                          fontWeight: 800,
+                          fontSize: "0.6rem",
+                          color: playbackRate === rate ? "#fff" : t.controlColor,
+                          background: playbackRate === rate ? "var(--lf-teal)" : "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "0.28rem 0.45rem",
+                          lineHeight: 1,
+                          transition: "background 0.15s, color 0.15s",
+                        }}
+                      >
+                        {rate}×
+                      </button>
+                    ))}
+                  </div>
                   {/* CC — subtitle on/off */}
                   <button
                     onClick={() => setShowSubtitles(s => !s)}
