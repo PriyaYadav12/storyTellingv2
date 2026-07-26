@@ -3,14 +3,14 @@ import type { Metadata } from "next";
 const BASE = "https://www.lallifafa.com";
 
 export const metadata: Metadata = {
-  title: "FAQ — Learn About Lalli Fafa",
+  title: "How Lalli Fafa Works — Personalised Kids' Stories in English & Hindi",
   description:
-    "Answers to common questions about Lalli Fafa — personalised AI stories for kids, bilingual English & Hindi narration, pricing, safety, and the technology behind it.",
+    "Your child becomes the hero of every story. Learn how Lalli Fafa generates personalised bedtime stories, which Hindi voices we use, what data we collect, and what each plan includes.",
   alternates: { canonical: `${BASE}/learn` },
   openGraph: {
-    title: "Lalli Fafa FAQ — Got Questions? We've Got Answers.",
+    title: "How Lalli Fafa Works — Personalised Kids' Stories in English & Hindi",
     description:
-      "Everything you need to know about Lalli Fafa — personalised stories, bilingual narration, safety, and pricing.",
+      "Your child becomes the hero of every story. Personalised bedtime stories in English and Hindi, ad-free, safe, and ready in under 2 minutes.",
     url: `${BASE}/learn`,
     images: [
       {
