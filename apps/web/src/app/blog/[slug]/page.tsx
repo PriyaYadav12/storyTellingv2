@@ -65,7 +65,7 @@ export default async function BlogPostPage({
     image: `${BASE}${post.image}`,
     datePublished: post.date,
     dateModified: post.date,
-    author: { "@type": "Organization", name: "Lalli Fafa", url: BASE },
+    author: { "@type": "Person", name: "Raj Kothari", url: `${BASE}/about` },
     publisher: {
       "@type": "Organization",
       name: "Lalli Fafa",
@@ -271,10 +271,10 @@ export default async function BlogPostPage({
                 </div>
                 <div>
                   <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.92rem", color: "var(--lf-dark)" }}>
-                    The Lalli Fafa Team
+                    Raj Kothari
                   </p>
                   <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.8rem", color: "rgba(45,45,45,0.5)" }}>
-                    Building magical, personalised stories for children across India.
+                    Founder, Lalli Fafa — building magical, personalised stories for children across India.
                   </p>
                 </div>
               </div>
