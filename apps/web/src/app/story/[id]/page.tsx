@@ -613,12 +613,17 @@ function StoryViewer({
   };
   const manualNavRef = useRef(false); // suppress auto-advance briefly after manual nav
   const manualSceneRef = useRef(-1);  // user-selected scene index; -1 = no override active
+  const seekMutedRef = useRef(false); // true while audio is muted because a seek is buffering
+  const userMutedRef = useRef(false); // mirrors `muted` state so event handlers can read it without stale closure
+  const seekUnmuteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
   /* Refs that always hold the latest titleOffset / sceneTimeline so event handlers stay fresh */
   const titleOffsetRef = useRef(0);
   const sceneTimelineRef = useRef<Array<{ startFrac: number; endFrac: number }>>([]);
+
+  useEffect(() => { userMutedRef.current = muted; }, [muted]);
 
   /* Background music — always on, fades with narration */
   const bgAudioRef = useRef<HTMLAudioElement>(null);
@@ -732,14 +737,21 @@ function StoryViewer({
       const contentDuration = Math.max(1, seekDur - titleOffset);
       const startFrac = sceneTimeline[idx]?.startFrac ?? (idx / numScenes);
       const targetTime = titleOffset + startFrac * contentDuration;
+      // Mute so the user doesn't hear wrong content while Convex re-buffers from
+      // byte 0 (no range-request support). `onNarrationSeeked` unmutes once the
+      // browser has genuinely buffered to targetTime.
+      if (seekUnmuteTimerRef.current) clearTimeout(seekUnmuteTimerRef.current);
+      seekMutedRef.current = true;
+      audio.muted = true;
       audio.currentTime = targetTime;
-      // Apply the same Convex-streaming guard used for pause/resume: if the
-      // browser snaps currentTime back (no range-request support), onTimeUpdate
-      // will keep correcting it until it reaches targetTime.
-      resumeGuardRef.current = { target: targetTime, until: performance.now() + 6000 };
-      // Track which scene was manually selected so auto-advance won't snap back
-      // until the audio actually reaches that scene's time range.
       manualSceneRef.current = idx;
+      // Safety net: unmute after 12 s if the seeked event never fires.
+      seekUnmuteTimerRef.current = setTimeout(() => {
+        if (seekMutedRef.current) {
+          seekMutedRef.current = false;
+          if (audioRef.current) audioRef.current.muted = userMutedRef.current;
+        }
+      }, 12000);
     },
     [reliableDuration, duration, numScenes]
   );
@@ -857,6 +869,15 @@ function StoryViewer({
   };
   const onEnded = () => { setIsPlaying(false); setStoryEnded(true); };
 
+  // Fires when the browser has buffered enough to play from the sought position.
+  const onNarrationSeeked = () => {
+    if (seekMutedRef.current) {
+      seekMutedRef.current = false;
+      if (seekUnmuteTimerRef.current) { clearTimeout(seekUnmuteTimerRef.current); seekUnmuteTimerRef.current = null; }
+      if (audioRef.current) audioRef.current.muted = userMutedRef.current;
+    }
+  };
+
   // Remembers exactly where playback was paused, in case the browser drops
   // its buffered position on resume (Convex storage doesn't support range
   // requests, so re-buffering after a pause can otherwise snap back to 0).
@@ -918,7 +939,18 @@ function StoryViewer({
   const onScrubberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const t = Number(e.target.value);
     setCurrentTime(t);
-    if (audioRef.current) audioRef.current.currentTime = t;
+    if (audioRef.current) {
+      if (seekUnmuteTimerRef.current) clearTimeout(seekUnmuteTimerRef.current);
+      seekMutedRef.current = true;
+      audioRef.current.muted = true;
+      audioRef.current.currentTime = t;
+      seekUnmuteTimerRef.current = setTimeout(() => {
+        if (seekMutedRef.current) {
+          seekMutedRef.current = false;
+          if (audioRef.current) audioRef.current.muted = userMutedRef.current;
+        }
+      }, 12000);
+    }
   };
 
   const onVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -946,6 +978,8 @@ function StoryViewer({
     if (!audioRef.current) return;
     const next = !muted;
     setMuted(next);
+    userMutedRef.current = next;
+    seekMutedRef.current = false; // user explicitly chose mute state
     audioRef.current.muted = next;
   };
 
@@ -1458,7 +1492,7 @@ function StoryViewer({
 
               {/* Hidden audio elements */}
               {narrationUrl && (
-                <audio ref={audioRef} src={narrationUrl} onTimeUpdate={onTimeUpdate} onLoadedMetadata={onLoadedMetadata} onDurationChange={onDurationChange} onEnded={onEnded} preload="auto" />
+                <audio ref={audioRef} src={narrationUrl} onTimeUpdate={onTimeUpdate} onLoadedMetadata={onLoadedMetadata} onDurationChange={onDurationChange} onEnded={onEnded} onSeeked={onNarrationSeeked} preload="auto" />
               )}
               <audio ref={bgAudioRef} src={bgPlaylist[bgTrackIdx]} preload="auto" onEnded={() => setBgTrackIdx(i => (i + 1) % bgPlaylist.length)} />
 
