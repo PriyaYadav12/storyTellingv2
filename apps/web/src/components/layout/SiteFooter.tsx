@@ -41,6 +41,7 @@ const footerLinks = {
     { label: "Learn / FAQ", href: "/learn" },
     { label: "About Us", href: "/about" },
     { label: "Characters", href: "/#characters" },
+    { label: "Contact", href: "mailto:contact@lallifafa.com" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/legal/privacy" },
@@ -160,7 +161,7 @@ export function SiteFooter() {
           style={{ maxWidth: 1200 }}
         >
           <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>
-            © {new Date().getFullYear()} Lalli Fafa. All rights reserved.
+            © <time dateTime={String(new Date().getFullYear())}>{new Date().getFullYear()}</time> Lalli Fafa. All rights reserved.
           </p>
           <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>
             Made with ❤️ for curious little minds

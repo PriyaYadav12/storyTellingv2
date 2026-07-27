@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     template: "%s | Lalli Fafa",
   },
   description:
-    "AI-powered personalised children's stories where your child is the hero. Featuring Lalli & Fafa — magical characters who make every bedtime an adventure. English & Hindi narration. Safe, ad-free, loved by 10,000+ families.",
+    "Personalised AI children's stories in English & Hindi. Your child is the hero alongside Lalli & Fafa. Free to start — safe, ad-free, loved by 10,000+ families.",
   keywords: [
     "personalised stories for kids",
     "ai children stories",
@@ -56,6 +56,10 @@ export const metadata: Metadata = {
      This is just the fallback for pages that don't override it. */
   alternates: {
     canonical: BASE,
+    languages: {
+      "en-IN": BASE,
+      "hi-IN": BASE,
+    },
   },
 
   /* ── Open Graph ── */
@@ -131,9 +135,9 @@ export default function RootLayout({
       className={`${baloo2.variable} ${nunito.variable} h-full`}
     >
       <head>
-        {/* Preconnect to font origin for faster load */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="alternate" type="application/rss+xml" title="Lalli Fafa Blog" href="/feed.xml" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <GoogleAnalytics />

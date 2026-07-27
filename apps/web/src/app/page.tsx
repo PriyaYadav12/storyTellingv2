@@ -10,6 +10,7 @@ import { ShopSection } from "@/components/sections/ShopSection";
 import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { FAQSection } from "@/components/sections/FAQSection";
 import { CTASection } from "@/components/sections/CTASection";
+import { WhyLalliFafaSection } from "@/components/sections/WhyLalliFafaSection";
 
 const BASE = "https://www.lallifafa.com";
 
@@ -42,6 +43,8 @@ const jsonLd = {
       sameAs: [
         "https://www.instagram.com/lallifafa",
         "https://www.facebook.com/lallifafa",
+        "https://www.youtube.com/@lallifafa",
+        "https://www.linkedin.com/company/lallifafa",
       ],
       contactPoint: {
         "@type": "ContactPoint",
@@ -63,6 +66,7 @@ const jsonLd = {
       "@id": `${BASE}/#website`,
       url: BASE,
       name: "Lalli Fafa",
+      dateModified: "2025-07-27",
       publisher: { "@id": `${BASE}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
@@ -211,6 +215,16 @@ const jsonLd = {
       ],
     },
     {
+      "@type": "BreadcrumbList",
+      "@id": `${BASE}/#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: BASE },
+        { "@type": "ListItem", position: 2, name: "Stories", item: `${BASE}/stories` },
+        { "@type": "ListItem", position: 3, name: "Pricing", item: `${BASE}/pricing` },
+        { "@type": "ListItem", position: 4, name: "Blog", item: `${BASE}/blog` },
+      ],
+    },
+    {
       "@type": "HowTo",
       "@id": `${BASE}/#howto`,
       name: "How to create a personalised story on Lalli Fafa",
@@ -263,6 +277,7 @@ export default function HomePage() {
         <CharactersSection />
         <HowItWorksSection />
         <FeaturesSection />
+        <WhyLalliFafaSection />
         <PricingSection />
         <ShopSection />
         <TestimonialsSection />

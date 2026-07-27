@@ -3,9 +3,6 @@ import type { NextConfig } from "next";
 // Auth requests are proxied through src/app/api/auth/[...path]/route.ts
 // so Better Auth's trustedOrigins check receives a known-good Origin header.
 const nextConfig: NextConfig = {
-  // 301 redirect non-www → www so Google sees one canonical host.
-  // Without this, lallifafa.com and www.lallifafa.com are treated as
-  // duplicate content and Google may pick the wrong canonical.
   async redirects() {
     return [
       {
@@ -13,6 +10,39 @@ const nextConfig: NextConfig = {
         has: [{ type: "host", value: "lallifafa.com" }],
         destination: "https://www.lallifafa.com/:path*",
         permanent: true,
+      },
+    ];
+  },
+
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: blob: https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://www.googletagmanager.com",
+              "connect-src 'self' https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://www.googletagmanager.com https://api.razorpay.com wss://*.convex.cloud",
+              "media-src 'self' blob: https://*.convex.cloud https://*.convex.site",
+              "frame-src https://api.razorpay.com",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join("; "),
+          },
+        ],
       },
     ];
   },

@@ -76,10 +76,11 @@ export function HeroSection() {
                 color: "var(--lf-dark)",
               }}
             >
-              Where every child{" "}
+              Personalised stories for kids —{" "}
+              <br className="hidden sm:block" />
+              where your child{" "}
               <span className="text-gradient-sunshine">becomes</span>
-              <br />
-              the{" "}
+              {" "}the{" "}
               <span style={{ position: "relative", display: "inline-block", color: "var(--lf-teal)" }}>
                 hero
                 <svg
@@ -89,8 +90,7 @@ export function HeroSection() {
                 >
                   <path d="M4 8 Q30 2 60 8 Q90 14 116 6" />
                 </svg>
-              </span>{" "}
-              of the story.
+              </span>.
             </h1>
 
             {/* Sub */}
@@ -189,7 +189,7 @@ export function HeroSection() {
             />
 
             {/* Characters — no blend mode needed, PNG has transparent bg */}
-            <div className="animate-float-slow relative z-10 w-full flex justify-center">
+            <figure className="animate-float-slow relative z-10 w-full flex flex-col items-center" style={{ margin: 0 }}>
               <Image
                 src="/lf-hero.png"
                 alt="Lalli and Fafa — your child's forever story companions"
@@ -199,7 +199,8 @@ export function HeroSection() {
                 style={{ objectPosition: "bottom", maxWidth: "100%" }}
                 priority
               />
-            </div>
+              <figcaption className="sr-only">Lalli (age 6) and Fafa (age 3) — the beloved characters of Lalli Fafa personalised children's stories</figcaption>
+            </figure>
 
             {/* Name badges pinned at the bottom */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-3 z-20">

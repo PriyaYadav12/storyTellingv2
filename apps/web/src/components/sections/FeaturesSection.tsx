@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Globe, Heart, Sparkles, Shield, Zap, Users, BookOpen, Music } from "lucide-react";
 
 const features = [
@@ -90,8 +91,12 @@ export function FeaturesSection() {
             Stories built for{" "}
             <span className="text-gradient-teal">giggle &amp; grow</span>
           </h2>
-          <p style={{ color: "rgba(45,45,45,0.65)", fontSize: "1.05rem", maxWidth: 520 }}>
-            Not just another kids app. A storytelling ecosystem designed around your child.
+          <p style={{ color: "rgba(45,45,45,0.65)", fontSize: "1.05rem", maxWidth: 580 }}>
+            Not just another children's app. A <strong>narrative learning platform</strong> built on developmental psychology — where AI-generated content, multi-voice narration, and personalised scaffolding combine to make every story a growth experience. Designed by{" "}
+            <Link href="/about" style={{ color: "var(--lf-teal)", fontWeight: 700, textDecoration: "underline" }}>
+              Raj Kothari
+            </Link>
+            , a product leader with a decade of consumer product experience.
           </p>
         </div>
 
