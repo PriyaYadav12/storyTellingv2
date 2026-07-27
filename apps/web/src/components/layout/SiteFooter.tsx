@@ -22,11 +22,19 @@ function IconFacebook() {
     </svg>
   );
 }
+function IconLinkedIn() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" width={17} height={17}>
+      <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM3.56 20.45h3.55V9H3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.27V1.73C24 .77 23.21 0 22.22 0z"/>
+    </svg>
+  );
+}
 
 const socials = [
   { Icon: IconYoutube, href: "https://youtube.com/@lallifafa", label: "YouTube" },
   { Icon: IconInstagram, href: "https://instagram.com/lallifafa", label: "Instagram" },
   { Icon: IconFacebook, href: "https://facebook.com/lallifafa", label: "Facebook" },
+  { Icon: IconLinkedIn, href: "https://linkedin.com/company/lallifafa", label: "LinkedIn" },
 ];
 
 const footerLinks = {
@@ -91,6 +99,12 @@ export function SiteFooter() {
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.7, maxWidth: 280 }}>
               Stories for Giggle &amp; Grow. AI-powered personalised stories in English &amp; Hindi — where your child is always the hero.
             </p>
+            <address style={{ fontStyle: "normal", color: "rgba(255,255,255,0.4)", fontSize: 13, lineHeight: 1.6 }}>
+              Siliguri, West Bengal, India<br />
+              <a href="mailto:contact@lallifafa.com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
+                contact@lallifafa.com
+              </a>
+            </address>
             {/* Socials */}
             <div className="flex items-center gap-3 mt-2">
               {socials.map(({ Icon, href, label }) => (

@@ -215,6 +215,30 @@ const jsonLd = {
       ],
     },
     {
+      "@type": "LocalBusiness",
+      "@id": `${BASE}/#localbusiness`,
+      name: "Lalli Fafa",
+      url: BASE,
+      description: "AI-powered personalised children's stories in English and Hindi, where every child becomes the hero alongside Lalli and Fafa.",
+      telephone: "+91-9831000000",
+      email: "contact@lallifafa.com",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Siliguri",
+        addressRegion: "West Bengal",
+        addressCountry: "IN",
+      },
+      areaServed: { "@type": "Country", name: "India" },
+      sameAs: [
+        "https://www.instagram.com/lallifafa",
+        "https://www.facebook.com/lallifafa",
+        "https://www.youtube.com/@lallifafa",
+        "https://www.linkedin.com/company/lallifafa",
+      ],
+      image: `${BASE}/lf-logo.png`,
+      priceRange: "₹0–₹199/month",
+    },
+    {
       "@type": "BreadcrumbList",
       "@id": `${BASE}/#breadcrumb`,
       itemListElement: [
