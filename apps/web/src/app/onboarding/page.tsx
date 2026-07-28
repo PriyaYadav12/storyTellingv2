@@ -68,6 +68,8 @@ interface FormData {
   childGender: Gender;
   favoriteColor: string;
   favoriteAnimal: string;
+  city: string;
+  country: string;
 }
 
 const STEP_META = [
@@ -150,6 +152,8 @@ function OnboardingForm() {
     childGender: "male",
     favoriteColor: "",
     favoriteAnimal: "",
+    city: "",
+    country: "",
   });
 
   function update(field: keyof FormData, value: string | number) {
@@ -196,6 +200,8 @@ function OnboardingForm() {
         childNickName: form.childNickName.trim() || undefined,
         favoriteColor: form.favoriteColor || undefined,
         favoriteAnimal: form.favoriteAnimal || undefined,
+        city: form.city.trim() || undefined,
+        country: form.country.trim() || undefined,
       });
 
       // Upload photo if provided (non-fatal if it fails)
@@ -454,6 +460,30 @@ function OnboardingForm() {
                             </button>
                           );
                         })}
+                      </div>
+                    </div>
+
+                    {/* City + Country */}
+                    <div className="flex gap-3">
+                      <div className="flex flex-col gap-2" style={{ flex: 1 }}>
+                        <label style={labelStyle}>City <span style={{ opacity: 0.5 }}>(optional)</span></label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Mumbai"
+                          value={form.city}
+                          onChange={(e) => update("city", e.target.value)}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2" style={{ flex: 1 }}>
+                        <label style={labelStyle}>Country <span style={{ opacity: 0.5 }}>(optional)</span></label>
+                        <input
+                          type="text"
+                          placeholder="e.g. India"
+                          value={form.country}
+                          onChange={(e) => update("country", e.target.value)}
+                          style={inputStyle}
+                        />
                       </div>
                     </div>
                   </div>

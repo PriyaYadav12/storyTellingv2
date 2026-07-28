@@ -19,6 +19,8 @@ export default defineSchema({
 		childGender: v.union(v.literal("male"), v.literal("female"), v.literal("other")),
 		favoriteColor: v.optional(v.string()),
 		favoriteAnimal: v.optional(v.string()),
+		city: v.optional(v.string()),
+		country: v.optional(v.string()),
 		childAvatarStorageId: v.optional(v.string()), 
 		childProfilePicture: v.optional(v.string()),
 		createdAt: v.number(),

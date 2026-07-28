@@ -28,6 +28,8 @@ export const createProfile = mutation({
 		childNickName: v.optional(v.string()),
 		favoriteColor: v.optional(v.string()),
 		favoriteAnimal: v.optional(v.string()),
+		city: v.optional(v.string()),
+		country: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const user = await authComponent.getAuthUser(ctx);
@@ -67,6 +69,8 @@ export const updateProfile = mutation({
 		childNickName: v.optional(v.string()),
 		favoriteColor: v.optional(v.string()),
 		favoriteAnimal: v.optional(v.string()),
+		city: v.optional(v.string()),
+		country: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const user = await authComponent.getAuthUser(ctx);

@@ -742,6 +742,9 @@ function UserDrawer({ user, onClose }: { user: any; onClose: () => void }) {
           <DrawerSection title="Account">
             <DrawerRow label="Email" value={user.email} />
             <DrawerRow label="Joined" value={formatDate(user.createdAt)} />
+            {(user.profile?.city || user.profile?.country) && (
+              <DrawerRow label="Location" value={[user.profile.city, user.profile.country].filter(Boolean).join(", ")} />
+            )}
             <DrawerRow label="Plan">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <SubscriptionBadge subscription={user.subscription} />
@@ -904,6 +907,7 @@ function UsersTabInner({ isAdmin }: { isAdmin: boolean }) {
                 <tr>
                   <th style={TH_STYLE}>User</th>
                   <th style={TH_STYLE}>Child</th>
+                  <th style={TH_STYLE}>Location</th>
                   <th style={TH_STYLE}>Joined</th>
                   <th style={TH_STYLE}>Credits</th>
                   <th style={TH_STYLE}>Plan</th>
@@ -916,7 +920,7 @@ function UsersTabInner({ isAdmin }: { isAdmin: boolean }) {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ ...TD_STYLE, textAlign: "center", color: "rgba(45,45,45,0.4)", padding: 32 }}>
+                    <td colSpan={10} style={{ ...TD_STYLE, textAlign: "center", color: "rgba(45,45,45,0.4)", padding: 32 }}>
                       No users found
                     </td>
                   </tr>
@@ -941,6 +945,14 @@ function UsersTabInner({ isAdmin }: { isAdmin: boolean }) {
                               Age {u.profile.childAge}
                               {u.profile.child2Name && ` + ${u.profile.child2Name}`}
                             </span>
+                          </div>
+                        ) : <span style={{ color: "rgba(45,45,45,0.3)" }}>—</span>}
+                      </td>
+                      <td style={{ ...TD_STYLE, fontSize: "0.83rem" }}>
+                        {u.profile?.city || u.profile?.country ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            {u.profile.city && <span>{u.profile.city}</span>}
+                            {u.profile.country && <span style={{ color: "rgba(45,45,45,0.5)" }}>{u.profile.country}</span>}
                           </div>
                         ) : <span style={{ color: "rgba(45,45,45,0.3)" }}>—</span>}
                       </td>
