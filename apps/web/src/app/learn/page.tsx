@@ -56,7 +56,7 @@ const faqGroups = [
       },
       {
         q: "Is my child's data safe?",
-        a: "Completely. We never share personal data. Stories are stored privately per account. We follow strict privacy practices and the platform contains no ads, no tracking pixels, and no third-party content.",
+        a: "Completely. We never share personal data. Stories are stored privately per account. We follow strict privacy practices — no ads, no selling of data, no third-party content. We use standard analytics (Google Analytics and Meta Pixel) solely to understand how families use the product and improve it.",
       },
       {
         q: "When is the physical shop launching?",

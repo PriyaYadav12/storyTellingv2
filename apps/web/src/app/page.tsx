@@ -193,7 +193,7 @@ const jsonLd = {
           name: "Is Lalli Fafa safe for young children?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Absolutely. Lalli Fafa is completely ad-free, contains no third-party trackers, and all stories are reviewed for age-appropriateness. It is designed exclusively for children aged 2–10 with parental oversight.",
+            text: "Absolutely. Lalli Fafa is completely ad-free and all stories are reviewed for age-appropriateness. We use standard analytics to improve the product but never serve ads or share personal data. It is designed exclusively for children aged 2–10 with parental oversight.",
           },
         },
         {
@@ -220,7 +220,7 @@ const jsonLd = {
       name: "Lalli Fafa",
       url: BASE,
       description: "AI-powered personalised children's stories in English and Hindi, where every child becomes the hero alongside Lalli and Fafa.",
-      telephone: "+91-9831000000",
+      telephone: "+919434636830",
       email: "raj@lallifafa.com",
       address: {
         "@type": "PostalAddress",

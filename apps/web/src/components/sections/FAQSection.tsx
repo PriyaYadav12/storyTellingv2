@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "Is the content safe and age-appropriate?",
-    a: "Absolutely. Lalli Fafa is 100% ad-free and contains no third-party trackers. All stories are generated within carefully designed templates that ensure age-appropriate themes, positive values, and safe language. Parents retain full control over the content their child experiences.",
+    a: "Absolutely. Lalli Fafa is 100% ad-free. All stories are generated within carefully designed templates that ensure age-appropriate themes, positive values, and safe language. We use standard analytics to improve the product but never serve ads or share personal data. Parents retain full control over the content their child experiences.",
   },
   {
     q: "Can I share a Lalli Fafa story with family members?",
