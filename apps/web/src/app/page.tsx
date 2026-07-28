@@ -48,7 +48,7 @@ const jsonLd = {
       ],
       contactPoint: {
         "@type": "ContactPoint",
-        email: "contact@lallifafa.com",
+        email: "raj@lallifafa.com",
         contactType: "customer support",
         areaServed: "IN",
         availableLanguage: ["English", "Hindi"],
@@ -221,7 +221,7 @@ const jsonLd = {
       url: BASE,
       description: "AI-powered personalised children's stories in English and Hindi, where every child becomes the hero alongside Lalli and Fafa.",
       telephone: "+91-9831000000",
-      email: "contact@lallifafa.com",
+      email: "raj@lallifafa.com",
       address: {
         "@type": "PostalAddress",
         addressLocality: "Siliguri",

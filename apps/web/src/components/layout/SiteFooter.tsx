@@ -49,7 +49,7 @@ const footerLinks = {
     { label: "Learn / FAQ", href: "/learn" },
     { label: "About Us", href: "/about" },
     { label: "Characters", href: "/#characters" },
-    { label: "Contact", href: "mailto:contact@lallifafa.com" },
+    { label: "Contact", href: "mailto:raj@lallifafa.com" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/legal/privacy" },
@@ -101,8 +101,8 @@ export function SiteFooter() {
             </p>
             <address style={{ fontStyle: "normal", color: "rgba(255,255,255,0.4)", fontSize: 13, lineHeight: 1.6 }}>
               Siliguri, West Bengal, India<br />
-              <a href="mailto:contact@lallifafa.com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
-                contact@lallifafa.com
+              <a href="mailto:raj@lallifafa.com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
+                raj@lallifafa.com
               </a>
             </address>
             {/* Socials */}
