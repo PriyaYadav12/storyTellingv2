@@ -139,7 +139,6 @@ export function CharactersSection() {
               fill
               className="object-cover transition-opacity duration-300"
               style={{ objectPosition: "center 40%" }}
-              priority
             />
             {/* Bottom gradient */}
             <div

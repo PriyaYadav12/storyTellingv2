@@ -30,13 +30,16 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
+              // GA4 + Google Ads (AW-*) + Meta Pixel scripts
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googleadservices.com https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://www.googletagmanager.com",
-              "connect-src 'self' https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://www.googletagmanager.com https://api.razorpay.com wss://*.convex.cloud",
+              // Meta Pixel noscript 1×1 + Google Ads measurement pixels
+              "img-src 'self' data: blob: https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://www.googletagmanager.com https://www.facebook.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+              // GA4 regional endpoints + Google Ads conversion + Meta Pixel beacon
+              "connect-src 'self' https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://www.googleadservices.com https://www.facebook.com https://connect.facebook.net https://api.razorpay.com wss://*.convex.cloud",
               "media-src 'self' blob: https://*.convex.cloud https://*.convex.site",
-              "frame-src https://api.razorpay.com",
+              "frame-src https://api.razorpay.com https://bid.g.doubleclick.net",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",

@@ -58,6 +58,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE,
     languages: {
+      "x-default": BASE,
       "en-IN": BASE,
       "hi-IN": BASE,
     },

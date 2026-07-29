@@ -101,8 +101,11 @@ export function SiteFooter() {
             </p>
             <address style={{ fontStyle: "normal", color: "rgba(255,255,255,0.4)", fontSize: 13, lineHeight: 1.6 }}>
               Siliguri, West Bengal, India<br />
-              <a href="mailto:raj@lallifafa.com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
-                raj@lallifafa.com
+              <a href="tel:+919434636830" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
+                +91 94346 36830
+              </a><br />
+              <a href="mailto:raj&#64;lallifafa&#46;com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
+                raj&#64;lallifafa&#46;com
               </a>
             </address>
             {/* Socials */}
