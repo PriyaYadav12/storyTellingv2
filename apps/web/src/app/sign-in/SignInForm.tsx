@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { useConvexAuth } from "convex/react";
 
 export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/dashboard";
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace(redirect);
+    }
+  }, [isAuthenticated, authLoading, redirect, router]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

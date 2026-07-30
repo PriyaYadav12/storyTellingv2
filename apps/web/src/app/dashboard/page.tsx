@@ -143,6 +143,14 @@ export default function DashboardPage() {
 function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
   const router = useRouter();
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("already_subscribed") === "1") {
+      toast.success("You're already subscribed to Magic Pass! Enjoy your stories.");
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
   const { data: session } = authClient.useSession();
   const isEmailVerified = session?.user?.emailVerified ?? true; // default true so banner doesn't flash on load
   const userEmail = session?.user?.email ?? "";
@@ -162,8 +170,8 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
     }
   }
 
-  const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
   const hasProfile = useQuery(api.userProfiles.hasProfile, isAuthenticated ? {} : "skip");
+  const profile = useQuery(api.userProfiles.getProfile, isAuthenticated ? {} : "skip");
   const stories = useQuery(api.stories.list, isAuthenticated ? {} : "skip");
   const achievementsData = useQuery(api.userProfiles.getAchievements, isAuthenticated ? {} : "skip");
   const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
@@ -197,6 +205,19 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
     toast.success("Signed out successfully");
   }
 
+  // Block render until profile state is known — prevents the full dashboard
+  // flashing briefly before the onboarding redirect fires
+  if (hasProfile === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-4 animate-spin" style={{ borderColor: "rgba(0,201,167,0.25)", borderTopColor: "var(--lf-teal)" }} />
+      </div>
+    );
+  }
+  if (hasProfile === false) {
+    router.replace("/onboarding");
+    return null;
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(160deg,#FFF8E7 0%,#E6FAF6 50%,#F3EEFF 100%)" }}>
@@ -239,9 +260,6 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           <UserPill variant="light" />
         </div>
       </header>
-
-      {/* Redirect to onboarding if no profile */}
-      {hasProfile === false && <OnboardingRedirect />}
 
       {/* Email verification banner */}
       {!isEmailVerified && !verifyBannerDismissed && session && (
@@ -354,7 +372,23 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           </div>
         </section>
 
-        {/* ── Low credits warning ── */}
+        {/* ── Credit warnings ── */}
+        {availableCredits === 0 && (
+          <div
+            className="flex items-center justify-between p-4 rounded-2xl"
+            style={{ background: "rgba(239,68,68,0.1)", border: "1.5px solid rgba(239,68,68,0.35)" }}
+          >
+            <div className="flex items-center gap-3">
+              <Zap size={20} style={{ color: "#dc2626" }} />
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, color: "#b91c1c", fontSize: "0.9rem" }}>
+                You&apos;re out of credits! Get Magic Pass to keep creating stories.
+              </p>
+            </div>
+            <Link href="/pricing" className="btn-primary" style={{ padding: "0.5rem 1.2rem", fontSize: "0.85rem", flexShrink: 0 }}>
+              Get credits
+            </Link>
+          </div>
+        )}
         {availableCredits < 30 && availableCredits > 0 && (
           <div
             className="flex items-center justify-between p-4 rounded-2xl"
@@ -611,9 +645,3 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
   );
 }
 
-/* ── Onboarding redirect ── */
-function OnboardingRedirect() {
-  const router = useRouter();
-  useEffect(() => { router.replace("/onboarding"); }, [router]);
-  return null;
-}

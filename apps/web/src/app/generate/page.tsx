@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -108,10 +108,16 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const themes = useQuery(api["migration/theme"].list, isAuthenticated ? {} : "skip");
   const lessons = useQuery(api["migration/lesson"].list, isAuthenticated ? {} : "skip");
   const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
-  // Languages come from DB so the admin panel toggle (isActive) controls what users see.
+  // Story types and languages from DB so admin panel toggles (isActive) control what users see.
+  const dbStoryTypes = useQuery((api as any)["migration/story_types"].list, isAuthenticated ? {} : "skip");
   const dbLanguages = useQuery((api as any)["migration/languages"].list, isAuthenticated ? {} : "skip");
 
   const isPremium = subscription?.status === "active";
+
+  // Redirect to onboarding if user has no profile yet
+  useEffect(() => {
+    if (profile === null) router.replace("/onboarding");
+  }, [profile, router]);
 
   const generateStory = useAction(api.generateStory.enqueueStory);
 
@@ -151,7 +157,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
       trackStoryGenerated({
         theme,
         language: languageName === "Hindi" ? "Hindi" : "English",
-        length: "medium",
+        length,
       });
       router.push(`/story/${result.storyId}`);
     } catch (err: unknown) {
@@ -179,7 +185,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
     { code: "te", name: "Telugu", nativeName: "తెలుగు", flag: "🇮🇳" },
   ];
 
-  const resolvedStoryTypes = FALLBACK_STORY_TYPES;
+  const resolvedStoryTypes = (dbStoryTypes && dbStoryTypes.length > 0) ? dbStoryTypes : FALLBACK_STORY_TYPES;
   // Use DB list (respects isActive toggle from admin panel); fall back to EN+HI only if DB is empty or loading.
   const resolvedLanguages = (dbLanguages && dbLanguages.length > 0)
     ? dbLanguages

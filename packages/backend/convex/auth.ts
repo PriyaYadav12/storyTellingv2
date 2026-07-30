@@ -498,6 +498,8 @@ export const listAllUsers = query({
           currentStreak: profile.currentStreak,
           longestStreak: profile.longestStreak,
           lastStoryDate: profile.lastStoryDate,
+          city: profile.city,
+          country: profile.country,
         } : null,
       };
     }));

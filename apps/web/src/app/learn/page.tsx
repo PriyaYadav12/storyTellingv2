@@ -18,7 +18,7 @@ const faqGroups = [
       },
       {
         q: "Is there a free plan?",
-        a: "Yes — sign up for free and get 250 welcome credits. You can generate multiple stories with no time limit on the free tier. Upgrade to the Magic Pass to unlock voice narration, AI illustrations, and longer story lengths.",
+        a: "Yes — sign up for free and get 320 welcome credits. You can generate multiple stories with no time limit on the free tier. Upgrade to the Magic Pass to unlock voice narration, AI illustrations, and longer story lengths.",
       },
       {
         q: "How long does it take to generate a story?",

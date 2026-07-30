@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   useQuery,
+  useMutation,
   useConvexAuth,
   Authenticated,
   AuthLoading,
@@ -107,29 +108,16 @@ export default function LibraryPage() {
   const [filterLang, setFilterLang] = useState("All");
   const [showFavOnly, setShowFavOnly] = useState(false);
 
-  /* Favourites — persisted in localStorage */
-  const [favourites, setFavourites] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") return new Set();
-    try {
-      const raw = localStorage.getItem("lf-favourites");
-      return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
-    } catch { return new Set(); }
-  });
-
-  useEffect(() => {
-    try { localStorage.setItem("lf-favourites", JSON.stringify([...favourites])); }
-    catch { /* quota exceeded */ }
-  }, [favourites]);
+  /* Favourites — synced to Convex for cross-device persistence */
+  const favouriteIds = useQuery(api.favourites.list, isAuthenticated ? {} : "skip");
+  const toggleFavourite = useMutation(api.favourites.toggle);
+  const favourites = useMemo(() => new Set<string>(favouriteIds ?? []), [favouriteIds]);
 
   const toggleFav = useCallback((id: string, e: React.MouseEvent) => {
-    e.preventDefault(); // don't navigate to story
+    e.preventDefault();
     e.stopPropagation();
-    setFavourites(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  }, []);
+    toggleFavourite({ storyId: id as any }).catch(() => {});
+  }, [toggleFavourite]);
 
   const themes = useMemo(() => {
     const set = new Set<string>();
@@ -153,6 +141,14 @@ export default function LibraryPage() {
   }, [stories, search, filterTheme, filterLang, showFavOnly, favourites]);
 
   const hasActiveFilters = search || filterTheme !== "All" || filterLang !== "All" || showFavOnly;
+
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset visible count whenever filters change
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [search, filterTheme, filterLang, showFavOnly]);
+
+  const visibleStories = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
   async function handleSignOut() {
     await authClient.signOut();
@@ -242,7 +238,7 @@ export default function LibraryPage() {
                 </span>
               </div>
               <Link
-                href="/dashboard"
+                href="/generate"
                 className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-bold transition-all hover:scale-105"
                 style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
               >
@@ -477,7 +473,7 @@ export default function LibraryPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {(filtered as Array<{
+                {(visibleStories as Array<{
                   _id: string;
                   title?: string;
                   params?: { theme?: string; language?: string; lesson?: string; length?: string };
@@ -523,7 +519,15 @@ export default function LibraryPage() {
                               {story.params.language === "Hindi" ? "🇮🇳 Hindi" : "🇬🇧 English"}
                             </span>
                           )}
-                          {story.status === "generating" && (
+                          {story.status === "error" && (
+                            <span
+                              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ml-auto"
+                              style={{ background: "rgba(220,38,38,0.92)", color: "#fff" }}
+                            >
+                              ⚠ Failed
+                            </span>
+                          )}
+                          {story.status !== "error" && story.status === "generating" && (
                             <span
                               className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ml-auto"
                               style={{ background: "rgba(249,199,0,0.95)", color: "#131020" }}
@@ -611,6 +615,19 @@ export default function LibraryPage() {
               </div>
             )}
 
+            {/* ── Load more ── */}
+            {visibleCount < filtered.length && (
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                  className="px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105"
+                  style={{ background: "rgba(0,0,0,0.06)", color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif", fontSize: "0.95rem" }}
+                >
+                  Load more ({filtered.length - visibleCount} remaining)
+                </button>
+              </div>
+            )}
+
             {/* ── Bottom CTA strip ── */}
             {stories !== undefined && stories.length > 0 && (
               <section
@@ -631,7 +648,7 @@ export default function LibraryPage() {
                     </p>
                   </div>
                   <Link
-                    href="/dashboard"
+                    href="/generate"
                     className="flex items-center gap-2 px-6 py-3 rounded-2xl font-bold flex-shrink-0 transition-all hover:scale-105"
                     style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Baloo 2', sans-serif", fontSize: "0.95rem", boxShadow: "0 4px 16px rgba(0,201,167,0.4)" }}
                   >

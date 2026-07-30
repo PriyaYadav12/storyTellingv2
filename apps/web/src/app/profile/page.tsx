@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   useQuery,
   useMutation,
+  useAction,
   useConvexAuth,
   Authenticated,
   AuthLoading,
@@ -34,6 +35,7 @@ import {
   Save,
   Plus,
   ChevronRight,
+  CreditCard,
 } from "lucide-react";
 import { UserPill } from "@/components/layout/UserPill";
 import { trackUpgradeClick } from "@/lib/analytics";
@@ -98,7 +100,7 @@ const ACHIEVEMENT_META: Record<string, { icon: string; description: string }> = 
   "Story Master":    { icon: "👑", description: "Generated 25 stories" },
 };
 
-const COLORS = ["Pink","Red","Blue","Green","Purple","Yellow","Orange","Teal","White"];
+const COLORS = ["Red","Pink","Orange","Yellow","Lime","Green","Mint","Teal","Sky Blue","Blue","Navy","Purple","Lavender","Magenta","Coral","Gold"];
 const ANIMALS = ["Rabbit","Dog","Cat","Elephant","Lion","Tiger","Bear","Panda","Unicorn","Dragon","Butterfly","Penguin","Owl","Fox","Deer"];
 
 function avatarGrad(color?: string) {
@@ -119,6 +121,7 @@ function animalEmoji(animal?: string) {
 type ProfileFields = {
   parentName: string; childName: string; childNickName: string;
   childAge: string; childGender: string; favoriteColor: string; favoriteAnimal: string;
+  city: string; country: string;
 };
 
 function EditModal({
@@ -182,6 +185,18 @@ function EditModal({
           <div className="flex flex-col gap-1.5">
             <label style={labelStyle}>Your name (parent)</label>
             <input style={inputStyle} value={form.parentName} onChange={(e) => set("parentName", e.target.value)} placeholder="e.g. Raj" />
+          </div>
+
+          {/* City + Country */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label style={labelStyle}>City</label>
+              <input style={inputStyle} value={form.city} onChange={(e) => set("city", e.target.value)} placeholder="e.g. Mumbai" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label style={labelStyle}>Country</label>
+              <input style={inputStyle} value={form.country} onChange={(e) => set("country", e.target.value)} placeholder="e.g. India" />
+            </div>
           </div>
 
           <div className="h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
@@ -295,9 +310,11 @@ export default function ProfilePage() {
   const stories          = useQuery(api.stories.list,                   isAuthenticated ? {} : "skip");
   const achievementsData = useQuery(api.userProfiles.getAchievements,   isAuthenticated ? {} : "skip");
   const profilePhotoUrl  = useQuery(api.userProfiles.getProfilePhotoUrl, isAuthenticated ? {} : "skip");
+  const subscription     = useQuery(api.subscription.getSubscription,   isAuthenticated ? {} : "skip");
   const updateProfile     = useMutation(api.userProfiles.updateProfile);
   const generateUploadUrl = useMutation(api.userProfiles.generateProfilePictureUploadUrl);
   const setProfilePic     = useMutation(api.userProfiles.setProfilePicture);
+  const cancelSubscription = useAction(api.razorpay.cancel_subscription.cancelRazorpaySubscription);
 
   const [editOpen, setEditOpen]     = useState(false);
   const [uploading, setUploading]   = useState(false);
@@ -334,6 +351,8 @@ export default function ProfilePage() {
       childNickName: form.childNickName || undefined,
       favoriteColor: form.favoriteColor || undefined,
       favoriteAnimal: form.favoriteAnimal || undefined,
+      city: form.city || undefined,
+      country: form.country || undefined,
     });
     toast.success("Profile updated! ✨");
   }, [updateProfile]);
@@ -342,6 +361,23 @@ export default function ProfilePage() {
     await authClient.signOut();
     router.push("/");
     toast.success("Signed out successfully");
+  }
+
+  // ── Subscription cancel ──
+  const [cancellingPlan, setCancellingPlan] = useState(false);
+  async function handleCancelSubscription() {
+    if (!confirm("Cancel your Magic Pass? You'll keep access until the end of your billing period.")) return;
+    setCancellingPlan(true);
+    try {
+      await cancelSubscription({ cancelAtCycleEnd: true });
+      toast.success("Subscription cancelled — you'll have access until the end of your billing period.");
+    } catch (err: any) {
+      const raw: string = err?.message ?? "Failed to cancel subscription. Please contact support.";
+      const clean = raw.replace(/^\[CONVEX [^\]]+\]\s*/i, "").trim();
+      toast.error(clean || "Failed to cancel. Please contact support.");
+    } finally {
+      setCancellingPlan(false);
+    }
   }
 
   // ── Change password state ──
@@ -401,6 +437,8 @@ export default function ProfilePage() {
                 childGender:   (p as { childGender?: string }).childGender  ?? "female",
                 favoriteColor: (p as { favoriteColor?: string }).favoriteColor ?? "",
                 favoriteAnimal:(p as { favoriteAnimal?: string }).favoriteAnimal ?? "",
+                city:          (p as { city?: string }).city ?? "",
+                country:       (p as { country?: string }).country ?? "",
               }}
               onSave={handleSaveProfile}
               onClose={() => setEditOpen(false)}
@@ -717,6 +755,47 @@ export default function ProfilePage() {
                 </div>
 
                 {/* ══ ACTIONS ══ */}
+                {/* ── Subscription ── */}
+                <div className="mb-4 rounded-2xl overflow-hidden" style={{ border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff" }}>
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(168,85,247,0.1)" }}>
+                        <CreditCard size={15} style={{ color: "#a855f7" }} />
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--lf-dark)" }}>
+                          {subscription?.status === "active"
+                            ? `Magic Pass — ${subscription.interval === "yearly" ? "Yearly" : "Monthly"}`
+                            : "Free plan"}
+                        </p>
+                        {subscription?.status === "active" && (
+                          <p style={{ fontSize: "0.75rem", color: "rgba(45,45,45,0.45)", marginTop: 1 }}>
+                            Active subscription
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {subscription?.status === "active" ? (
+                      <button
+                        onClick={handleCancelSubscription}
+                        disabled={cancellingPlan}
+                        className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all"
+                        style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", fontFamily: "'Nunito', sans-serif", opacity: cancellingPlan ? 0.6 : 1 }}
+                      >
+                        {cancellingPlan ? "Cancelling…" : "Cancel plan"}
+                      </button>
+                    ) : (
+                      <Link
+                        href="/pricing"
+                        className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:scale-105"
+                        style={{ background: "linear-gradient(135deg,#a855f7,#7c3aed)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
+                      >
+                        Upgrade ✨
+                      </Link>
+                    )}
+                  </div>
+                </div>
+
                 {/* ── Change password ── */}
                 <div className="mb-4 rounded-2xl overflow-hidden" style={{ border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff" }}>
                   <button

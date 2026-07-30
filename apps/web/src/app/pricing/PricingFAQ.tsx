@@ -6,11 +6,11 @@ import { ChevronDown } from "lucide-react";
 const faqItems = [
   {
     q: "What are credits?",
-    a: "Credits are the currency for generating stories. A short story (text + illustrations) costs 60 credits, a medium story costs 80. Voice narration is included in those costs. On the free plan you get 250 credits — plenty to explore.",
+    a: "Credits are the currency for generating stories. A short story (text + illustrations) costs 60 credits, a medium story costs 80. Voice narration is included in those costs. On the free plan you get 320 credits — plenty to explore.",
   },
   {
     q: "Is there really a free plan?",
-    a: "Absolutely. Sign up with your email and get 250 credits instantly — no credit card needed. That's around 4 illustrated stories to try before you decide.",
+    a: "Absolutely. Sign up with your email and get 320 credits instantly — no credit card needed. That's around 4 illustrated stories to try before you decide.",
   },
   {
     q: "Can I cancel anytime?",

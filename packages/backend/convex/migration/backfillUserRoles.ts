@@ -1,4 +1,4 @@
-import { internalAction, internalMutation } from "../_generated/server";
+import { action, internalMutation } from "../_generated/server";
 import { components, internal } from "../_generated/api";
 import { v } from "convex/values";
 
@@ -7,7 +7,7 @@ import { v } from "convex/values";
 // databaseHooks fix was deployed and never completed onboarding).
 //
 // Run with:  npx convex run migration/backfillUserRoles:run
-export const run = internalAction({
+export const run = action({
   args: {},
   handler: async (ctx) => {
     let cursor: string | null = null;

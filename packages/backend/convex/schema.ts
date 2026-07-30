@@ -264,6 +264,14 @@ flavor_openings: defineTable({
 		value: v.string(),
 		updatedAt: v.number(),
 	}).index("by_key", ["key"]),
+
+	// User story favourites
+	story_favourites: defineTable({
+		userId: v.string(),
+		storyId: v.id("stories"),
+	})
+	.index("by_user", ["userId"])
+	.index("by_user_story", ["userId", "storyId"]),
 });
 
 

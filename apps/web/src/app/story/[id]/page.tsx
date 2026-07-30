@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -593,8 +594,16 @@ function StoryViewer({
         },
       });
       storyRouter.push(`/story/${result.storyId}`);
-    } catch {
+    } catch (err: unknown) {
       setSequelLoading(false);
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.toLowerCase().includes("credit")) {
+        toast.error("Not enough credits for a sequel. Top up to continue!", {
+          action: { label: "Get credits", onClick: () => storyRouter.push("/pricing") },
+        });
+      } else {
+        toast.error("Couldn't start the next adventure — please try again.");
+      }
     }
   };
 
@@ -1074,6 +1083,29 @@ function StoryViewer({
       <BookOpen size={48} style={{ color: "var(--lf-teal)", opacity: 0.4 }} />
       <p style={{ fontFamily: "'Nunito', sans-serif", color: "rgba(255,255,255,0.5)" }}>Story not found.</p>
       <Link href="/library" className="btn-primary">Back to library</Link>
+    </div>
+  );
+
+  // Story failed — show a friendly error screen
+  if (story.status === "error") return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-6" style={{ background: "#131020" }}>
+      <div style={{ fontSize: "3rem" }}>😔</div>
+      <div className="text-center" style={{ maxWidth: 360 }}>
+        <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "#fff", marginBottom: "0.5rem" }}>
+          Story generation failed
+        </p>
+        <p style={{ fontFamily: "'Nunito', sans-serif", color: "rgba(255,255,255,0.5)", fontSize: "0.9rem", lineHeight: 1.6 }}>
+          Something went wrong while creating this story. Your credits were not charged.
+        </p>
+      </div>
+      <div className="flex gap-3 flex-wrap justify-center">
+        <Link href="/generate" className="btn-primary" style={{ fontSize: "0.9rem", padding: "0.6rem 1.4rem" }}>
+          <Sparkles size={15} /> Try again
+        </Link>
+        <Link href="/library" style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.88rem", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", gap: 6, padding: "0.6rem 1rem" }}>
+          <Library size={15} /> Back to library
+        </Link>
+      </div>
     </div>
   );
 

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Lalli Fafa Pricing — Free plan + Magic Pass from ₹199/month",
     description:
-      "Start free with 250 credits (≈4 stories). Upgrade anytime to Magic Pass for ₹199/month.",
+      "Start free with 320 credits (≈4 stories). Upgrade anytime to Magic Pass for ₹199/month.",
     url: `${BASE}/pricing`,
     images: [
       {
@@ -152,7 +152,7 @@ const trustItems = [
   { icon: <Shield size={20} />, label: "Secure payments", sub: "via Razorpay", color: "#00c9a7" },
   { icon: <Zap size={20} />, label: "Instant access", sub: "stories in 2 min", color: "#f9c700" },
   { icon: <Check size={20} />, label: "Cancel anytime", sub: "no questions asked", color: "#a855f7" },
-  { icon: <Star size={20} fill="currentColor" />, label: "250 free credits", sub: "no card needed", color: "#ff6b35" },
+  { icon: <Star size={20} fill="currentColor" />, label: "320 free credits", sub: "no card needed", color: "#ff6b35" },
 ];
 
 export default function PricingPage() {
@@ -208,7 +208,7 @@ export default function PricingPage() {
               {/* Right: character + trust pills */}
               <div className="flex items-center gap-4 flex-shrink-0">
                 <div className="hidden sm:flex flex-col gap-1.5">
-                  {["No credit card", "250 free credits", "Cancel anytime"].map((t) => (
+                  {["No credit card", "320 free credits", "Cancel anytime"].map((t) => (
                     <span key={t} className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "rgba(45,45,45,0.55)", fontFamily: "'Nunito', sans-serif" }}>
                       <Check size={13} style={{ color: "var(--lf-teal)" }} /> {t}
                     </span>

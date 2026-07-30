@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -94,7 +94,17 @@ const STEP_META = [
 // ─── Page shell ───────────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
+  return (
+    <Suspense>
+      <OnboardingContent />
+    </Suspense>
+  );
+}
+
+function OnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan"); // "monthly" | "yearly" | null
   const { isAuthenticated, isLoading } = useConvexAuth();
   const hasProfile = useQuery(api.userProfiles.hasProfile, isAuthenticated ? {} : "skip");
 
@@ -222,7 +232,7 @@ function OnboardingForm() {
 
       trackOnboardingComplete();
       toast.success("Welcome to Lalli Fafa! 🎉");
-      router.replace("/dashboard");
+      router.replace(plan ? `/checkout?plan=${plan}` : "/dashboard");
     } catch {
       toast.error("Failed to create profile. Please try again.");
       setLoading(false);

@@ -16,6 +16,7 @@ export function CheckoutClient() {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
 
   const plans = useQuery(api.subscription.getPlans);
+  const subscription = useQuery(api.subscription.getSubscription);
   const initiateSubscription = useAction(api.subscription.initiateSubscription);
 
   const [error, setError] = useState<string | null>(null);
@@ -38,8 +39,14 @@ export function CheckoutClient() {
       return;
     }
 
-    // Wait for plans to load from Convex
-    if (plans === undefined) return;
+    // Wait for subscription status and plans to load
+    if (subscription === undefined || plans === undefined) return;
+
+    // Already subscribed → send to dashboard
+    if (subscription?.status === "active") {
+      router.replace("/dashboard?already_subscribed=1");
+      return;
+    }
 
     // Prevent double-fire (React strict mode / re-renders)
     if (initiated.current) return;
@@ -62,7 +69,7 @@ export function CheckoutClient() {
         const clean = raw.replace(/^\[CONVEX [^\]]+\]\s*/i, "").trim();
         setError(clean || "Something went wrong. Please try again.");
       });
-  }, [authLoading, isAuthenticated, plans, plan]);
+  }, [authLoading, isAuthenticated, plans, subscription, plan]);
 
   if (error) {
     return (

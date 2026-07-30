@@ -15,6 +15,7 @@ type StoryParams = {
   theme: string;
   lesson?: string;
   language?: string;
+  length?: "short" | "medium" | "long";
   storyType?: string | null;
   storyTypeName?: string;
   storyTypePromptHint?: string;
@@ -42,6 +43,13 @@ export function formatStoryPrompt(
     childInfo.gender === "male" ? "boy" : childInfo.gender === "female" ? "girl" : "child";
 
   const language = getLanguageLabel(params.language);
+
+  const lengthConfig = {
+    short:  { total: "200–230", perScene: "40–46", readTime: "~3 min" },
+    medium: { total: "430–460", perScene: "86–92", readTime: "~6 min" },
+    long:   { total: "620–660", perScene: "124–132", readTime: "~10 min" },
+  }[params.length ?? "medium"];
+  const wordInstruction = `MANDATORY: The story body must be ${lengthConfig.total} words (title excluded, SCENE METADATA excluded). Count your words before finalising. Each of the 5 scenes must be approximately ${lengthConfig.perScene} words of story content. Do not go below the minimum and do not exceed the maximum.`;
 
   const storyTypeName = params.storyTypeName || mapStoryTypeCode(params.storyType);
   const storyTypeHint = params.storyTypePromptHint || getDefaultHint(params.storyType);
@@ -89,7 +97,7 @@ export function formatStoryPrompt(
     } : {}),
     instructions: [
       `BEGIN STORY NOW.`,
-      `MANDATORY: The story body must be 430–450 words (title excluded, SCENE METADATA excluded). Count your words before finalising. Each of the 5 scenes must be approximately 85–90 words of story content. Do not go below 430 words and do not exceed 450 words.`,
+      wordInstruction,
       `SCENE METADATA RULE (CRITICAL): Every one of the 5 scene description lines MUST follow this pattern: "Lalli, ${childInfo.name}, and Fafa [doing action together] in [setting]." — ${childInfo.name} must be NAMED and given a SPECIFIC VISIBLE ACTION in every single scene description. A scene description that says only "Lalli and Fafa" without mentioning ${childInfo.name} is WRONG. ${childInfo.name} is the HERO — they should be described as the central figure in each scene, with Lalli on their left and Fafa on their right.`,
       personalisationRules ? `PERSONALISATION RULES (MANDATORY — do not skip): ${personalisationRules}` : null,
     ].filter(Boolean).join(" "),

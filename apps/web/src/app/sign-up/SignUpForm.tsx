@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,11 +8,19 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { trackSignUp } from "@/lib/analytics";
+import { useConvexAuth } from "convex/react";
 
 export function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan"); // "monthly" | "yearly" | null
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace(plan ? `/checkout?plan=${plan}` : "/dashboard");
+    }
+  }, [isAuthenticated, authLoading, plan, router]);
   const isMonthly = plan === "monthly";
   const isYearly = plan === "yearly";
 
@@ -36,16 +44,17 @@ export function SignUpForm() {
       {
         onSuccess: async () => {
           trackSignUp("email");
+          const onboardingDest = plan ? `/onboarding?plan=${plan}` : "/onboarding";
           // Send verification email; if it fails we still proceed to onboarding
           try {
             await authClient.sendVerificationEmail({
               email,
-              callbackURL: "/onboarding",
+              callbackURL: onboardingDest,
             });
             setVerifyEmailSent(true);
           } catch {
             // Verification email failed — just go to onboarding
-            router.push("/onboarding");
+            router.push(onboardingDest);
           }
           setLoading(false);
         },
@@ -78,7 +87,9 @@ export function SignUpForm() {
       // Must be a URL in the Convex backend's trustedOrigins list.
       // Use the production domain so the callbackURL is always trusted,
       // regardless of which Vercel preview URL we're running on.
-      const callbackURL = "https://www.lallifafa.com/onboarding";
+      const callbackURL = plan
+        ? `https://www.lallifafa.com/onboarding?plan=${plan}`
+        : "https://www.lallifafa.com/onboarding";
 
       // Fetch the Google OAuth URL directly — avoids the crossDomainClient popup
       // which gets blocked by browsers after an async await (user-gesture expiry).
@@ -143,7 +154,7 @@ export function SignUpForm() {
               {resendLoading ? "Sending…" : "Resend verification email"}
             </button>
             <button
-              onClick={() => router.push("/onboarding")}
+              onClick={() => router.push(plan ? `/onboarding?plan=${plan}` : "/onboarding")}
               style={{
                 background: "none",
                 border: "none",
@@ -192,7 +203,7 @@ export function SignUpForm() {
               { emoji: "🌟", text: "Your child is the hero of every story" },
               { emoji: "🎧", text: "Beautiful narration in English & Hindi" },
               { emoji: "🎨", text: "AI illustrations in every tale" },
-              { emoji: "💛", text: "250 free credits on signup — no card needed" },
+              { emoji: "💛", text: "320 free credits on signup — no card needed" },
             ].map((item) => (
               <div key={item.emoji} className="flex items-start gap-3">
                 <span style={{ fontSize: "1.3rem" }}>{item.emoji}</span>
@@ -248,7 +259,7 @@ export function SignUpForm() {
             Create your free account
           </h1>
           <p className="mt-2 mb-8" style={{ color: "rgba(45,45,45,0.55)", fontSize: "0.9rem" }}>
-            250 credits on signup · No credit card needed
+            320 credits on signup · No credit card needed
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

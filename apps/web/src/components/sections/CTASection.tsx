@@ -94,7 +94,7 @@ export function CTASection() {
 
             {!isLoggedIn && (
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.82rem" }}>
-                250 free credits on signup · No card required · Cancel Magic Pass anytime
+                320 free credits on signup · No card required · Cancel Magic Pass anytime
               </p>
             )}
           </div>

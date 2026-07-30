@@ -16,6 +16,7 @@ export const _generateContent = internalAction({
     storyTypeCode: v.optional(v.string()),
     storyTypeName: v.optional(v.string()),
     storyTypePromptHint: v.optional(v.string()),
+    length: v.optional(v.union(v.literal("short"), v.literal("medium"), v.literal("long"))),
     creditId: v.id("user_credits"),
     previousStoryContent: v.optional(v.string()),
     childInfo: v.object({
@@ -31,7 +32,7 @@ export const _generateContent = internalAction({
   },
 
   handler: async (ctx, args) => {
-    const { storyId, theme, lesson, language, storyTypeCode, storyTypeName, storyTypePromptHint, creditId, previousStoryContent, childInfo } = args;
+    const { storyId, theme, lesson, language, length, storyTypeCode, storyTypeName, storyTypePromptHint, creditId, previousStoryContent, childInfo } = args;
 
     await ctx.runMutation(api.stories._markStatus, {
       storyId,
@@ -53,6 +54,7 @@ export const _generateContent = internalAction({
         theme,
         lesson: lesson || undefined,
         language,
+        length: length ?? "medium",
         storyType: storyTypeCode,
         storyTypeName,
         storyTypePromptHint,
@@ -113,15 +115,20 @@ export const _generateContent = internalAction({
     }
 
     // Check word count — retry if too short OR too long
+    const wordLimits = {
+      short:  { min: 175, max: 260, label: "200–230" },
+      medium: { min: 400, max: 490, label: "430–460" },
+      long:   { min: 580, max: 690, label: "620–660" },
+    }[length ?? "medium"];
     const storyBodyForCount = content.split(/^SCENE METADATA$/m)[0].trim();
     const wordCount = storyBodyForCount.split(/\s+/).filter(Boolean).length;
-    const tooShort = wordCount < 400 && content.length > 200;
-    const tooLong = wordCount > 470;
+    const tooShort = wordCount < wordLimits.min && content.length > 200;
+    const tooLong = wordCount > wordLimits.max;
 
     if (tooShort || tooLong) {
       const reason = tooShort
-        ? `too short (${wordCount} words, need 430–450)`
-        : `too long (${wordCount} words, max 450)`;
+        ? `too short (${wordCount} words, need ${wordLimits.label})`
+        : `too long (${wordCount} words, max ${wordLimits.max})`;
       console.warn(`Story body ${reason}, retrying...`);
       const retryResp = await gemini.models.generateContent({
         model: "gemini-2.5-pro",
@@ -220,8 +227,8 @@ export const enqueueStory: ReturnType<typeof action> = action({
       language: v.optional(v.string()),
       childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
       sequelOfId: v.optional(v.id("stories")),
+      length: v.optional(v.union(v.literal("short"), v.literal("medium"), v.literal("long"))),
       // Legacy fields — accepted but ignored
-      length: v.optional(v.string()),
       textOnly: v.optional(v.boolean()),
       useFavorites: v.optional(v.boolean()),
     }),
@@ -324,6 +331,7 @@ export const enqueueStory: ReturnType<typeof action> = action({
       theme: params.theme,
       lesson: params.lesson,
       language: params.language,
+      length: params.length ?? "medium",
       storyTypeCode: params.storyType,
       storyTypeName: storyTypeRecord?.name,
       storyTypePromptHint: storyTypeRecord?.promptHint,

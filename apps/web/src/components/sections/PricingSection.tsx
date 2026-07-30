@@ -11,7 +11,7 @@ const plans = [
     period: "Forever free",
     tagline: "Try before you love it",
     features: [
-      "250 welcome credits",
+      "320 welcome credits",
       "Text-only stories",
       "2-min & 3-min story lengths",
       "English & Hindi",

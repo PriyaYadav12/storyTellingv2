@@ -311,7 +311,7 @@ export default function StoriesPage() {
               <span className="text-gradient-sunshine">first story?</span>
             </h2>
             <p className="mt-4 mb-8" style={{ color: "rgba(255,255,255,0.6)", fontSize: "1rem", lineHeight: 1.7 }}>
-              250 free credits. No credit card. Your child&apos;s name in a story in under 2 minutes.
+              320 free credits. No credit card. Your child&apos;s name in a story in under 2 minutes.
             </p>
             <BottomCTA />
           </div>

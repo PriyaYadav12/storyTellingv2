@@ -23,10 +23,12 @@ export const _updateCredit = mutation({
         usedCredits: v.number(),
     },
     handler: async (ctx, { creditId, usedCredits }) => {
-        //calculate available credits
         const userCredit = await ctx.db.get(creditId);
         if (!userCredit) return { success: false, error: "User credit not found" };
-        const availableCredits = userCredit.availableCredits - usedCredits;
+        if (userCredit.availableCredits < usedCredits) {
+            throw new Error("Not enough credits");
+        }
+        const availableCredits = Math.max(0, userCredit.availableCredits - usedCredits);
         const totalUsed = userCredit.usedCredits + usedCredits;
         await ctx.db.patch(creditId, { usedCredits: totalUsed, availableCredits, updatedAt: Date.now() });
         return { success: true };
