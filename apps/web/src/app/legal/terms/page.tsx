@@ -72,8 +72,8 @@ export default function TermsPage() {
             <Section title="4. Credits and Payments">
               <p>The Service operates on a credit-based system:</p>
               <ul>
-                <li>New accounts receive <strong>320 free welcome credits</strong> upon registration</li>
-                <li>Additional credits are available through paid subscription plans (Magic Pass Monthly at ₹199/month or Magic Pass Yearly at ₹1,999/year)</li>
+                <li>New accounts receive <strong>200 free welcome credits</strong> upon registration</li>
+                <li>Additional credits are available through paid subscription plans (Magic Pass Monthly at ₹199/month or Magic Pass Pro at ₹1,999/year)</li>
                 <li>Credits are non-transferable and non-refundable except where required by applicable law</li>
                 <li>Subscription charges are processed via Razorpay and billed in Indian Rupees (INR)</li>
                 <li>Subscriptions auto-renew unless cancelled before the renewal date</li>

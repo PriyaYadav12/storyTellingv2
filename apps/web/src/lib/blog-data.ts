@@ -1538,7 +1538,7 @@ export const BLOG_POSTS: BlogPost[] = [
     tag: "Parenting",
     faqs: [
       { q: "What is the best story app for kids in India?", a: "For personalised stories in English and Hindi with Indian characters, Lalli Fafa is the top choice. It creates unique illustrated stories where your child is the hero, starting free with 250 credits." },
-      { q: "Are there free story apps for kids in India?", a: "Yes — Katha Kids offers free Indian folk tales with ads, Storyberries has a free browser-based library, and Lalli Fafa offers 250 free credits (about 4 stories) with no credit card required." },
+      { q: "Are there free story apps for kids in India?", a: "Yes — Katha Kids offers free Indian folk tales with ads, Storyberries has a free browser-based library, and Lalli Fafa offers 200 free credits (about 4 stories) with no credit card required." },
       { q: "Which story apps support Hindi for kids?", a: "Lalli Fafa supports full Hindi narration with native-quality voices. Audible has a growing Hindi audiobook section. Most other apps are English-only or have limited Hindi content." },
     ],
   },
@@ -1666,7 +1666,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         q: "Is there a free personalised story app for kids in India?",
-        a: "Lalli Fafa offers a free tier with 250 welcome credits — enough for approximately 4 fully illustrated and narrated stories, with no credit card required. No other app in this comparison offers genuinely personalised stories on a free tier. Kuku FM has a free tier but its children's content is not personalised.",
+        a: "Lalli Fafa offers a free tier with 250 welcome credits — enough for approximately 2 fully illustrated and narrated stories, with no credit card required. No other app in this comparison offers genuinely personalised stories on a free tier. Kuku FM has a free tier but its children's content is not personalised.",
       },
       {
         q: "Which children's story app has the best Hindi narration?",

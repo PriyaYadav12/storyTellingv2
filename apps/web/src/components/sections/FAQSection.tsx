@@ -8,7 +8,7 @@ const faqs = [
   },
   {
     q: "Is there a free plan — and what does it include?",
-    a: "Yes. Sign up free and receive 320 welcome credits with no credit card required. That's enough for approximately 4 fully illustrated and narrated stories. There's no time limit on free credits. Upgrade to the Magic Pass (₹199/month) to unlock Hindi narration, longer stories, and priority generation.",
+    a: "Yes. Sign up free and receive 200 welcome credits with no credit card required. That's enough for approximately 2 fully illustrated and narrated stories. There's no time limit on free credits. Upgrade to the Magic Pass (₹199/month) to unlock Hindi narration, longer stories, and priority generation.",
   },
   {
     q: "How long does it take to generate a personalised story?",

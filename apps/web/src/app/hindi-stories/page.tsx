@@ -78,7 +78,7 @@ const faqs = [
   },
   {
     q: "Is Hindi available on the free plan?",
-    a: "English stories are available on all plans including the free plan (320 welcome credits). Hindi narration is available on the Magic Pass plan (₹199/month), which includes 1,000 credits per month, Hindi voice narration, and illustrated scenes.",
+    a: "English stories are available on all plans including the free plan (200 welcome credits). Hindi narration is available on the Magic Pass plan (₹199/month), which includes 1,000 credits per month, Hindi voice narration, and illustrated scenes.",
   },
   {
     q: "What themes are available in Hindi?",
@@ -366,7 +366,7 @@ export default function HindiStoriesPage() {
             </h2>
             <div className="flex flex-col gap-5">
               {[
-                { n: "1", head: "Sign up free", body: "No credit card. 320 welcome credits are waiting for you." },
+                { n: "1", head: "Sign up free", body: "No credit card. 200 welcome credits are waiting for you." },
                 { n: "2", head: "Enter your child's name", body: "Lalli and Fafa will use it naturally in Hindi dialogue throughout the story." },
                 { n: "3", head: "Choose a theme and select Hindi", body: "Pick from 10+ themes — adventure, festival, bedtime, friendship and more. Select Hindi as the story language." },
                 { n: "4", head: "Your story is ready", body: "A fully illustrated, narrated Hindi story in under 2 minutes. Your child will ask for another one tomorrow." },
