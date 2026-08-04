@@ -60,6 +60,7 @@ export function SiteHeader() {
     isAuthenticated ? {} : "skip"
   );
   const isSubscriber = subscription?.status === "active";
+  const isPro = isSubscriber && subscription?.interval === "yearly";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -156,19 +157,50 @@ export function SiteHeader() {
           {/* Auth + CTA */}
           {isLoggedIn ? (
             <div className="flex items-center gap-2">
-              {isSubscriber && (
-                <span
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
+              {isPro ? (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105"
                   style={{
-                    background: "linear-gradient(135deg, #f9c700 0%, #ffb700 100%)",
-                    color: "#1a1a2e",
-                    boxShadow: "0 2px 8px rgba(249,199,0,0.35)",
+                    background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                    color: "#fff",
+                    boxShadow: "0 2px 8px rgba(124,58,237,0.4)",
                     letterSpacing: "0.03em",
+                    textDecoration: "none",
+                  }}
+                >
+                  <Star size={11} fill="currentColor" />
+                  Magic Pass Pro
+                </Link>
+              ) : isSubscriber ? (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105"
+                  style={{
+                    background: "linear-gradient(135deg, #00c9a7 0%, #00a38d 100%)",
+                    color: "#fff",
+                    boxShadow: "0 2px 8px rgba(0,201,167,0.35)",
+                    letterSpacing: "0.03em",
+                    textDecoration: "none",
                   }}
                 >
                   <Star size={11} fill="currentColor" />
                   Magic Pass
-                </span>
+                </Link>
+              ) : (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105"
+                  style={{
+                    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                    color: "#fff",
+                    boxShadow: "0 2px 8px rgba(239,68,68,0.3)",
+                    letterSpacing: "0.03em",
+                    textDecoration: "none",
+                  }}
+                >
+                  Starter
+                </Link>
               )}
               <Link
                 href="/dashboard"
@@ -242,21 +274,53 @@ export function SiteHeader() {
             <div className="flex flex-col gap-2 mt-4">
               {isLoggedIn ? (
                 <>
-                  {isSubscriber && (
-                    <div className="flex justify-center pb-1">
-                      <span
+                  <div className="flex justify-center pb-1">
+                    {isPro ? (
+                      <Link
+                        href="/profile"
+                        onClick={() => setMenuOpen(false)}
                         className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold"
                         style={{
-                          background: "linear-gradient(135deg, #f9c700 0%, #ffb700 100%)",
-                          color: "#1a1a2e",
-                          boxShadow: "0 2px 8px rgba(249,199,0,0.35)",
+                          background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+                          color: "#fff",
+                          boxShadow: "0 2px 8px rgba(124,58,237,0.4)",
+                          textDecoration: "none",
                         }}
                       >
                         <Star size={13} fill="currentColor" />
-                        Magic Pass Member
-                      </span>
-                    </div>
-                  )}
+                        Magic Pass Pro
+                      </Link>
+                    ) : isSubscriber ? (
+                      <Link
+                        href="/profile"
+                        onClick={() => setMenuOpen(false)}
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold"
+                        style={{
+                          background: "linear-gradient(135deg, #00c9a7 0%, #00a38d 100%)",
+                          color: "#fff",
+                          boxShadow: "0 2px 8px rgba(0,201,167,0.35)",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <Star size={13} fill="currentColor" />
+                        Magic Pass
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/profile"
+                        onClick={() => setMenuOpen(false)}
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold"
+                        style={{
+                          background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                          color: "#fff",
+                          boxShadow: "0 2px 8px rgba(239,68,68,0.3)",
+                          textDecoration: "none",
+                        }}
+                      >
+                        Starter
+                      </Link>
+                    )}
+                  </div>
                   <Link
                     href="/dashboard"
                     onClick={() => setMenuOpen(false)}

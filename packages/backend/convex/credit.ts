@@ -43,7 +43,7 @@ export const _createCredit = mutation({
             throw new Error("Not authenticated");
         }
         const userId = String(user._id);
-        await ctx.db.insert("user_credits", { userId, totalCredits: 320, usedCredits: 0, availableCredits: 320, createdAt: Date.now(), updatedAt: Date.now() });
+        await ctx.db.insert("user_credits", { userId, totalCredits: 200, usedCredits: 0, availableCredits: 200, createdAt: Date.now(), updatedAt: Date.now() });
         return { success: true };
     },
 });

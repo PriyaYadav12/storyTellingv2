@@ -203,7 +203,7 @@ export function SignUpForm() {
               { emoji: "🌟", text: "Your child is the hero of every story" },
               { emoji: "🎧", text: "Beautiful narration in English & Hindi" },
               { emoji: "🎨", text: "AI illustrations in every tale" },
-              { emoji: "💛", text: "320 free credits on signup — no card needed" },
+              { emoji: "💛", text: "200 free credits on signup — no card needed" },
             ].map((item) => (
               <div key={item.emoji} className="flex items-start gap-3">
                 <span style={{ fontSize: "1.3rem" }}>{item.emoji}</span>
@@ -241,7 +241,7 @@ export function SignUpForm() {
               <Sparkles size={18} style={{ color: "#b8860b", flexShrink: 0 }} />
               <p style={{ fontSize: "0.88rem", color: "#7a5800", fontWeight: 600 }}>
                 {isYearly
-                  ? "Magic Pass Yearly — ₹1,999/year selected. Start your free trial first."
+                  ? "Magic Pass Pro — ₹1,999/year selected. Start your free trial first."
                   : "Magic Pass Monthly — ₹199/month selected. Start your free trial first."}
               </p>
             </div>
@@ -259,7 +259,7 @@ export function SignUpForm() {
             Create your free account
           </h1>
           <p className="mt-2 mb-8" style={{ color: "rgba(45,45,45,0.55)", fontSize: "0.9rem" }}>
-            320 credits on signup · No credit card needed
+            200 credits on signup · No credit card needed
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

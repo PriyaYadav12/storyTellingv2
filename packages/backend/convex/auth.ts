@@ -62,7 +62,7 @@ function buildWelcomeEmail(name?: string) {
         ✨ Create your first story →
       </a>
     </div>
-    <p style="color:#888;font-size:13px;line-height:1.6;margin:0">Your account starts with <strong>320 free credits</strong> — enough for several stories. Each personalised story costs 80 credits. Happy storytelling! 🌙</p>
+    <p style="color:#888;font-size:13px;line-height:1.6;margin:0">Your account starts with <strong>200 free credits</strong> — enough for 2 stories to start. Short stories cost 80 credits, longer ones up to 150. Happy storytelling! 🌙</p>
   </div>
   <div style="padding:24px 32px;background:#f9f6ef;text-align:center">
     <p style="color:#aaa;font-size:11px;margin:0">© ${new Date().getFullYear()} Lalli Fafa · <a href="https://www.lallifafa.com" style="color:#4ecdc4;text-decoration:none">lallifafa.com</a></p>
@@ -72,7 +72,7 @@ function buildWelcomeEmail(name?: string) {
 
 function buildWelcomeText(name?: string) {
   const first = name ? name.split(" ")[0] : "there";
-  return `Hi ${first}, welcome to Lalli Fafa!\n\nYou've unlocked personalised bedtime stories for your child featuring Lalli and Fafa.\n\nOur stories help children:\n• Build listening skills through rich narration\n• Improve attention and focus with personalised content\n• Spark creativity through imaginative worlds\n• Develop cognitive abilities via story structure and moral lessons\n\nYour account starts with 320 free credits. Create your first story at https://www.lallifafa.com/dashboard\n\n— The Lalli Fafa team`;
+  return `Hi ${first}, welcome to Lalli Fafa!\n\nYou've unlocked personalised bedtime stories for your child featuring Lalli and Fafa.\n\nOur stories help children:\n• Build listening skills through rich narration\n• Improve attention and focus with personalised content\n• Spark creativity through imaginative worlds\n• Develop cognitive abilities via story structure and moral lessons\n\nYour account starts with 200 free credits. Create your first story at https://www.lallifafa.com/dashboard\n\n— The Lalli Fafa team`;
 }
 
 export const authComponent = createClient<DataModel>(components.betterAuth);

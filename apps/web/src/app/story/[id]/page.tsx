@@ -40,6 +40,7 @@ import {
   Maximize,
   Minimize,
 } from "lucide-react";
+import { UpgradeModal } from "@/components/ui/UpgradeModal";
 
 /* ────────────────────────────────────────────────────────────────
    Helpers
@@ -485,6 +486,8 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
   const story = useQuery(api.stories.get, isAuthenticated ? { storyId: id as Id<"stories"> } : "skip");
   const imageUrls = useQuery(api.stories.getSceneImageUrls, isAuthenticated && story ? { storyId: id as Id<"stories"> } : "skip");
   const narrationUrl = useQuery(api.stories.getNarrationFileUrl, isAuthenticated && story ? { storyId: id as Id<"stories"> } : "skip");
+  const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
+  const isPremium = subscription?.status === "active";
 
   return (
     <>
@@ -559,6 +562,7 @@ function StoryViewer({
   const [lightMode, setLightMode] = useState(true);
   const [storyEnded, setStoryEnded] = useState(false);
   const [sequelLoading, setSequelLoading] = useState(false);
+  const [endUpgradeModalOpen, setEndUpgradeModalOpen] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const fullscreenRef = useRef<HTMLDivElement>(null);
@@ -1213,9 +1217,41 @@ function StoryViewer({
                 {shareCopied ? <Check size={14} /> : <Copy size={14} />}
               </button>
             </div>
+
+            {/* Upgrade nudge for free users */}
+            {!isPremium && (
+              <button
+                onClick={() => setEndUpgradeModalOpen(true)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+                style={{
+                  background: "linear-gradient(135deg,rgba(0,201,167,0.15) 0%,rgba(128,0,255,0.12) 100%)",
+                  border: "1.5px solid rgba(0,201,167,0.4)",
+                }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span style={{ fontSize: "1.2rem" }}>🌙</span>
+                  <div className="text-left">
+                    <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.82rem", color: "#fff", lineHeight: 1 }}>
+                      Lalli has 999 more stories...
+                    </p>
+                    <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.3 }}>
+                      Unlock unlimited stories with Magic Pass
+                    </p>
+                  </div>
+                </div>
+                <Sparkles size={15} style={{ color: "var(--lf-teal)", flexShrink: 0 }} />
+              </button>
+            )}
           </div>
         </div>
       )}
+
+      <UpgradeModal
+        open={endUpgradeModalOpen}
+        onClose={() => setEndUpgradeModalOpen(false)}
+        trigger="end_of_story"
+        childName={(story as any)?.params?.childName ?? undefined}
+      />
 
       {/* ── Sleep timer bottom sheet ── */}
       {bedtimeMenuOpen && (

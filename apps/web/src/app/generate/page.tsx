@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { UserPill } from "@/components/layout/UserPill";
 import { trackStoryGenerated, trackUpgradeClick } from "@/lib/analytics";
+import { UpgradeModal, type UpgradeTrigger } from "@/components/ui/UpgradeModal";
 
 const THEME_ICONS: Record<string, string> = {
   "Magical Forest": "🌳",
@@ -66,8 +67,8 @@ const DEFAULT_LESSON_ICON = "📖";
 
 const LENGTHS: { value: "short" | "medium" | "long"; label: string; desc: string; credits: number; premium?: boolean }[] = [
   { value: "short",  label: "Short",  desc: "~3 min read",  credits: 80 },
-  { value: "medium", label: "Medium", desc: "~6 min read",  credits: 80 },
-  { value: "long",   label: "Long",   desc: "~10 min read", credits: 80, premium: true },
+  { value: "medium", label: "Medium", desc: "~6 min read",  credits: 100, premium: true },
+  { value: "long",   label: "Long",   desc: "~10 min read", credits: 150, premium: true },
 ];
 
 // Subtle pastel backgrounds cycled across unselected cards for a bit of color variety.
@@ -126,18 +127,24 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   const [childId, setChildId] = useState<"1" | "2">("1");
   const [storyType, setStoryType] = useState<string>("adventure");
-  const [length, setLength] = useState<"short" | "medium" | "long">("medium");
+  const [length, setLength] = useState<"short" | "medium" | "long">("short");
   const [languageCode, setLanguageCode] = useState<string>("en");
   const [theme, setTheme] = useState(prefilledTheme);
   const [lesson, setLesson] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger: UpgradeTrigger; lockedLength?: "medium" | "long" }>({ open: false, trigger: "no_credits" });
 
-  const CREDIT_COST = 80;
+  const CREDIT_COST = LENGTHS.find((l) => l.value === length)?.credits ?? 80;
   const canAfford = availableCredits >= CREDIT_COST;
-  const canGenerate = !!theme && canAfford && !generating;
+  const canGenerate = !!theme && !generating;
+  const childName = (childId === "1" ? profile?.childName : (profile as any)?.child2Name) ?? undefined;
 
   async function handleGenerate() {
-    if (!canGenerate) return;
+    if (!theme || generating) return;
+    if (!canAfford) {
+      setUpgradeModal({ open: true, trigger: "no_credits" });
+      return;
+    }
     setGenerating(true);
     try {
       // Resolve language name from code
@@ -244,7 +251,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
               {isLoading ? "—" : availableCredits} credits available
             </span>
             <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.4)" }}>
-              · 80 credits = 1 story
+              · 80–150 credits/story
             </span>
           </div>
           {!isLoading && availableCredits < 120 && (
@@ -327,15 +334,19 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                   return (
                     <button
                       key={l.value}
-                      onClick={() => !locked && setLength(l.value)}
-                      disabled={locked}
+                      onClick={() => {
+                        if (locked) {
+                          setUpgradeModal({ open: true, trigger: "locked_length", lockedLength: l.value as "medium" | "long" });
+                        } else {
+                          setLength(l.value);
+                        }
+                      }}
                       className="flex flex-col gap-1 px-5 py-3 rounded-2xl text-left transition-all"
                       style={{
                         background: selected ? "var(--lf-dark)" : "#fff",
-                        border: `2px solid ${selected ? "var(--lf-dark)" : "rgba(0,0,0,0.08)"}`,
+                        border: `2px solid ${selected ? "var(--lf-dark)" : locked ? "rgba(0,201,167,0.3)" : "rgba(0,0,0,0.08)"}`,
                         color: selected ? "#fff" : "var(--lf-dark)",
-                        opacity: locked ? 0.5 : 1,
-                        cursor: locked ? "not-allowed" : "pointer",
+                        cursor: "pointer",
                         minWidth: 90,
                       }}
                     >
@@ -345,8 +356,8 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", opacity: 0.75 }}>
                         {l.desc}
                       </span>
-                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: selected ? "var(--lf-teal)" : "rgba(45,45,45,0.45)" }}>
-                        {l.premium ? "Magic Pass" : `${l.credits} credits`}
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: selected ? "var(--lf-teal)" : locked ? "var(--lf-teal)" : "rgba(45,45,45,0.45)" }}>
+                        {locked ? "Magic Pass only ✨" : `${l.credits} credits`}
                       </span>
                     </button>
                   );
@@ -461,7 +472,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
             </Section>
 
             {/* Generate button */}
-            {availableCredits < 20 ? (
+            {availableCredits <= 0 ? (
               <div className="flex flex-col gap-3 items-center py-6 px-6 rounded-2xl" style={{ background: "rgba(255,100,60,0.06)", border: "1.5px solid rgba(255,100,60,0.2)" }}>
                 <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, color: "#b83030", textAlign: "center", fontSize: "0.95rem" }}>
                   You&apos;re out of credits. Top up to generate stories!
@@ -522,6 +533,14 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
           </div>
         )}
       </main>
+
+      <UpgradeModal
+        open={upgradeModal.open}
+        onClose={() => setUpgradeModal((m) => ({ ...m, open: false }))}
+        trigger={upgradeModal.trigger}
+        lockedLength={upgradeModal.lockedLength}
+        childName={childName}
+      />
     </div>
   );
 }

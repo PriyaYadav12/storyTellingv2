@@ -765,7 +765,7 @@ export default function ProfilePage() {
                       <div>
                         <p style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--lf-dark)" }}>
                           {subscription?.status === "active"
-                            ? `Magic Pass — ${subscription.interval === "yearly" ? "Yearly" : "Monthly"}`
+                            ? (subscription.interval === "yearly" ? "Magic Pass Pro" : "Magic Pass")
                             : "Free plan"}
                         </p>
                         {subscription?.status === "active" && (
@@ -775,24 +775,35 @@ export default function ProfilePage() {
                         )}
                       </div>
                     </div>
-                    {subscription?.status === "active" ? (
-                      <button
-                        onClick={handleCancelSubscription}
-                        disabled={cancellingPlan}
-                        className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all"
-                        style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", fontFamily: "'Nunito', sans-serif", opacity: cancellingPlan ? 0.6 : 1 }}
-                      >
-                        {cancellingPlan ? "Cancelling…" : "Cancel plan"}
-                      </button>
-                    ) : (
-                      <Link
-                        href="/pricing"
-                        className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:scale-105"
-                        style={{ background: "linear-gradient(135deg,#a855f7,#7c3aed)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
-                      >
-                        Upgrade ✨
-                      </Link>
-                    )}
+                    <div className="flex flex-col gap-2 items-end">
+                      {subscription?.status === "active" && subscription?.interval === "monthly" && (
+                        <Link
+                          href="/pricing"
+                          className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:scale-105 whitespace-nowrap"
+                          style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", color: "#fff", fontFamily: "'Nunito', sans-serif", textDecoration: "none" }}
+                        >
+                          ⬆ Magic Pass Pro
+                        </Link>
+                      )}
+                      {subscription?.status === "active" ? (
+                        <button
+                          onClick={handleCancelSubscription}
+                          disabled={cancellingPlan}
+                          className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all"
+                          style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", fontFamily: "'Nunito', sans-serif", opacity: cancellingPlan ? 0.6 : 1 }}
+                        >
+                          {cancellingPlan ? "Cancelling…" : "Cancel plan"}
+                        </button>
+                      ) : (
+                        <Link
+                          href="/pricing"
+                          className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:scale-105"
+                          style={{ background: "linear-gradient(135deg,#a855f7,#7c3aed)", color: "#fff", fontFamily: "'Nunito', sans-serif", textDecoration: "none" }}
+                        >
+                          Upgrade ✨
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
 

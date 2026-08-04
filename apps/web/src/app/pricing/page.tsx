@@ -110,7 +110,7 @@ const plans = [
   },
   {
     id: "yearly",
-    name: "Magic Pass Yearly",
+    name: "Magic Pass Pro",
     emoji: "👑",
     price: "₹1,999",
     period: "/ year",
@@ -131,7 +131,7 @@ const plans = [
       { text: "Highest credit value" },
     ],
     ctaGuest: "Go yearly & save 20%",
-    ctaLoggedIn: "Get Yearly Plan",
+    ctaLoggedIn: "Get Magic Pass Pro",
     planInterval: "yearly" as const,
     highlight: false,
   },
@@ -140,9 +140,9 @@ const plans = [
 /* ── Credit comparison table ── */
 const creditRows = [
   { action: "Story with illustrations + narration", free: "80", magic: "80" },
-  { action: "Starting credits", free: "320 (once)", magic: "1,000 / month" },
+  { action: "Starting credits", free: "200 (once)", magic: "1,000 / month" },
   { action: "Yearly plan credits", free: "—", magic: "13,200 / year" },
-  { action: "Stories on free plan", free: "~4 stories", magic: "—" },
+  { action: "Stories on free plan", free: "~2 stories", magic: "—" },
   { action: "Stories on monthly plan", free: "—", magic: "~12 / month" },
   { action: "Stories on yearly plan", free: "—", magic: "~165 / year" },
 ];

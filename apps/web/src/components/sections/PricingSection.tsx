@@ -47,7 +47,7 @@ const plans = [
   },
   {
     id: "yearly",
-    name: "Magic Pass Yearly",
+    name: "Magic Pass Pro",
     price: "₹1,999",
     period: "/ year",
     badge: "Save 20%",
@@ -60,7 +60,7 @@ const plans = [
       "Highest credit value",
     ],
     ctaGuest: "Go yearly & save 20%",
-    ctaLoggedIn: "Get Yearly Plan",
+    ctaLoggedIn: "Get Magic Pass Pro",
     planInterval: "yearly" as const,
     style: "secondary",
   },

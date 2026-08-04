@@ -177,7 +177,7 @@ export const _generateContent = internalAction({
     });
 
     // Deduct credits
-    const creditCost = 80;
+    const creditCost = ({ short: 80, medium: 100, long: 150 } as const)[length ?? "medium"] ?? 80;
     await ctx.runMutation(api.credit._updateCredit, {
       creditId,
       usedCredits: creditCost,
@@ -279,7 +279,8 @@ export const enqueueStory: ReturnType<typeof action> = action({
     if (!userCredit || userCredit.length === 0) {
       throw new Error("No credit record found");
     }
-    if (userCredit[0].availableCredits < 80) {
+    const requiredCredits = ({ short: 80, medium: 100, long: 150 } as const)[params.length ?? "medium"] ?? 80;
+    if (userCredit[0].availableCredits < requiredCredits) {
       throw new Error("Not enough credits");
     }
     const creditId = userCredit[0]._id;
