@@ -747,8 +747,9 @@ function OnboardingForm() {
                     </button>
                   ) : (
                     <button
-                      type="submit"
-                      disabled={loading}
+                      type="button"
+                      onClick={() => { if (!loading) doSubmit(); }}
+                      disabled={loading || !form.favoriteAnimal}
                       className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold transition-all hover:scale-[1.02]"
                       style={{
                         background: "linear-gradient(135deg, var(--lf-sunshine), #e6ac00)",
@@ -757,12 +758,12 @@ function OnboardingForm() {
                         fontSize: "1.05rem",
                         boxShadow: "0 4px 20px rgba(255,193,7,0.35)",
                         border: "none",
-                        opacity: loading ? 0.7 : 1,
-                        cursor: loading ? "not-allowed" : "pointer",
+                        opacity: (loading || !form.favoriteAnimal) ? 0.5 : 1,
+                        cursor: (loading || !form.favoriteAnimal) ? "not-allowed" : "pointer",
                       }}
                     >
                       {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-                      {loading ? "Setting up your adventure…" : "Start the adventure! 🚀"}
+                      {loading ? "Setting up your adventure…" : form.favoriteAnimal ? "Start the adventure! 🚀" : "Pick a companion above ↑"}
                     </button>
                   )}
 

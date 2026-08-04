@@ -136,7 +136,9 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   const CREDIT_COST = LENGTHS.find((l) => l.value === length)?.credits ?? 80;
   const canAfford = availableCredits >= CREDIT_COST;
-  const canGenerate = !!theme && !generating;
+  // If the user can't afford the story, the button is always clickable to open the upgrade modal.
+  // If they can afford it, the button requires a theme and no in-progress generation.
+  const canGenerate = !canAfford ? true : (!!theme && !generating);
   const childName = (childId === "1" ? profile?.childName : (profile as any)?.child2Name) ?? undefined;
 
   async function handleGenerate() {
@@ -502,7 +504,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                 )}
                 <button
                   onClick={handleGenerate}
-                  disabled={!canGenerate}
+                  disabled={canAfford && !canGenerate}
                   className="btn-primary w-full justify-center"
                   style={{
                     fontSize: "1.05rem",
