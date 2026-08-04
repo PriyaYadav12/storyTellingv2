@@ -486,8 +486,6 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
   const story = useQuery(api.stories.get, isAuthenticated ? { storyId: id as Id<"stories"> } : "skip");
   const imageUrls = useQuery(api.stories.getSceneImageUrls, isAuthenticated && story ? { storyId: id as Id<"stories"> } : "skip");
   const narrationUrl = useQuery(api.stories.getNarrationFileUrl, isAuthenticated && story ? { storyId: id as Id<"stories"> } : "skip");
-  const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
-  const isPremium = subscription?.status === "active";
 
   return (
     <>
@@ -522,6 +520,10 @@ function StoryViewer({
   imageUrls: Array<{ url?: string | null }> | null | undefined;
   narrationUrl: string | null;
 }) {
+  const { isAuthenticated } = useConvexAuth();
+  const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
+  const isPremium = subscription?.status === "active";
+
   /* Scene state */
   const scenes: SceneMeta[] = story?.sceneMetadata ?? [];
   const numScenes = scenes.length;

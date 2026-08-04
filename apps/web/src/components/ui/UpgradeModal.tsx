@@ -33,7 +33,7 @@ const COPY: Record<UpgradeTrigger, (childName?: string, lockedLength?: string) =
       : `A richer story for ${childName ?? "your little one"}!`,
     sub: lockedLength === "long"
       ? "Fafa says the BEST part happens on page 3... but only Magic Pass readers get that far. 🌟"
-      : "Lalli whispers: "the medium story has plot twists and a surprise ending..." — upgrade to unlock it! ✨",
+      : "Lalli whispers: “the medium story has plot twists and a surprise ending...” — upgrade to unlock it! ✨",
     cta: "Unlock with Magic Pass →",
   }),
   no_credits: (childName) => ({
