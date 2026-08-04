@@ -140,6 +140,8 @@ function OnboardingContent() {
 
 function OnboardingForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan");
   const createProfile = useMutation(api.userProfiles.createProfile);
   const generateUploadUrl = useMutation(api.userProfiles.generateProfilePictureUploadUrl);
   const setProfilePicture = useMutation(api.userProfiles.setProfilePicture);
