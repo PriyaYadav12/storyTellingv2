@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Component } from "react";
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -2238,60 +2238,9 @@ export default function AdminPage() {
     return null; // useEffect handles redirect
   }
 
-  // ── Access denied ─────────────────────────────────────────────────────────
+  // ── Access denied → 404 (hides the route from non-admins) ───────────────
   if (role !== null && role !== undefined && role !== "admin") {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "var(--lf-cream)",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            border: "1.5px solid rgba(0,0,0,0.06)",
-            borderRadius: "1.2rem",
-            padding: "40px 48px",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-            maxWidth: 380,
-          }}
-        >
-          <span style={{ fontSize: "2.5rem" }}>🔒</span>
-          <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.4rem", color: "var(--lf-dark)", margin: 0 }}>
-            Access Denied
-          </h2>
-          <p style={{ fontFamily: "'Nunito', sans-serif", color: "rgba(45,45,45,0.55)", fontSize: "0.95rem", margin: 0 }}>
-            You don't have admin access to this page.
-          </p>
-          <Link
-            href="/dashboard"
-            style={{
-              display: "inline-block",
-              marginTop: 4,
-              padding: "10px 24px",
-              borderRadius: "0.8rem",
-              background: "var(--lf-teal)",
-              color: "#fff",
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 700,
-              fontSize: "0.95rem",
-              textDecoration: "none",
-            }}
-          >
-            Back to Dashboard
-          </Link>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   // ── Admin dashboard ────────────────────────────────────────────────────────
