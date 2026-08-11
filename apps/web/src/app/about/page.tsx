@@ -400,7 +400,7 @@ export default function AboutPage() {
               className="inline-flex items-center gap-2"
               style={{ color: "var(--lf-teal)", fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "1.05rem", textDecoration: "none" }}
             >
-              hello@lallifafa.com
+              Email us →
             </a>
           </div>
         </section>
