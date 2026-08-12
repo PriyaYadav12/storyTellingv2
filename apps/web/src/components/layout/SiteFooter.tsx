@@ -49,7 +49,7 @@ const footerLinks = {
     { label: "Learn / FAQ", href: "/learn" },
     { label: "About Us", href: "/about" },
     { label: "Characters", href: "/#characters" },
-    { label: "Contact", href: "mailto:raj@lallifafa.com" },
+    { label: "Contact", href: "mailto:hello@lallifafa.com" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/legal/privacy" },
@@ -104,8 +104,8 @@ export function SiteFooter() {
               <a href="tel:+919434636830" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
                 +91 94346 36830
               </a><br />
-              <a href="mailto:raj&#64;lallifafa&#46;com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
-                raj&#64;lallifafa&#46;com
+              <a href="mailto:hello&#64;lallifafa&#46;com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
+                hello&#64;lallifafa&#46;com
               </a>
             </address>
             {/* Socials */}

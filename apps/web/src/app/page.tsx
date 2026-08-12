@@ -185,7 +185,7 @@ const jsonLd = {
           name: "Is Lalli Fafa free?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes — sign up for free and receive 320 credits with no credit card required. That gives you approximately 2 fully illustrated and narrated stories to try before you decide to upgrade.",
+            text: "Yes — sign up free and receive 200 welcome credits with no credit card required. That's enough for approximately 2 short stories to try before you decide to upgrade.",
           },
         },
         {

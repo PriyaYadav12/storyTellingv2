@@ -154,7 +154,9 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { data: session } = authClient.useSession();
   const isEmailVerified = session?.user?.emailVerified ?? true; // default true so banner doesn't flash on load
   const userEmail = session?.user?.email ?? "";
-  const [verifyBannerDismissed, setVerifyBannerDismissed] = useState(false);
+  const [verifyBannerDismissed, setVerifyBannerDismissed] = useState(() => {
+    try { return localStorage.getItem("lf_verify_dismissed") === "1"; } catch { return false; }
+  });
   const [resendingVerify, setResendingVerify] = useState(false);
 
   async function handleResendVerification() {
@@ -178,12 +180,19 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   const userName = profile?.parentName ?? "Friend";
   const childName = profile?.childName ?? "your child";
-  const availableCredits = credits?.[0]?.availableCredits ?? 0;
+  const availableCredits = credits?.[0]?.availableCredits ?? null;
+
+  const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
+  const isSubscribed = subscription !== null && subscription !== undefined && (subscription as { status?: string })?.status === "active";
 
   const stats = useMemo(() => {
     const list = stories ?? [];
     const storiesCreated = list.length;
-    const readingTime = storiesCreated * 3;
+    const lengthToMinutes: Record<string, number> = { short: 3, medium: 6, long: 10 };
+    const readingTime = list.reduce((sum, s) => {
+      const len = ((s as { params?: { length?: string } })?.params?.length ?? "short").toLowerCase();
+      return sum + (lengthToMinutes[len] ?? 3);
+    }, 0);
     let favoriteTheme = "Adventure";
     if (list.length > 0) {
       const counts = new Map<string, number>();
@@ -244,19 +253,23 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           <Link href="/profile" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-black/5" style={{ color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif" }}>
             <User size={15} /> Profile
           </Link>
-          <Link href="/checkout?plan=monthly" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-black/5" style={{ color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif" }}>
-            <Zap size={15} /> Upgrade
-          </Link>
+          {!isSubscribed && (
+            <Link href="/checkout?plan=monthly" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-black/5" style={{ color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif" }}>
+              <Zap size={15} /> Upgrade
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-3">
-          {/* Credits pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: "linear-gradient(135deg,rgba(168,85,247,0.12),rgba(168,85,247,0.06))", border: "1.5px solid rgba(168,85,247,0.25)" }}>
-            <Zap size={14} style={{ color: "#a855f7" }} />
-            <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "#7c3aed" }}>
-              {availableCredits} credits
-            </span>
-          </div>
+          {/* Credits pill — only render once loaded */}
+          {availableCredits !== null && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: "linear-gradient(135deg,rgba(168,85,247,0.12),rgba(168,85,247,0.06))", border: "1.5px solid rgba(168,85,247,0.25)" }}>
+              <Zap size={14} style={{ color: "#a855f7" }} />
+              <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "#7c3aed" }}>
+                {availableCredits} credits
+              </span>
+            </div>
+          )}
           <UserPill variant="light" />
         </div>
       </header>
@@ -282,7 +295,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
               {resendingVerify ? "Sending…" : "Resend email"}
             </button>
             <button
-              onClick={() => setVerifyBannerDismissed(true)}
+              onClick={() => { setVerifyBannerDismissed(true); try { localStorage.setItem("lf_verify_dismissed", "1"); } catch {} }}
               style={{ background: "none", border: "none", color: "rgba(122,88,0,0.5)", cursor: "pointer", padding: "0.25rem", fontSize: "1rem", lineHeight: 1 }}
               aria-label="Dismiss"
             >
@@ -292,7 +305,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
         </div>
       )}
 
-      <main className="max-w-6xl mx-auto px-5 py-8 flex flex-col gap-8">
+      <main className="max-w-6xl mx-auto px-5 py-8 pb-24 md:pb-8 flex flex-col gap-8">
 
         {/* ── Hero welcome banner ── */}
         <section
@@ -372,8 +385,8 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           </div>
         </section>
 
-        {/* ── Credit warnings ── */}
-        {availableCredits === 0 && (
+        {/* ── Credit warnings — only show when credits have loaded (not null) ── */}
+        {availableCredits !== null && availableCredits === 0 && (
           <div
             className="flex items-center justify-between p-4 rounded-2xl"
             style={{ background: "rgba(239,68,68,0.1)", border: "1.5px solid rgba(239,68,68,0.35)" }}
@@ -389,7 +402,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
             </Link>
           </div>
         )}
-        {availableCredits < 30 && availableCredits > 0 && (
+        {availableCredits !== null && availableCredits < 80 && availableCredits > 0 && (
           <div
             className="flex items-center justify-between p-4 rounded-2xl"
             style={{ background: "rgba(255,100,60,0.08)", border: "1.5px solid rgba(255,100,60,0.25)" }}
@@ -397,7 +410,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
             <div className="flex items-center gap-3">
               <Zap size={20} style={{ color: "#e84040" }} />
               <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, color: "#b83030", fontSize: "0.9rem" }}>
-                Only {availableCredits} credits left — top up to keep the magic going!
+                Only {availableCredits} credits left — not enough for a full story. Top up!
               </p>
             </div>
             <Link href="/checkout?plan=monthly" className="btn-primary" style={{ padding: "0.5rem 1.2rem", fontSize: "0.85rem", flexShrink: 0 }}>
@@ -412,7 +425,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
             { icon: <BookOpen size={22} />, label: "Stories created", value: stats.storiesCreated, delay: "0s" },
             { icon: <Flame size={22} />, label: "Reading minutes", value: `${stats.readingTime}m`, delay: "0.08s" },
             { icon: <Star size={22} />, label: "Fave theme", value: stats.favoriteTheme, delay: "0.16s" },
-            { icon: <Zap size={22} />, label: "Credits left", value: availableCredits, delay: "0.24s" },
+            { icon: <Zap size={22} />, label: "Credits left", value: availableCredits ?? "—", delay: "0.24s" },
           ].map((s, i) => (
             <div
               key={s.label}
@@ -640,6 +653,35 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
         </section>
 
       </main>
+
+      {/* Mobile bottom nav */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 md:hidden flex items-center justify-around px-4 py-3 z-50"
+        style={{ background: "rgba(255,252,245,0.96)", backdropFilter: "blur(16px)", borderTop: "1.5px solid rgba(0,0,0,0.08)" }}
+      >
+        <button
+          onClick={() => router.push("/generate")}
+          className="flex flex-col items-center gap-0.5"
+          style={{ background: "none", border: "none", cursor: "pointer" }}
+        >
+          <Sparkles size={22} style={{ color: "var(--lf-teal)" }} />
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "var(--lf-teal)" }}>Create</span>
+        </button>
+        <Link href="/library" className="flex flex-col items-center gap-0.5">
+          <Library size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Library</span>
+        </Link>
+        <Link href="/profile" className="flex flex-col items-center gap-0.5">
+          <User size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Profile</span>
+        </Link>
+        {!isSubscribed && (
+          <Link href="/checkout?plan=monthly" className="flex flex-col items-center gap-0.5">
+            <Zap size={22} style={{ color: "#a855f7" }} />
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "#a855f7" }}>Upgrade</span>
+          </Link>
+        )}
+      </nav>
 
     </div>
   );

@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { trackSignUp } from "@/lib/analytics";
 import { useConvexAuth } from "convex/react";
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export function SignUpForm() {
   const router = useRouter();
@@ -27,15 +29,31 @@ export function SignUpForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [verifyEmailSent, setVerifyEmailSent] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Countdown timer for resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((s) => Math.max(0, s - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password.length < 8) {
       toast.error("Password must be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords don't match — please check and try again.");
       return;
     }
     setLoading(true);
@@ -52,6 +70,7 @@ export function SignUpForm() {
               callbackURL: onboardingDest,
             });
             setVerifyEmailSent(true);
+            setResendCooldown(RESEND_COOLDOWN_SECONDS);
           } catch {
             // Verification email failed — just go to onboarding
             router.push(onboardingDest);
@@ -60,8 +79,6 @@ export function SignUpForm() {
         },
         onError: (ctx) => {
           console.error("[sign-up] full error object:", JSON.stringify(ctx.error));
-          console.error("[sign-up] error message:", ctx.error?.message);
-          console.error("[sign-up] error status:", ctx.error?.status);
           toast.error(ctx.error.message || JSON.stringify(ctx.error) || "Sign up failed.");
           setLoading(false);
         },
@@ -70,10 +87,15 @@ export function SignUpForm() {
   }
 
   async function handleResendVerification() {
+    if (resendCooldown > 0) return;
     setResendLoading(true);
     try {
-      await authClient.sendVerificationEmail({ email, callbackURL: "/onboarding" });
+      await authClient.sendVerificationEmail({
+        email,
+        callbackURL: plan ? `/onboarding?plan=${plan}` : "/onboarding",
+      });
       toast.success("Verification email resent!");
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch {
       toast.error("Couldn't resend — please try again.");
     } finally {
@@ -84,17 +106,10 @@ export function SignUpForm() {
   async function handleGoogle() {
     setGoogleLoading(true);
     try {
-      // Must be a URL in the Convex backend's trustedOrigins list.
-      // Use the production domain so the callbackURL is always trusted,
-      // regardless of which Vercel preview URL we're running on.
       const callbackURL = plan
         ? `https://www.lallifafa.com/onboarding?plan=${plan}`
         : "https://www.lallifafa.com/onboarding";
 
-      // Fetch the Google OAuth URL directly — avoids the crossDomainClient popup
-      // which gets blocked by browsers after an async await (user-gesture expiry).
-      // crossDomainClient stays in the plugins array so it can still process the
-      // inbound session token in the URL after Google redirects back.
       const res = await fetch("/api/auth/sign-in/social", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,7 +118,7 @@ export function SignUpForm() {
       const data = await res.json();
       if (data.url) {
         trackSignUp("google");
-      window.location.href = data.url;
+        window.location.href = data.url;
       } else {
         throw new Error("No redirect URL from auth server");
       }
@@ -139,42 +154,53 @@ export function SignUpForm() {
           >
             Check your inbox!
           </h1>
-          <p style={{ color: "rgba(45,45,45,0.6)", fontSize: "1rem", lineHeight: 1.6, marginBottom: "2rem" }}>
+          <p style={{ color: "rgba(45,45,45,0.6)", fontSize: "1rem", lineHeight: 1.6, marginBottom: "0.5rem" }}>
             We've sent a verification link to <strong style={{ color: "var(--lf-dark)" }}>{email}</strong>.
             Click the link in your email to activate your account.
+          </p>
+          <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem", marginBottom: "2rem" }}>
+            Link expires in 24 hours · Check your spam folder if you don't see it
           </p>
           <div className="flex flex-col gap-3">
             <button
               onClick={handleResendVerification}
-              disabled={resendLoading}
+              disabled={resendLoading || resendCooldown > 0}
               className="btn-primary"
               style={{ width: "100%", justifyContent: "center", fontSize: "0.95rem" }}
             >
               {resendLoading ? <Loader2 size={16} className="animate-spin" /> : null}
-              {resendLoading ? "Sending…" : "Resend verification email"}
+              {resendLoading
+                ? "Sending…"
+                : resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : "Resend verification email"}
             </button>
             <button
               onClick={() => router.push(plan ? `/onboarding?plan=${plan}` : "/onboarding")}
               style={{
                 background: "none",
-                border: "none",
-                color: "rgba(45,45,45,0.45)",
-                fontSize: "0.85rem",
+                border: "1.5px solid rgba(45,45,45,0.25)",
+                color: "rgba(45,45,45,0.7)",
+                fontSize: "0.88rem",
                 cursor: "pointer",
-                padding: "0.5rem",
+                padding: "0.6rem 1rem",
+                borderRadius: "0.75rem",
+                fontFamily: "'Nunito', sans-serif",
+                fontWeight: 600,
               }}
             >
-              Skip for now →
+              Skip verification — continue to setup →
             </button>
           </div>
           <p style={{ color: "rgba(45,45,45,0.35)", fontSize: "0.78rem", marginTop: "2rem", lineHeight: 1.5 }}>
-            Didn't get it? Check your spam folder, or try a different email address by{" "}
+            Wrong email?{" "}
             <button
               onClick={() => setVerifyEmailSent(false)}
               style={{ background: "none", border: "none", color: "var(--lf-teal)", cursor: "pointer", fontWeight: 600, padding: 0, fontSize: "inherit" }}
             >
-              going back
-            </button>.
+              Go back
+            </button>
+            {" "}and sign up with a different address.
           </p>
         </div>
       </div>
@@ -201,8 +227,8 @@ export function SignUpForm() {
           <div className="flex flex-col gap-5">
             {[
               { emoji: "🌟", text: "Your child is the hero of every story" },
-              { emoji: "🎧", text: "Beautiful narration in English & Hindi" },
-              { emoji: "🎨", text: "AI illustrations in every tale" },
+              { emoji: "📖", text: "Personalised short stories — free forever" },
+              { emoji: "🎧", text: "Narration & AI illustrations with Magic Pass" },
               { emoji: "💛", text: "200 free credits on signup — no card needed" },
             ].map((item) => (
               <div key={item.emoji} className="flex items-start gap-3">
@@ -259,13 +285,13 @@ export function SignUpForm() {
             Create your free account
           </h1>
           <p className="mt-2 mb-8" style={{ color: "rgba(45,45,45,0.55)", fontSize: "0.9rem" }}>
-            200 credits on signup · No credit card needed
+            200 credits on signup (~2 short stories) · No credit card needed
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>
-                Your name
+                Your name <span style={{ fontWeight: 400, color: "rgba(45,45,45,0.45)" }}>(parent or guardian)</span>
               </label>
               <input
                 type="text"
@@ -299,21 +325,60 @@ export function SignUpForm() {
               <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>
                 Password
               </label>
-              <input
-                type="password"
-                placeholder="At least 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
-                style={inputStyle}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
+                  style={{ ...inputStyle, paddingRight: "3rem" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(45,45,45,0.4)", padding: "4px" }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>
+                Confirm password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Type it again"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
+                  style={{
+                    ...inputStyle,
+                    borderColor: confirmPassword && confirmPassword !== password
+                      ? "rgba(239,68,68,0.6)"
+                      : confirmPassword && confirmPassword === password
+                      ? "rgba(0,201,167,0.6)"
+                      : "rgba(0,0,0,0.1)",
+                  }}
+                />
+              </div>
+              {confirmPassword && confirmPassword !== password && (
+                <p style={{ fontSize: "0.78rem", color: "#dc2626" }}>Passwords don't match</p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loading || googleLoading}
+              disabled={loading || googleLoading || (!!confirmPassword && confirmPassword !== password)}
               className="btn-primary mt-2"
               style={{ width: "100%", justifyContent: "center", fontSize: "1rem", padding: "0.85rem" }}
             >

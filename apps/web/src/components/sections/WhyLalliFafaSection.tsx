@@ -12,7 +12,7 @@ const terms = [
   },
   {
     term: "Credits",
-    def: "The in-app currency used to generate stories. Each illustrated + narrated story costs 80 credits. New accounts receive 200 free credits.",
+    def: "The in-app currency used to generate stories. Short stories cost 80 credits, medium 100, and long 150. New accounts receive 200 free credits.",
   },
 ];
 

@@ -58,7 +58,7 @@ const ANIMALS = [
   { name: "Dog",      emoji: "🐶" },
 ];
 
-type Gender = "male" | "female" | "other";
+type Gender = "male" | "female" | "other" | "";
 
 interface FormData {
   parentName: string;
@@ -155,18 +155,42 @@ function OnboardingForm() {
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [skipStep4Confirm, setSkipStep4Confirm] = useState(false);
 
-  const [form, setForm] = useState<FormData>({
-    parentName: "",
-    childName: "",
-    childNickName: "",
-    childAge: null,
-    childGender: "male",
-    favoriteColor: "",
-    favoriteAnimal: "",
-    city: "",
-    country: "",
+  const [form, setForm] = useState<FormData>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("lf_onboarding_step1");
+        if (saved) return { ...JSON.parse(saved), favoriteColor: "", favoriteAnimal: "" };
+      } catch {}
+    }
+    return {
+      parentName: "",
+      childName: "",
+      childNickName: "",
+      childAge: null,
+      childGender: "" as Gender,
+      favoriteColor: "",
+      favoriteAnimal: "",
+      city: "",
+      country: "",
+    };
   });
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("lf_onboarding_step1", JSON.stringify({
+        parentName: form.parentName,
+        childName: form.childName,
+        childNickName: form.childNickName,
+        childAge: form.childAge,
+        childGender: form.childGender,
+        city: form.city,
+        country: form.country,
+      }));
+    } catch {}
+  }, [form.parentName, form.childName, form.childNickName, form.childAge, form.childGender, form.city, form.country]);
 
   function update(field: keyof FormData, value: string | number) {
     setForm((f) => ({
@@ -195,8 +219,16 @@ function OnboardingForm() {
 
   function handleNext() {
     if (step === 1) {
-      if (!form.childName.trim()) { toast.error("Please enter your child's name"); return; }
-      if (!form.childAge) { toast.error("Please select your child's age"); return; }
+      const errors: Partial<Record<keyof FormData, string>> = {};
+      if (!form.childName.trim()) errors.childName = "Please enter your child's name";
+      if (!form.childAge) errors.childAge = "Please select an age";
+      if (!form.childGender) errors.childGender = "Please select a gender";
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        toast.error(Object.values(errors)[0]);
+        return;
+      }
+      setFieldErrors({});
     }
     setStep((s) => s + 1);
   }
@@ -349,9 +381,24 @@ function OnboardingForm() {
               Lalli <span style={{ color: "var(--lf-teal)" }}>Fafa</span>
             </span>
           </Link>
-          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.3)" }}>
-            Step {step} of {STEPS}
-          </p>
+          <div className="flex items-center gap-2">
+            {Array.from({ length: STEPS }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: i + 1 === step ? 20 : 7,
+                  height: 7,
+                  background:
+                    i + 1 === step
+                      ? "var(--lf-teal)"
+                      : i + 1 < step
+                      ? "rgba(0,201,167,0.45)"
+                      : "rgba(255,255,255,0.15)",
+                }}
+              />
+            ))}
+          </div>
         </header>
 
         {/* Progress bar */}
@@ -367,7 +414,7 @@ function OnboardingForm() {
         {/* Form area */}
         <div className="flex-1 flex items-center justify-center px-6 py-8 lg:px-12">
           <div className="w-full" style={{ maxWidth: 500 }}>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-7">
+            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-7">
 
               {/* ────────────── Step 1: Child info ────────────── */}
               {step === 1 && (
@@ -390,13 +437,13 @@ function OnboardingForm() {
                           type="text"
                           placeholder="e.g. Aryan Sharma"
                           value={form.childName}
-                          onChange={(e) => update("childName", e.target.value)}
-                          style={inputStyle}
+                          onChange={(e) => { update("childName", e.target.value); if (fieldErrors.childName) setFieldErrors((f) => ({ ...f, childName: undefined })); }}
+                          style={{ ...inputStyle, borderColor: fieldErrors.childName ? "rgba(248,113,113,0.6)" : "rgba(255,255,255,0.13)" }}
                           autoFocus
                         />
                       </div>
                       <div className="flex flex-col gap-2" style={{ flex: 2 }}>
-                        <label style={labelStyle}>Nickname</label>
+                        <label style={labelStyle}>Nickname <span style={{ opacity: 0.5, textTransform: "none", fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
                         <input
                           type="text"
                           placeholder="e.g. Aru"
@@ -404,6 +451,9 @@ function OnboardingForm() {
                           onChange={(e) => update("childNickName", e.target.value)}
                           style={inputStyle}
                         />
+                        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: "rgba(255,255,255,0.28)", margin: 0, lineHeight: 1.4 }}>
+                          Used in narration instead of full name
+                        </p>
                       </div>
                     </div>
 
@@ -442,7 +492,7 @@ function OnboardingForm() {
 
                     {/* Gender — visual pill buttons */}
                     <div className="flex flex-col gap-3">
-                      <label style={labelStyle}>Gender</label>
+                      <label style={{ ...labelStyle, color: fieldErrors.childGender ? "#f87171" : "rgba(255,255,255,0.4)" }}>Gender</label>
                       <div className="flex gap-3">
                         {(
                           [
@@ -475,29 +525,6 @@ function OnboardingForm() {
                       </div>
                     </div>
 
-                    {/* City + Country */}
-                    <div className="flex gap-3">
-                      <div className="flex flex-col gap-2" style={{ flex: 1 }}>
-                        <label style={labelStyle}>City <span style={{ opacity: 0.5 }}>(optional)</span></label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Mumbai"
-                          value={form.city}
-                          onChange={(e) => update("city", e.target.value)}
-                          style={inputStyle}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2" style={{ flex: 1 }}>
-                        <label style={labelStyle}>Country <span style={{ opacity: 0.5 }}>(optional)</span></label>
-                        <input
-                          type="text"
-                          placeholder="e.g. India"
-                          value={form.country}
-                          onChange={(e) => update("country", e.target.value)}
-                          style={inputStyle}
-                        />
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
@@ -602,7 +629,7 @@ function OnboardingForm() {
                       </div>
                       <div className="flex flex-col items-center gap-1">
                         <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.98rem", color: "rgba(255,255,255,0.6)", margin: 0 }}>
-                          Tap to upload a photo
+                          Upload a photo
                         </p>
                         <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.8rem", color: "rgba(255,255,255,0.27)", margin: 0 }}>
                           JPG, PNG or WebP · Max 5 MB
@@ -778,13 +805,32 @@ function OnboardingForm() {
                     </button>
                   )}
                   {step === 4 && (
-                    <button
-                      type="button"
-                      onClick={doSubmit}
-                      style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(255,255,255,0.25)", background: "none", border: "none", cursor: "pointer", padding: "4px", textAlign: "center" }}
-                    >
-                      Skip for now →
-                    </button>
+                    skipStep4Confirm ? (
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          type="button"
+                          onClick={doSubmit}
+                          style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "#f87171", background: "none", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "0.5rem", cursor: "pointer", padding: "4px 12px" }}
+                        >
+                          Yes, skip companion →
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSkipStep4Confirm(false)}
+                          style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer", padding: "4px 8px" }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setSkipStep4Confirm(true)}
+                        style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(255,255,255,0.25)", background: "none", border: "none", cursor: "pointer", padding: "4px", textAlign: "center" }}
+                      >
+                        Skip companion →
+                      </button>
+                    )
                   )}
                 </div>
               </div>

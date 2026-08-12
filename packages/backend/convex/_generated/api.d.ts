@@ -13,6 +13,7 @@ import type * as blogs from "../blogs.js";
 import type * as credit from "../credit.js";
 import type * as crons from "../crons.js";
 import type * as emailActions from "../emailActions.js";
+import type * as favourites from "../favourites.js";
 import type * as generateStory from "../generateStory.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
@@ -39,6 +40,7 @@ import type * as migration_update_themes_lessons from "../migration/update_theme
 import type * as migration_voice_models from "../migration/voice_models.js";
 import type * as narrationGenerator from "../narrationGenerator.js";
 import type * as privateData from "../privateData.js";
+import type * as razorpay_cancel_subscription from "../razorpay/cancel_subscription.js";
 import type * as razorpay_create_subscription from "../razorpay/create_subscription.js";
 import type * as razorpay_initiate_razorpay from "../razorpay/initiate_razorpay.js";
 import type * as razorpay_webhook from "../razorpay/webhook.js";
@@ -69,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   credit: typeof credit;
   crons: typeof crons;
   emailActions: typeof emailActions;
+  favourites: typeof favourites;
   generateStory: typeof generateStory;
   healthCheck: typeof healthCheck;
   http: typeof http;
@@ -95,6 +98,7 @@ declare const fullApi: ApiFromModules<{
   "migration/voice_models": typeof migration_voice_models;
   narrationGenerator: typeof narrationGenerator;
   privateData: typeof privateData;
+  "razorpay/cancel_subscription": typeof razorpay_cancel_subscription;
   "razorpay/create_subscription": typeof razorpay_create_subscription;
   "razorpay/initiate_razorpay": typeof razorpay_initiate_razorpay;
   "razorpay/webhook": typeof razorpay_webhook;
