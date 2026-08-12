@@ -76,7 +76,9 @@ export function HeroSection() {
                 color: "var(--lf-dark)",
               }}
             >
-              Personalised stories for kids —{" "}
+              Personalised kids stories{" "}
+              <br className="hidden sm:block" />
+              in English &amp; Hindi —{" "}
               <br className="hidden sm:block" />
               where your child{" "}
               <span className="text-gradient-sunshine">becomes</span>

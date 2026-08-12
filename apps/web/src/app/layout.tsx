@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s | Lalli Fafa",
   },
   description:
-    "Personalised AI children's stories in English & Hindi. Your child is the hero alongside Lalli & Fafa. Free to start — safe, ad-free, loved by 10,000+ families.",
+    "AI personalised kids stories in English & Hindi — your child is the hero with Lalli & Fafa. Free to start, safe, ad-free, loved by 10,000+ Indian families.",
   keywords: [
     "personalised stories for kids",
     "ai children stories",
@@ -140,6 +140,14 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="alternate" type="application/rss+xml" title="Lalli Fafa Blog" href="/feed.xml" />
+        {/* Explicit hreflang links — belt-and-suspenders alongside metadata alternates */}
+        <link rel="alternate" hrefLang="x-default" href="https://www.lallifafa.com/" />
+        <link rel="alternate" hrefLang="en-IN" href="https://www.lallifafa.com/" />
+        <link rel="alternate" hrefLang="hi-IN" href="https://www.lallifafa.com/" />
+        {/* max-image-preview in standard robots tag for tools that don't check googlebot tag */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+        {/* Mobile browser UI colour */}
+        <meta name="theme-color" content="#FFF8E7" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <GoogleAnalytics />

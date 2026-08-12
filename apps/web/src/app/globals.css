@@ -245,20 +245,23 @@
   color: var(--lf-teal);
 }
 
-/* Gradient text */
+/* Gradient text — color fallback keeps text visible to crawlers that don't parse -webkit-text-fill-color */
 .text-gradient-sunshine {
+  color: #FF5722;
   background: linear-gradient(135deg, #FFC107 0%, #FF5722 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .text-gradient-teal {
+  color: #00C9A7;
   background: linear-gradient(135deg, #00C9A7 0%, #2979FF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .text-gradient-electric {
+  color: #7C4DFF;
   background: linear-gradient(135deg, #7C4DFF 0%, #2979FF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

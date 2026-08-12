@@ -576,7 +576,7 @@ export default function ProfilePage() {
                           }}
                         >
                           {profilePhotoUrl
-                            ? <img src={profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+                            ? <img src={profilePhotoUrl} alt="Profile" width={100} height={100} className="w-full h-full object-cover" />
                             : initial}
                           <div className="absolute inset-0 rounded-full flex flex-col items-center justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(0,0,0,0.65)" }}>
                             {uploading ? <Loader2 size={22} className="animate-spin" style={{ color: "#fff" }} /> : <Camera size={22} style={{ color: "#fff" }} />}

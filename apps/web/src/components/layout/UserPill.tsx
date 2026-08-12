@@ -118,7 +118,7 @@ export function UserPill({ variant = "light" }: Props) {
           }}
         >
           {profilePhotoUrl ? (
-            <img src={profilePhotoUrl} alt={childName} className="w-full h-full object-cover" />
+            <img src={profilePhotoUrl} alt={childName} width={36} height={36} className="w-full h-full object-cover" />
           ) : (
             initial
           )}
