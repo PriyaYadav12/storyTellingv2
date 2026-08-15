@@ -19,14 +19,25 @@ export const generateNarration = internalAction({
     const childName = child.name || "Child";
     const childGender = child.gender;
 
-    await generateMergedNarration(ctx, {
-      storyId,
-      title: story.title || "",   // was missing — caused runtime crash on first line
-      content: story.content,
-      childName,
-      childGender,
-      language: story.params?.language || "english",
-    });
+    try {
+      await generateMergedNarration(ctx, {
+        storyId,
+        title: story.title || "",
+        content: story.content,
+        childName,
+        childGender,
+        language: story.params?.language || "english",
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[generateNarration] failed:", message);
+      await ctx.runMutation(api.stories._markStatus, {
+        storyId,
+        status: "error",
+        error: `Narration failed: ${message}`,
+      });
+      throw err;
+    }
 
     await ctx.runMutation(api.stories._markStatus, {
       storyId,

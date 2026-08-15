@@ -1,6 +1,5 @@
 import { ActionCtx } from "./_generated/server";
 import { api } from "./_generated/api";
-import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js/Client";
 import { Id } from "./_generated/dataModel";
 
 type Gender = "male" | "female" | "other";
@@ -179,42 +178,42 @@ const LANGUAGE_CODES: Record<string, string> = {
 
 async function ttsArrayBuffer(voiceId: string, text: string, language: string): Promise<ArrayBuffer> {
   const apiKey = process.env.ELEVEN_LABS_API_KEY;
-  if (!apiKey) throw new Error("ELEVENLABS_API_KEY missing");
-
-  const client = new ElevenLabsClient({ apiKey });
+  if (!apiKey) throw new Error("ELEVEN_LABS_API_KEY env var is not set in Convex dashboard");
 
   const isMultilingual = isMultilingualLanguage(language);
   const modelId = isMultilingual ? "eleven_multilingual_v2" : "eleven_turbo_v2_5";
   const langCode = LANGUAGE_CODES[language.toLowerCase()];
 
-  const resp = await client.textToSpeech.convert(voiceId, {
+  const body: Record<string, unknown> = {
     text,
-    modelId,
-    outputFormat: "mp3_44100_64",
-    // Force the correct language so the model doesn't flip between
-    // Hindi and English pronunciation on mixed-language text
-    ...(langCode ? { languageCode: langCode } : {}),
-    voiceSettings: {
+    model_id: modelId,
+    output_format: "mp3_44100_64",
+    voice_settings: {
       stability: 0.78,
-      similarityBoost: 0.80,
+      similarity_boost: 0.80,
       style: 0.10,
-      useSpeakerBoost: true,
+      use_speaker_boost: true,
       speed: 0.82,
     },
+  };
+  if (langCode) body.language_code = langCode;
+
+  const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    method: "POST",
+    headers: {
+      "xi-api-key": apiKey,
+      "Content-Type": "application/json",
+      "Accept": "audio/mpeg",
+    },
+    body: JSON.stringify(body),
   });
 
-  // handle web ReadableStream -> ArrayBuffer
-  const reader = resp.getReader();
-  const chunks: Uint8Array[] = [];
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "(no body)");
+    throw new Error(`ElevenLabs API error ${resp.status} for voice ${voiceId}: ${errText}`);
   }
-  // Ensure Blob receives parts backed by standard ArrayBuffer
-  const safeChunks = chunks.map((c) => new Uint8Array(c));
-  const blob = new Blob(safeChunks, { type: "audio/mpeg" });
-  return await blob.arrayBuffer();
+
+  return resp.arrayBuffer();
 }
 
 function concatMp3(buffers: ArrayBuffer[]): ArrayBuffer {
@@ -309,6 +308,13 @@ export async function generateMergedNarration(
   // Filter out failed lines and merge in order
   const successful = results.filter((r): r is { order: number; ab: ArrayBuffer } => r !== null);
   console.log(`[Narration] ${successful.length}/${lines.length} lines succeeded.`);
+
+  // If every single TTS call failed, throw so the story is properly marked as error
+  // instead of silently storing an empty audio file that plays as silence.
+  if (successful.length === 0) {
+    throw new Error(`[Narration] All ${lines.length} TTS calls failed — check ELEVEN_LABS_API_KEY and voice model IDs in Convex dashboard`);
+  }
+
   successful.sort((a, b) => a.order - b.order);
   const merged = concatMp3(successful.map(r => r.ab));
 
