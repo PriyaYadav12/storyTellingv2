@@ -9,6 +9,18 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { LayoutDashboard, User, LogOut, ChevronDown } from "lucide-react";
 
+/* ── plan badge ────────────────────────────────────────── */
+
+type PlanInfo = { label: string; bg: string; color: string } | null;
+
+function getPlanInfo(subscription: { status?: string; interval?: string } | null | undefined): PlanInfo {
+  if (subscription?.status !== "active") return null;
+  if (subscription.interval === "yearly") {
+    return { label: "Magic Pass Pro", bg: "rgba(168,85,247,0.18)", color: "#c084fc" };
+  }
+  return { label: "Magic Pass", bg: "rgba(249,199,0,0.15)", color: "#f9c700" };
+}
+
 /* ── helpers ─────────────────────────────────────────── */
 
 const AVATAR_GRADIENTS: Record<string, string> = {
@@ -55,6 +67,13 @@ export function UserPill({ variant = "light" }: Props) {
     api.userProfiles.getProfilePhotoUrl,
     isAuthenticated ? {} : "skip"
   ) as string | null | undefined;
+
+  const subscription = useQuery(
+    api.subscription.getSubscription,
+    isAuthenticated ? {} : "skip"
+  ) as { status?: string; interval?: string } | null | undefined;
+
+  const plan = getPlanInfo(subscription);
 
   // Close on outside click
   useEffect(() => {
@@ -124,18 +143,39 @@ export function UserPill({ variant = "light" }: Props) {
           )}
         </div>
 
-        {/* Greeting */}
-        <span
-          style={{
-            fontFamily: "'Nunito', sans-serif",
-            fontWeight: 700,
-            fontSize: "0.85rem",
-            color: pillText,
-            whiteSpace: "nowrap",
-          }}
-        >
-          Hi, {childName}!
-        </span>
+        {/* Greeting + plan badge */}
+        <div className="flex flex-col gap-0" style={{ alignItems: "flex-start" }}>
+          <span
+            style={{
+              fontFamily: "'Nunito', sans-serif",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              color: pillText,
+              whiteSpace: "nowrap",
+              lineHeight: plan ? 1.2 : 1,
+            }}
+          >
+            Hi, {childName}!
+          </span>
+          {plan && (
+            <span
+              style={{
+                fontFamily: "'Nunito', sans-serif",
+                fontWeight: 800,
+                fontSize: "0.6rem",
+                letterSpacing: "0.04em",
+                color: plan.color,
+                background: plan.bg,
+                borderRadius: 4,
+                padding: "0px 5px",
+                whiteSpace: "nowrap",
+                lineHeight: 1.7,
+              }}
+            >
+              {plan.label}
+            </span>
+          )}
+        </div>
 
         <ChevronDown
           size={13}
