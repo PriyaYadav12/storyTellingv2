@@ -198,6 +198,7 @@ function createAuth(
               await (ctx as any).runMutation(internal.auth.initUserRoleRecord, {
                 userId: user.id,
                 email: user.email ?? "",
+                name: user.name ?? undefined,
               });
             } catch (err) {
               console.error("Failed to initialize user role record:", err);
@@ -579,8 +580,8 @@ export const adminAddCredits = mutation({
 // Called immediately on account creation (via databaseHooks) so every signup
 // appears in the admin tool regardless of whether the user completes onboarding.
 export const initUserRoleRecord = internalMutation({
-  args: { userId: v.string(), email: v.string() },
-  handler: async (ctx, { userId, email }) => {
+  args: { userId: v.string(), email: v.string(), name: v.optional(v.string()) },
+  handler: async (ctx, { userId, email, name }) => {
     const existing = await ctx.db
       .query("user_roles")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -594,5 +595,13 @@ export const initUserRoleRecord = internalMutation({
       createdAt: now,
       updatedAt: now,
     });
+    // Schedule a re-engagement email for 1 hour later.
+    // sendReengagementIfNeeded checks whether the user completed onboarding
+    // before sending — so this is a no-op for anyone who finishes quickly.
+    await ctx.scheduler.runAfter(
+      60 * 60 * 1000,
+      internal.emailActions.sendReengagementIfNeeded,
+      { userId, email, name },
+    );
   },
 });

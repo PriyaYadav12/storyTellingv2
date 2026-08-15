@@ -141,7 +141,7 @@ export function SignUpForm() {
     return (
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--lf-cream)" }}>
         <div className="w-full text-center" style={{ maxWidth: 460 }}>
-          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📬</div>
+          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🎉</div>
           <h1
             style={{
               fontFamily: "'Baloo 2', sans-serif",
@@ -152,44 +152,46 @@ export function SignUpForm() {
               marginBottom: "0.75rem",
             }}
           >
-            Check your inbox!
+            Account created!
           </h1>
           <p style={{ color: "rgba(45,45,45,0.6)", fontSize: "1rem", lineHeight: 1.6, marginBottom: "0.5rem" }}>
-            We've sent a verification link to <strong style={{ color: "var(--lf-dark)" }}>{email}</strong>.
-            Click the link in your email to activate your account.
+            You're in! We also sent a verification link to{" "}
+            <strong style={{ color: "var(--lf-dark)" }}>{email}</strong> — but you
+            don't need to verify before setting up your child's profile.
           </p>
           <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem", marginBottom: "2rem" }}>
-            Link expires in 24 hours · Check your spam folder if you don't see it
+            Verification link expires in 24 hours · Check spam if you don't see it
           </p>
           <div className="flex flex-col gap-3">
             <button
-              onClick={handleResendVerification}
-              disabled={resendLoading || resendCooldown > 0}
+              onClick={() => router.push(plan ? `/onboarding?plan=${plan}` : "/onboarding")}
               className="btn-primary"
-              style={{ width: "100%", justifyContent: "center", fontSize: "0.95rem" }}
+              style={{ width: "100%", justifyContent: "center", fontSize: "1rem", padding: "0.85rem" }}
             >
-              {resendLoading ? <Loader2 size={16} className="animate-spin" /> : null}
-              {resendLoading
-                ? "Sending…"
-                : resendCooldown > 0
-                ? `Resend in ${resendCooldown}s`
-                : "Resend verification email"}
+              <Sparkles size={18} />
+              Continue to set up your profile →
             </button>
             <button
-              onClick={() => router.push(plan ? `/onboarding?plan=${plan}` : "/onboarding")}
+              onClick={handleResendVerification}
+              disabled={resendLoading || resendCooldown > 0}
               style={{
                 background: "none",
-                border: "1.5px solid rgba(45,45,45,0.25)",
-                color: "rgba(45,45,45,0.7)",
-                fontSize: "0.88rem",
-                cursor: "pointer",
-                padding: "0.6rem 1rem",
+                border: "1.5px solid rgba(45,45,45,0.2)",
+                color: "rgba(45,45,45,0.55)",
+                fontSize: "0.83rem",
+                cursor: resendCooldown > 0 ? "default" : "pointer",
+                padding: "0.55rem 1rem",
                 borderRadius: "0.75rem",
                 fontFamily: "'Nunito', sans-serif",
                 fontWeight: 600,
               }}
             >
-              Skip verification — continue to setup →
+              {resendLoading ? <Loader2 size={14} className="animate-spin" style={{ display: "inline", marginRight: 4 }} /> : null}
+              {resendLoading
+                ? "Sending…"
+                : resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : "Didn't get the email? Resend or check spam"}
             </button>
           </div>
           <p style={{ color: "rgba(45,45,45,0.35)", fontSize: "0.78rem", marginTop: "2rem", lineHeight: 1.5 }}>

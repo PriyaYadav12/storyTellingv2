@@ -1,4 +1,5 @@
-import { internalAction } from "./_generated/server";
+import { internalAction, internalQuery } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 async function sendEmail(resendKey: string, payload: {
@@ -184,6 +185,122 @@ export const sendCreditAddedEmail = internalAction({
       });
     } catch (err) {
       console.error("Failed to send credit email:", err);
+    }
+  },
+});
+
+// Internal query: check whether a user has completed onboarding (has a profile).
+export const _checkHasProfile = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    const profile = await ctx.db
+      .query("user_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId as any))
+      .first();
+    return profile !== null;
+  },
+});
+
+// Scheduled 1 hour after signup — sends a re-engagement email if the user
+// never finished onboarding (i.e. has no profile record yet).
+export const sendReengagementIfNeeded = internalAction({
+  args: {
+    userId: v.string(),
+    email: v.string(),
+    name: v.optional(v.string()),
+  },
+  handler: async (ctx, { userId, email, name }) => {
+    const hasProfile = await ctx.runQuery(internal.emailActions._checkHasProfile, { userId });
+    if (hasProfile) return; // Already onboarded — nothing to do
+
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey || !email) return;
+
+    const first = name ? name.split(" ")[0] : "there";
+
+    const html = `
+      <div style="font-family:'Nunito',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:20px;overflow:hidden;border:1.5px solid rgba(0,0,0,0.06)">
+        ${HEADER}
+        <div style="padding:40px 32px">
+          <h2 style="color:#1a1a2e;font-size:24px;font-weight:800;margin:0 0 8px">
+            Hi ${first} — your first story is waiting! ✨
+          </h2>
+          <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px">
+            You created your Lalli Fafa account an hour ago but haven't set up your child's profile yet.
+            It only takes 2 minutes — and your <strong>200 free credits</strong> are ready and waiting.
+          </p>
+
+          <!-- Story preview card -->
+          <div style="background:linear-gradient(135deg,#1a1a2e,#2d2b50);border-radius:18px;padding:24px;margin-bottom:28px;text-align:center">
+            <p style="color:rgba(255,255,255,0.5);font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 10px">What's waiting for you</p>
+            <p style="color:#fff;font-size:18px;font-weight:800;margin:0 0 8px;line-height:1.3">A personalised illustrated story<br/>starring your child 🌟</p>
+            <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:0">With AI narration · In English or Hindi · Ready in 60 seconds</p>
+          </div>
+
+          <!-- Steps -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px">
+            <tr>
+              <td style="vertical-align:top;padding:0 0 16px">
+                <div style="display:flex;align-items:flex-start;gap:12px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#f9c700;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#1a1a2e;flex-shrink:0">1</div>
+                  <div>
+                    <div style="font-weight:800;color:#1a1a2e;font-size:14px;margin-bottom:2px">Tell us about your child</div>
+                    <div style="color:#666;font-size:13px">Name, age, favourite colour — they become the hero</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align:top;padding:0 0 16px">
+                <div style="display:flex;align-items:flex-start;gap:12px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#4ecdc4;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#1a1a2e;flex-shrink:0">2</div>
+                  <div>
+                    <div style="font-weight:800;color:#1a1a2e;font-size:14px;margin-bottom:2px">Pick a theme</div>
+                    <div style="color:#666;font-size:13px">Adventure, bedtime, silly, moral lessons — your choice</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align:top">
+                <div style="display:flex;align-items:flex-start;gap:12px">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#c084fc;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0">3</div>
+                  <div>
+                    <div style="font-weight:800;color:#1a1a2e;font-size:14px;margin-bottom:2px">Your story is ready in ~60 seconds</div>
+                    <div style="color:#666;font-size:13px">Illustrated, narrated, and personalised just for them</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- CTA -->
+          <div style="text-align:center;margin-bottom:24px">
+            <a href="https://www.lallifafa.com/onboarding"
+               style="display:inline-block;background:linear-gradient(135deg,#f9c700,#ffab00);color:#1a1a2e;text-decoration:none;font-weight:800;font-size:15px;padding:16px 40px;border-radius:50px;box-shadow:0 4px 20px rgba(249,199,0,0.35)">
+              ✨ Finish setup — takes 2 minutes →
+            </a>
+          </div>
+
+          <p style="color:#aaa;font-size:12px;text-align:center;margin:0;line-height:1.6">
+            Your 200 free credits never expire. No credit card needed.<br/>
+            Questions? Just reply to this email.
+          </p>
+        </div>
+        ${FOOTER}
+      </div>`;
+
+    const text = `Hi ${first}!\n\nYou created your Lalli Fafa account an hour ago but haven't set up your child's profile yet.\n\nIt only takes 2 minutes — and your 200 free credits are ready and waiting.\n\nFinish setup at: https://www.lallifafa.com/onboarding\n\nNo credit card needed. Your credits never expire.\n\n— The Lalli Fafa team`;
+
+    try {
+      await sendEmail(resendKey, {
+        to: [email],
+        subject: `${first}, your child's first story is waiting ✨`,
+        html,
+        text,
+      });
+    } catch (err) {
+      console.error("Failed to send re-engagement email:", err);
     }
   },
 });
