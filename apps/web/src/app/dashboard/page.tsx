@@ -189,7 +189,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
     const list = stories ?? [];
     const storiesCreated = list.length;
     const lengthToMinutes: Record<string, number> = { short: 3, medium: 6, long: 10 };
-    const readingTime = list.reduce((sum, s) => {
+    const readingTime = list.reduce((sum: number, s) => {
       const len = ((s as { params?: { length?: string } })?.params?.length ?? "short").toLowerCase();
       return sum + (lengthToMinutes[len] ?? 3);
     }, 0);
