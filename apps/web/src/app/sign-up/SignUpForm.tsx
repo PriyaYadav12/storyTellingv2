@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,12 +10,26 @@ import { authClient } from "@/lib/auth-client";
 import { trackSignUp } from "@/lib/analytics";
 import { useConvexAuth } from "convex/react";
 
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: HTMLElement, opts: {
+        sitekey: string;
+        callback: (token: string) => void;
+        "expired-callback": () => void;
+        "error-callback": () => void;
+      }) => string;
+      reset: (widgetId: string) => void;
+    };
+  }
+}
+
 const RESEND_COOLDOWN_SECONDS = 60;
 
 export function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const plan = searchParams.get("plan"); // "monthly" | "yearly" | null
+  const plan = searchParams.get("plan");
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
 
   useEffect(() => {
@@ -23,6 +37,7 @@ export function SignUpForm() {
       router.replace(plan ? `/checkout?plan=${plan}` : "/dashboard");
     }
   }, [isAuthenticated, authLoading, plan, router]);
+
   const isMonthly = plan === "monthly";
   const isYearly = plan === "yearly";
 
@@ -37,49 +52,82 @@ export function SignUpForm() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Countdown timer for resend cooldown
+  // Turnstile
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!siteKey || !turnstileRef.current) return;
+    const existing = document.getElementById("cf-turnstile-script");
+    if (!existing) {
+      const script = document.createElement("script");
+      script.id = "cf-turnstile-script";
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.onload = renderWidget;
+      document.head.appendChild(script);
+    } else {
+      renderWidget();
+    }
+    function renderWidget() {
+      if (!turnstileRef.current || !window.turnstile) return;
+      widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+        sitekey: siteKey!,
+        callback: (token) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(null),
+        "error-callback": () => setTurnstileToken(null),
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [siteKey]);
+
   useEffect(() => {
     if (resendCooldown <= 0) return;
-    const timer = setInterval(() => {
-      setResendCooldown((s) => Math.max(0, s - 1));
-    }, 1000);
+    const timer = setInterval(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters.");
-      return;
+    if (password.length < 8) { toast.error("Password must be at least 8 characters."); return; }
+    if (password !== confirmPassword) { toast.error("Passwords don't match — please check and try again."); return; }
+
+    // Turnstile verification
+    if (siteKey) {
+      if (!turnstileToken) { toast.error("Please complete the security check."); return; }
+      const res = await fetch("/api/verify-turnstile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: turnstileToken }),
+      });
+      if (!res.ok) {
+        toast.error("Security check failed — please try again.");
+        if (widgetIdRef.current) window.turnstile?.reset(widgetIdRef.current);
+        setTurnstileToken(null);
+        return;
+      }
     }
-    if (password !== confirmPassword) {
-      toast.error("Passwords don't match — please check and try again.");
-      return;
-    }
+
     setLoading(true);
+    const onboardingDest = plan ? `/onboarding?plan=${plan}` : "/onboarding";
     await authClient.signUp.email(
       { name, email, password },
       {
         onSuccess: async () => {
           trackSignUp("email");
-          const onboardingDest = plan ? `/onboarding?plan=${plan}` : "/onboarding";
-          // Send verification email; if it fails we still proceed to onboarding
           try {
-            await authClient.sendVerificationEmail({
-              email,
-              callbackURL: onboardingDest,
-            });
-            setVerifyEmailSent(true);
-            setResendCooldown(RESEND_COOLDOWN_SECONDS);
-          } catch {
-            // Verification email failed — just go to onboarding
-            router.push(onboardingDest);
-          }
+            await authClient.sendVerificationEmail({ email, callbackURL: onboardingDest });
+          } catch { /* verification email send failed; verification screen still shown */ }
+          setVerifyEmailSent(true);
+          setResendCooldown(RESEND_COOLDOWN_SECONDS);
           setLoading(false);
         },
         onError: (ctx) => {
-          console.error("[sign-up] full error object:", JSON.stringify(ctx.error));
-          toast.error(ctx.error.message || JSON.stringify(ctx.error) || "Sign up failed.");
+          toast.error(ctx.error.message || "Sign up failed.");
+          if (widgetIdRef.current) window.turnstile?.reset(widgetIdRef.current);
+          setTurnstileToken(null);
           setLoading(false);
         },
       }
@@ -109,7 +157,6 @@ export function SignUpForm() {
       const callbackURL = plan
         ? `https://www.lallifafa.com/onboarding?plan=${plan}`
         : "https://www.lallifafa.com/onboarding";
-
       const res = await fetch("/api/auth/sign-in/social", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,8 +170,7 @@ export function SignUpForm() {
         throw new Error("No redirect URL from auth server");
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Google sign up failed.";
-      toast.error(msg);
+      toast.error(err instanceof Error ? err.message : "Google sign up failed.");
       setGoogleLoading(false);
     }
   }
@@ -137,63 +183,41 @@ export function SignUpForm() {
     fontFamily: "'Nunito', sans-serif",
   };
 
+  // ── Verify-email screen (shown after signup) ──────────────────────────────
   if (verifyEmailSent) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--lf-cream)" }}>
         <div className="w-full text-center" style={{ maxWidth: 460 }}>
-          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🎉</div>
-          <h1
-            style={{
-              fontFamily: "'Baloo 2', sans-serif",
-              fontSize: "clamp(1.7rem, 3vw, 2.2rem)",
-              fontWeight: 800,
-              color: "var(--lf-dark)",
-              lineHeight: 1.2,
-              marginBottom: "0.75rem",
-            }}
-          >
-            Account created!
+          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📬</div>
+          <h1 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: "clamp(1.7rem,3vw,2.2rem)", fontWeight: 800, color: "var(--lf-dark)", lineHeight: 1.2, marginBottom: "0.75rem" }}>
+            Check your email!
           </h1>
           <p style={{ color: "rgba(45,45,45,0.6)", fontSize: "1rem", lineHeight: 1.6, marginBottom: "0.5rem" }}>
-            You're in! We also sent a verification link to{" "}
-            <strong style={{ color: "var(--lf-dark)" }}>{email}</strong> — but you
-            don't need to verify before setting up your child's profile.
+            We sent a verification link to{" "}
+            <strong style={{ color: "var(--lf-dark)" }}>{email}</strong>.{" "}
+            Click it to finish creating your account and set up your child&apos;s profile.
           </p>
           <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem", marginBottom: "2rem" }}>
-            Verification link expires in 24 hours · Check spam if you don't see it
+            Link expires in 24 hours · Check spam if you don&apos;t see it
           </p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => router.push(plan ? `/onboarding?plan=${plan}` : "/onboarding")}
-              className="btn-primary"
-              style={{ width: "100%", justifyContent: "center", fontSize: "1rem", padding: "0.85rem" }}
-            >
-              <Sparkles size={18} />
-              Continue to set up your profile →
-            </button>
-            <button
-              onClick={handleResendVerification}
-              disabled={resendLoading || resendCooldown > 0}
-              style={{
-                background: "none",
-                border: "1.5px solid rgba(45,45,45,0.2)",
-                color: "rgba(45,45,45,0.55)",
-                fontSize: "0.83rem",
-                cursor: resendCooldown > 0 ? "default" : "pointer",
-                padding: "0.55rem 1rem",
-                borderRadius: "0.75rem",
-                fontFamily: "'Nunito', sans-serif",
-                fontWeight: 600,
-              }}
-            >
-              {resendLoading ? <Loader2 size={14} className="animate-spin" style={{ display: "inline", marginRight: 4 }} /> : null}
-              {resendLoading
-                ? "Sending…"
-                : resendCooldown > 0
-                ? `Resend in ${resendCooldown}s`
-                : "Didn't get the email? Resend or check spam"}
-            </button>
-          </div>
+          <button
+            onClick={handleResendVerification}
+            disabled={resendLoading || resendCooldown > 0}
+            style={{
+              background: "none",
+              border: "1.5px solid rgba(45,45,45,0.2)",
+              color: "rgba(45,45,45,0.55)",
+              fontSize: "0.83rem",
+              cursor: resendCooldown > 0 ? "default" : "pointer",
+              padding: "0.55rem 1.2rem",
+              borderRadius: "0.75rem",
+              fontFamily: "'Nunito', sans-serif",
+              fontWeight: 600,
+            }}
+          >
+            {resendLoading && <Loader2 size={14} className="animate-spin" style={{ display: "inline", marginRight: 4 }} />}
+            {resendLoading ? "Sending…" : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+          </button>
           <p style={{ color: "rgba(45,45,45,0.35)", fontSize: "0.78rem", marginTop: "2rem", lineHeight: 1.5 }}>
             Wrong email?{" "}
             <button
@@ -209,13 +233,14 @@ export function SignUpForm() {
     );
   }
 
+  // ── Sign-up form ──────────────────────────────────────────────────────────
+  const turnstileReady = !siteKey || !!turnstileToken;
+  const submitDisabled = loading || googleLoading || (!!confirmPassword && confirmPassword !== password) || !turnstileReady;
+
   return (
     <div className="min-h-screen flex" style={{ background: "var(--lf-cream)" }}>
-      {/* Left panel — branding */}
-      <div
-        className="hidden lg:flex flex-col justify-between p-12 w-[420px] flex-shrink-0"
-        style={{ background: "var(--lf-dark)" }}
-      >
+      {/* Left panel */}
+      <div className="hidden lg:flex flex-col justify-between p-12 w-[420px] flex-shrink-0" style={{ background: "var(--lf-dark)" }}>
         <Link href="/" className="flex items-center gap-2">
           <div className="relative" style={{ width: 40, height: 40 }}>
             <Image src="/logoNoBg.png" alt="Lalli Fafa" fill className="object-contain" />
@@ -224,33 +249,24 @@ export function SignUpForm() {
             Lalli <span style={{ color: "var(--lf-teal)" }}>Fafa</span>
           </span>
         </Link>
-
-        <div>
-          <div className="flex flex-col gap-5">
-            {[
-              { emoji: "🌟", text: "Your child is the hero of every story" },
-              { emoji: "📖", text: "Personalised short stories — free forever" },
-              { emoji: "🎧", text: "Narration & AI illustrations with Magic Pass" },
-              { emoji: "💛", text: "200 free credits on signup — no card needed" },
-            ].map((item) => (
-              <div key={item.emoji} className="flex items-start gap-3">
-                <span style={{ fontSize: "1.3rem" }}>{item.emoji}</span>
-                <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.95rem", lineHeight: 1.5 }}>
-                  {item.text}
-                </p>
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-col gap-5">
+          {[
+            { emoji: "🌟", text: "Your child is the hero of every story" },
+            { emoji: "📖", text: "Personalised short stories — free forever" },
+            { emoji: "🎧", text: "Narration & AI illustrations with Magic Pass" },
+            { emoji: "💛", text: "200 free credits on signup — no card needed" },
+          ].map((item) => (
+            <div key={item.emoji} className="flex items-start gap-3">
+              <span style={{ fontSize: "1.3rem" }}>{item.emoji}</span>
+              <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.95rem", lineHeight: 1.5 }}>{item.text}</p>
+            </div>
+          ))}
         </div>
-
-        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem" }}>
-          Loved by 10,000+ Indian families
-        </p>
+        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem" }}>Loved by 10,000+ Indian families</p>
       </div>
 
-      {/* Right panel — form */}
+      {/* Right panel */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        {/* Mobile logo */}
         <Link href="/" className="flex items-center gap-2 mb-10 lg:hidden">
           <div className="relative" style={{ width: 36, height: 36 }}>
             <Image src="/logoNoBg.png" alt="Lalli Fafa" fill className="object-contain" />
@@ -262,28 +278,15 @@ export function SignUpForm() {
 
         <div className="w-full" style={{ maxWidth: 420 }}>
           {(isMonthly || isYearly) && (
-            <div
-              className="mb-6 p-4 rounded-2xl flex items-center gap-3"
-              style={{ background: "rgba(249,199,0,0.12)", border: "1.5px solid rgba(249,199,0,0.3)" }}
-            >
+            <div className="mb-6 p-4 rounded-2xl flex items-center gap-3" style={{ background: "rgba(249,199,0,0.12)", border: "1.5px solid rgba(249,199,0,0.3)" }}>
               <Sparkles size={18} style={{ color: "#b8860b", flexShrink: 0 }} />
               <p style={{ fontSize: "0.88rem", color: "#7a5800", fontWeight: 600 }}>
-                {isYearly
-                  ? "Magic Pass Pro — ₹1,999/year selected. Start your free trial first."
-                  : "Magic Pass Monthly — ₹199/month selected. Start your free trial first."}
+                {isYearly ? "Magic Pass Pro — ₹1,999/year selected. Start your free trial first." : "Magic Pass Monthly — ₹199/month selected. Start your free trial first."}
               </p>
             </div>
           )}
 
-          <h1
-            style={{
-              fontFamily: "'Baloo 2', sans-serif",
-              fontSize: "clamp(1.7rem, 3vw, 2.2rem)",
-              fontWeight: 800,
-              color: "var(--lf-dark)",
-              lineHeight: 1.2,
-            }}
-          >
+          <h1 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: "clamp(1.7rem,3vw,2.2rem)", fontWeight: 800, color: "var(--lf-dark)", lineHeight: 1.2 }}>
             Create your free account
           </h1>
           <p className="mt-2 mb-8" style={{ color: "rgba(45,45,45,0.55)", fontSize: "0.9rem" }}>
@@ -295,95 +298,40 @@ export function SignUpForm() {
               <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>
                 Your name <span style={{ fontWeight: 400, color: "rgba(45,45,45,0.45)" }}>(parent or guardian)</span>
               </label>
-              <input
-                type="text"
-                placeholder="e.g. Priya Sharma"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                disabled={loading}
-                className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
-                style={inputStyle}
-              />
+              <input type="text" placeholder="e.g. Priya Sharma" value={name} onChange={(e) => setName(e.target.value)} required disabled={loading} className="w-full px-4 py-3 rounded-2xl outline-none transition-all" style={inputStyle} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>
-                Email address
-              </label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
-                style={inputStyle}
-              />
+              <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>Email address</label>
+              <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} className="w-full px-4 py-3 rounded-2xl outline-none transition-all" style={inputStyle} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>
-                Password
-              </label>
+              <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>Password</label>
               <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="At least 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
-                  style={{ ...inputStyle, paddingRight: "3rem" }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                  style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(45,45,45,0.4)", padding: "4px" }}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
+                <input type={showPassword ? "text" : "password"} placeholder="At least 8 characters" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} className="w-full px-4 py-3 rounded-2xl outline-none transition-all" style={{ ...inputStyle, paddingRight: "3rem" }} />
+                <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(45,45,45,0.4)", padding: "4px" }} aria-label={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>
-                Confirm password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Type it again"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
-                  style={{
-                    ...inputStyle,
-                    borderColor: confirmPassword && confirmPassword !== password
-                      ? "rgba(239,68,68,0.6)"
-                      : confirmPassword && confirmPassword === password
-                      ? "rgba(0,201,167,0.6)"
-                      : "rgba(0,0,0,0.1)",
-                  }}
-                />
-              </div>
+              <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--lf-dark)" }}>Confirm password</label>
+              <input type={showPassword ? "text" : "password"} placeholder="Type it again" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} className="w-full px-4 py-3 rounded-2xl outline-none transition-all" style={{ ...inputStyle, borderColor: confirmPassword && confirmPassword !== password ? "rgba(239,68,68,0.6)" : confirmPassword && confirmPassword === password ? "rgba(0,201,167,0.6)" : "rgba(0,0,0,0.1)" }} />
               {confirmPassword && confirmPassword !== password && (
-                <p style={{ fontSize: "0.78rem", color: "#dc2626" }}>Passwords don't match</p>
+                <p style={{ fontSize: "0.78rem", color: "#dc2626" }}>Passwords don&apos;t match</p>
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || googleLoading || (!!confirmPassword && confirmPassword !== password)}
-              className="btn-primary mt-2"
-              style={{ width: "100%", justifyContent: "center", fontSize: "1rem", padding: "0.85rem" }}
-            >
+            {/* Cloudflare Turnstile */}
+            {siteKey && (
+              <div className="flex justify-center">
+                <div ref={turnstileRef} />
+              </div>
+            )}
+
+            <button type="submit" disabled={submitDisabled} className="btn-primary mt-2" style={{ width: "100%", justifyContent: "center", fontSize: "1rem", padding: "0.85rem" }}>
               {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
               {loading ? "Creating account…" : "Create account — it's free"}
             </button>
@@ -394,22 +342,8 @@ export function SignUpForm() {
               <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.08)" }} />
             </div>
 
-            <button
-              type="button"
-              onClick={handleGoogle}
-              disabled={loading || googleLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all"
-              style={{
-                background: "#fff",
-                border: "1.5px solid rgba(0,0,0,0.1)",
-                color: "var(--lf-dark)",
-                fontSize: "0.9rem",
-                fontFamily: "'Nunito', sans-serif",
-              }}
-            >
-              {googleLoading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
+            <button type="button" onClick={handleGoogle} disabled={loading || googleLoading} className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.1)", color: "var(--lf-dark)", fontSize: "0.9rem", fontFamily: "'Nunito', sans-serif" }}>
+              {googleLoading ? <Loader2 size={18} className="animate-spin" /> : (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -423,15 +357,11 @@ export function SignUpForm() {
 
           <p className="text-center mt-6" style={{ fontSize: "0.85rem", color: "rgba(45,45,45,0.5)" }}>
             Already have an account?{" "}
-            <Link href="/sign-in" style={{ color: "var(--lf-teal)", fontWeight: 600 }}>
-              Sign in
-            </Link>
+            <Link href="/sign-in" style={{ color: "var(--lf-teal)", fontWeight: 600 }}>Sign in</Link>
           </p>
-
           <p className="text-center mt-4" style={{ fontSize: "0.75rem", color: "rgba(45,45,45,0.35)", lineHeight: 1.6 }}>
             By signing up you agree to our{" "}
-            <Link href="/legal/terms" style={{ color: "var(--lf-teal)" }}>Terms</Link>{" "}
-            and{" "}
+            <Link href="/legal/terms" style={{ color: "var(--lf-teal)" }}>Terms</Link>{" "}and{" "}
             <Link href="/legal/privacy" style={{ color: "var(--lf-teal)" }}>Privacy Policy</Link>.
           </p>
         </div>

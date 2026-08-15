@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, MailWarning } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useConvexAuth } from "convex/react";
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export function SignInForm() {
   const router = useRouter();
@@ -25,16 +27,52 @@ export function SignInForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  async function handleResendVerification() {
+    if (resendCooldown > 0) return;
+    setResendLoading(true);
+    try {
+      await authClient.sendVerificationEmail({ email, callbackURL: redirect });
+      toast.success("Verification email sent — check your inbox.");
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    } catch {
+      toast.error("Couldn't send verification email — please try again.");
+    } finally {
+      setResendLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setEmailNotVerified(false);
     setLoading(true);
     await authClient.signIn.email(
       { email, password },
       {
         onSuccess: () => router.push(redirect),
         onError: (ctx) => {
-          toast.error(ctx.error.message ?? "Sign in failed. Please try again.");
+          const msg = ctx.error.message ?? "";
+          // Better Auth returns this when requireEmailVerification is true
+          if (
+            msg.toLowerCase().includes("email") &&
+            msg.toLowerCase().includes("verif")
+          ) {
+            setEmailNotVerified(true);
+            setResendCooldown(RESEND_COOLDOWN_SECONDS);
+            // Fire-and-forget: send verification email automatically
+            authClient.sendVerificationEmail({ email, callbackURL: redirect }).catch(() => null);
+          } else {
+            toast.error(msg || "Sign in failed. Please try again.");
+          }
           setLoading(false);
         },
       }
@@ -243,6 +281,43 @@ export function SignInForm() {
                 style={inputStyle}
               />
             </div>
+
+            {emailNotVerified && (
+              <div
+                className="rounded-2xl p-4 flex flex-col gap-2"
+                style={{ background: "rgba(249,199,0,0.1)", border: "1.5px solid rgba(249,199,0,0.35)" }}
+              >
+                <div className="flex items-center gap-2">
+                  <MailWarning size={16} style={{ color: "#a67c00", flexShrink: 0 }} />
+                  <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "#7a5800" }}>
+                    Please verify your email first
+                  </p>
+                </div>
+                <p style={{ fontSize: "0.8rem", color: "#7a5800", lineHeight: 1.5 }}>
+                  We sent a verification link to <strong>{email}</strong>. Click it to activate your account, then sign in here.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading || resendCooldown > 0}
+                  style={{
+                    alignSelf: "flex-start",
+                    background: "none",
+                    border: "1.5px solid rgba(166,124,0,0.4)",
+                    color: "#7a5800",
+                    fontSize: "0.78rem",
+                    cursor: resendCooldown > 0 ? "default" : "pointer",
+                    padding: "0.35rem 0.85rem",
+                    borderRadius: "0.6rem",
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 700,
+                  }}
+                >
+                  {resendLoading && <Loader2 size={12} className="animate-spin" style={{ display: "inline", marginRight: 4 }} />}
+                  {resendLoading ? "Sending…" : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+                </button>
+              </div>
+            )}
 
             <button
               type="submit"
