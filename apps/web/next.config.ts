@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
             value: [
               "default-src 'self'",
               // GA4 + Google Ads (AW-*) + Meta Pixel scripts
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googleadservices.com https://connect.facebook.net",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googleadservices.com https://connect.facebook.net https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               // Meta Pixel noscript 1×1 + Google Ads measurement + remarketing pixels
@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
               // GA4 regional endpoints + Google Ads conversion + remarketing + Meta Pixel beacon
               "connect-src 'self' https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.facebook.com https://connect.facebook.net https://api.razorpay.com wss://*.convex.cloud",
               "media-src 'self' blob: https://*.convex.cloud https://*.convex.site",
-              "frame-src https://api.razorpay.com https://bid.g.doubleclick.net",
+              "frame-src https://api.razorpay.com https://bid.g.doubleclick.net https://challenges.cloudflare.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
