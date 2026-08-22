@@ -110,7 +110,7 @@ export default function StoryChallengeScreen() {
           Question {index + 1} of {total}
         </span>
         <div style={{ display: "flex", gap: 4 }}>
-          {questions.map((_, i) => (
+          {questions.map((_: unknown, i: number) => (
             <div key={i} style={{ width: i === index ? 18 : 6, height: 6, borderRadius: 99, background: i <= index ? "linear-gradient(90deg, var(--lf-sunshine), var(--lf-teal))" : "rgba(14,10,31,0.12)", transition: "all 0.2s" }} />
           ))}
         </div>
