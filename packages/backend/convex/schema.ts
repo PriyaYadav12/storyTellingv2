@@ -451,6 +451,9 @@ flavor_openings: defineTable({
 			v.literal("fafa")
 		)),
 
+		// Source of primary pillar — audits whether Challenge signal or LRU rotation drove selection
+		pillarSource: v.optional(v.union(v.literal("challenge_signal"), v.literal("lru_rotation"))),
+
 		createdAt: v.number(),
 	})
 		.index("by_user",          ["userId"])

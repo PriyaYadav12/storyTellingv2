@@ -5,7 +5,7 @@
 // rest of convex/testserver/* and apps/web/src/app/testserver/* if no
 // longer needed.
 
-import { action, internalMutation, mutation, query } from "../_generated/server";
+import { action, internalMutation, internalQuery, mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import { GoogleGenAI } from "@google/genai";
 import { api, internal } from "../_generated/api";
@@ -379,5 +379,42 @@ export const getStarsBalance = query({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
     return rows.reduce((sum, r) => sum + r.amount, 0);
+  },
+});
+
+/**
+ * Called by generateStoryV2 to look up the most recent "growing in" pillar
+ * from completed Challenges linked to a child's recent stories.
+ * Window: completed within the last 7 days; storyIds come from story_memory
+ * (last 8 stories), so the effective window is "last 3 challenges from recent
+ * story history that are also within 7 days of now."
+ * Returns a pillar string or null if no qualifying challenge exists.
+ */
+export const getGrowingInForStories = internalQuery({
+  args: { storyIds: v.array(v.id("stories")) },
+  handler: async (ctx, { storyIds }) => {
+    const WINDOW_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+    const cutoff    = Date.now() - WINDOW_MS;
+
+    let best: { completedAt: number; pillar: string } | null = null;
+
+    for (const storyId of storyIds) {
+      const row = await ctx.db
+        .query("testserver_challenges")
+        .withIndex("by_story", (q) => q.eq("storyId", storyId))
+        .first();
+      if (
+        row?.status === "completed" &&
+        typeof row.completedAt === "number" &&
+        row.completedAt >= cutoff &&
+        typeof row.score?.growingInPillar === "string"
+      ) {
+        if (!best || row.completedAt > best.completedAt) {
+          best = { completedAt: row.completedAt, pillar: row.score.growingInPillar };
+        }
+      }
+    }
+
+    return best?.pillar ?? null;
   },
 });

@@ -113,6 +113,30 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function computeSpeakerWordShares(
+  body:      string,
+  childName: string
+): { narrator: number; lalli: number; fafa: number; child: number; total: number } {
+  const lalliRx = /^Lalli:\s*/i;
+  const fafaRx  = /^Fafa:\s*/i;
+  const childRx = new RegExp(`^${escapeRegex(childName)}:\\s*`, "i");
+  const counts  = { narrator: 0, lalli: 0, fafa: 0, child: 0 };
+
+  for (const line of body.split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    let speaker: keyof typeof counts = "narrator";
+    let text = t;
+    if      (lalliRx.test(t)) { speaker = "lalli"; text = t.replace(lalliRx, ""); }
+    else if (fafaRx.test(t))  { speaker = "fafa";  text = t.replace(fafaRx,  ""); }
+    else if (childRx.test(t)) { speaker = "child"; text = t.replace(childRx, ""); }
+    counts[speaker] += text.split(/\s+/).filter(Boolean).length;
+  }
+
+  const total = counts.narrator + counts.lalli + counts.fafa + counts.child;
+  return { ...counts, total };
+}
+
 function runDeterministicValidation(
   content:  string,
   childName: string,
@@ -214,6 +238,37 @@ function runDeterministicValidation(
         severity: "critical",
         description: `Story contains moralising phrase "${phrase}".`,
         repairHint:  `Remove the sentence with "${phrase}". Show the value through what characters do, never what they conclude.`,
+      });
+    }
+  }
+
+  // 8. Dialogue word-share against age-group targets (§I — ±15pp tolerance)
+  const targets = resolveDialogueTargets(ageGroup);
+  const shares  = computeSpeakerWordShares(body, childName);
+  if (shares.total > 0) {
+    const TOLERANCE = 0.15;
+    const offTarget: string[] = [];
+    const speakerMap: Array<[keyof typeof targets, keyof typeof shares]> = [
+      ["narrator", "narrator"],
+      ["lalli", "lalli"],
+      ["fafa", "fafa"],
+      ["child", "child"],
+    ];
+    for (const [tk, sk] of speakerMap) {
+      const actual = (shares[sk] as number) / shares.total;
+      const diff   = actual - targets[tk];
+      if (Math.abs(diff) > TOLERANCE) {
+        offTarget.push(
+          `${tk}: target ${Math.round(targets[tk] * 100)}%, actual ${Math.round(actual * 100)}% (${diff > 0 ? "+" : ""}${Math.round(diff * 100)}pp)`
+        );
+      }
+    }
+    if (offTarget.length > 0) {
+      issues.push({
+        code:        "DIALOGUE_WORD_SHARE_OFF_TARGET",
+        severity:    "critical",
+        description: `Word-share distribution off-target: ${offTarget.join("; ")}.`,
+        repairHint:  `Rebalance dialogue so each speaker stays within 15pp of age-group ${ageGroup} targets — narrator ${Math.round(targets.narrator * 100)}%, Lalli ${Math.round(targets.lalli * 100)}%, Fafa ${Math.round(targets.fafa * 100)}%, ${childName} ${Math.round(targets.child * 100)}%.`,
       });
     }
   }
@@ -713,6 +768,22 @@ export const _generateContentV2 = internalAction({
 
     const recordCount = recentMemory.length;
 
+    // Challenge "growing in" signal — look up the most recent completed Challenge
+    // from the child's last 8 stories (joined via story_memory storyIds).
+    // Window: completed within 7 days. Returns null when Challenge is not in production.
+    const recentStoryIds = recentMemory.map((r: any) => r.storyId).filter(Boolean) as string[];
+    const rawChallengeSignal: string | null = recentStoryIds.length > 0
+      ? await ctx.runQuery(
+          (internal as any).testserver.challenge.getGrowingInForStories,
+          { storyIds: recentStoryIds }
+        )
+      : null;
+    const VALID_PILLARS = new Set(["listening", "attention", "emotional", "cognitive"]);
+    const challengeSignal: Pillar | null =
+      rawChallengeSignal && VALID_PILLARS.has(rawChallengeSignal)
+        ? rawChallengeSignal as Pillar
+        : null;
+
     // ── 2. Resolve all engine dimensions ──────────────────────────────────
     const ageGroup        = resolveAgeGroup(childInfo.age);
     const storyLength     = resolveStoryLength(length);
@@ -720,7 +791,8 @@ export const _generateContentV2 = internalAction({
     const wordCount       = resolveWordCount(storyLength, lang);
     const dialogueTargets = resolveDialogueTargets(ageGroup);
     const mode            = requestedMode ?? resolveModeFromHistory(recentMemory);
-    const primaryPillar   = resolvePrimaryPillarFromHistory(recentMemory);
+    const pillarSource    = challengeSignal ? "challenge_signal" : "lru_rotation";
+    const primaryPillar   = challengeSignal ?? resolvePrimaryPillarFromHistory(recentMemory);
     const secondaryPillar = resolveSecondaryPillar(primaryPillar, storyLength, recentMemory);
     const structureShape  = resolveStructureShape(storyLength, ageGroup);
     const narrativeArc    = resolveNarrativeArc(structureShape, recordCount);
@@ -976,7 +1048,9 @@ export const _generateContentV2 = internalAction({
       },
       resolvedBy,
       endingType,
+      pillarSource,
     });
+    console.log(`[v2] primaryPillar="${primaryPillar}" source="${pillarSource}"${challengeSignal ? ` (challenge window hit)` : ""}`);
 
     // ── 9. Fire image + narration pipelines ──────────────────────────────
     await ctx.scheduler.runAfter(0, internal.internal.generateSceneImage.generateImages, {

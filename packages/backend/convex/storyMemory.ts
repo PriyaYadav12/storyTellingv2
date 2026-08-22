@@ -61,6 +61,7 @@ export const create = mutation({
     resolvedBy: v.optional(v.union(
       v.literal("child"), v.literal("lalli"), v.literal("fafa")
     )),
+    pillarSource: v.optional(v.union(v.literal("challenge_signal"), v.literal("lru_rotation"))),
   },
   handler: async (ctx, args) => {
     await ctx.db.insert("story_memory", {
