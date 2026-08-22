@@ -3,28 +3,20 @@ import { v } from "convex/values";
 
 const STORY_TYPES = [
   {
-    code: "adventure",
-    name: "Big Adventure",
+    code: "quest",
+    name: "Quest",
     emoji: "🗺️",
-    description: "A quest full of discovery, teamwork, and a twist that changes everything.",
-    promptHint: "Quest structure: problem → journey → unexpected twist → resolution. Sense of movement and discovery. Lalli leads, Fafa's wild idea helps, child's observation unlocks the final answer.",
+    description: "A goal to reach, a puzzle to solve, or something to find — energy ranges playful to bold.",
+    promptHint: "Quest mode (external, goal-driven): a place to reach, a thing to find, or a puzzle to solve. Energy ranges playful to bold. Comedic dial is applied as a tone setting inside this structure — never as a separate unconstrained mode. Lalli leads the plan, Fafa's wild idea or gag contributes, child's observation unlocks the resolution.",
     sortOrder: 1,
   },
   {
-    code: "silly",
-    name: "Silly & Funny",
-    emoji: "🌀",
-    description: "Chaotic fun where Fafa's impossible ideas somehow save the day.",
-    promptHint: "Twist structure: comic misunderstanding escalates → Fafa's absurd solution is attempted → it goes hilariously wrong → accidentally fixes everything. Physical comedy, gentle absurdity, Lalli's deadpan reactions.",
-    sortOrder: 2,
-  },
-  {
-    code: "cozy",
-    name: "Cozy Bedtime",
+    code: "wonder",
+    name: "Wonder",
     emoji: "🌙",
-    description: "A gentle, slow story full of warmth — perfect for winding down.",
-    promptHint: "Cozy structure: quiet beginning → soft exploration → gentle resolution. Slower pacing, rich sensory detail (soft light, warm textures, quiet sounds). No dramatic tension. Story slows like a yawn at the end.",
-    sortOrder: 3,
+    description: "Built on noticing, feeling, and connecting — calm and warm, anytime of day.",
+    promptHint: "Wonder mode (internal, reflective): built on noticing, feeling, and connecting rather than external obstacles. Energy ranges calm to warm. Rich sensory detail, emotional resonance, slower pacing. Not restricted to bedtime — a parent can request a Wonder story at 4pm.",
+    sortOrder: 2,
   },
 ];
 
@@ -44,6 +36,45 @@ export const seed = mutation({
       }
     }
     return { seeded };
+  },
+});
+
+/** Replace the old three-mode system (adventure/silly/cozy) with quest/wonder. Safe to run multiple times. */
+export const migrate = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    let deactivated = 0;
+    let upserted = 0;
+
+    // Deactivate legacy modes
+    for (const legacyCode of ["adventure", "silly", "cozy"]) {
+      const rec = await ctx.db
+        .query("story_types")
+        .withIndex("by_code", (q) => q.eq("code", legacyCode))
+        .first();
+      if (rec && rec.isActive) {
+        await ctx.db.patch(rec._id, { isActive: false, updatedAt: now });
+        deactivated++;
+      }
+    }
+
+    // Upsert quest and wonder
+    for (const st of STORY_TYPES) {
+      const existing = await ctx.db
+        .query("story_types")
+        .withIndex("by_code", (q) => q.eq("code", st.code))
+        .first();
+      if (!existing) {
+        await ctx.db.insert("story_types", { ...st, isActive: true, createdAt: now, updatedAt: now });
+        upserted++;
+      } else {
+        await ctx.db.patch(existing._id, { ...st, isActive: true, updatedAt: now });
+        upserted++;
+      }
+    }
+
+    return { deactivated, upserted };
   },
 });
 

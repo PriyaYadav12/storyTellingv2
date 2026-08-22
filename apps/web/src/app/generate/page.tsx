@@ -126,7 +126,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const hasSecondChild = !!(profile as { child2Name?: string } | null | undefined)?.child2Name;
 
   const [childId, setChildId] = useState<"1" | "2">("1");
-  const [storyType, setStoryType] = useState<string>("adventure");
+  const [storyType, setStoryType] = useState<string>("quest");
   const [length, setLength] = useState<"short" | "medium" | "long">("short");
   const [languageCode, setLanguageCode] = useState<string>("en");
   const [theme, setTheme] = useState(prefilledTheme);
@@ -176,11 +176,10 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
     }
   }
 
-  // Fallback story types if DB not yet seeded
+  // Fallback story types if DB not yet seeded (matches Section G: Quest + Wonder only)
   const FALLBACK_STORY_TYPES = [
-    { code: "adventure", name: "Big Adventure", emoji: "🗺️", description: "A quest full of discovery, teamwork, and a twist that changes everything." },
-    { code: "silly", name: "Silly & Funny", emoji: "🌀", description: "Chaotic fun where Fafa's impossible ideas somehow save the day." },
-    { code: "cozy", name: "Cozy Bedtime", emoji: "🌙", description: "A gentle, slow story full of warmth — perfect for winding down." },
+    { code: "quest",  name: "Quest",   emoji: "🗺️", description: "A goal to reach, a puzzle to solve, or something to find — energy ranges playful to bold." },
+    { code: "wonder", name: "Wonder",  emoji: "🌙", description: "Built on noticing, feeling, and connecting — calm and warm, anytime of day." },
   ];
   const FALLBACK_LANGUAGES = [
     { code: "en", name: "English", nativeName: "English", flag: "🇬🇧" },

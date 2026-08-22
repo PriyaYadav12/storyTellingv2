@@ -677,7 +677,8 @@ export const _generateContentV2 = internalAction({
     theme:    v.string(),
     lesson:   v.optional(v.string()),
     language: v.optional(v.string()),
-    length:   v.optional(v.union(v.literal("short"), v.literal("medium"), v.literal("long"))),
+    length:        v.optional(v.union(v.literal("short"), v.literal("medium"), v.literal("long"))),
+    requestedMode: v.optional(v.union(v.literal("quest"), v.literal("wonder"))),
     creditId: v.id("user_credits"),
     previousStoryContent: v.optional(v.string()),
   },
@@ -685,7 +686,7 @@ export const _generateContentV2 = internalAction({
   handler: async (ctx, args) => {
     const {
       storyId, profileId, childId, childInfo, userId,
-      theme, lesson, language, length, creditId, previousStoryContent,
+      theme, lesson, language, length, requestedMode, creditId, previousStoryContent,
     } = args;
 
     await ctx.runMutation(api.stories._markStatus, { storyId, status: "generating" });
@@ -718,7 +719,7 @@ export const _generateContentV2 = internalAction({
     const lang            = language || "English";
     const wordCount       = resolveWordCount(storyLength, lang);
     const dialogueTargets = resolveDialogueTargets(ageGroup);
-    const mode            = resolveModeFromHistory(recentMemory);
+    const mode            = requestedMode ?? resolveModeFromHistory(recentMemory);
     const primaryPillar   = resolvePrimaryPillarFromHistory(recentMemory);
     const secondaryPillar = resolveSecondaryPillar(primaryPillar, storyLength, recentMemory);
     const structureShape  = resolveStructureShape(storyLength, ageGroup);
@@ -1097,6 +1098,7 @@ export const enqueueStoryV2: ReturnType<typeof action> = action({
       lesson:               params.lesson,
       language:             params.language,
       length:               params.length ?? "medium",
+      requestedMode:        (params.storyType === "quest" || params.storyType === "wonder") ? params.storyType as "quest" | "wonder" : undefined,
       creditId,
       previousStoryContent,
     });
