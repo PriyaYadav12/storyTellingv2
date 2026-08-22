@@ -93,7 +93,7 @@ export default function ResultsScreen() {
   }
 
   const score = challenge.score;
-  const currentPos = history.findIndex((h) => h._id === challenge._id);
+  const currentPos = history.findIndex((h: any) => h._id === challenge._id);
   const previous = currentPos >= 0 ? history[currentPos + 1] : undefined;
 
   const growingIn = score.growingInPillar as Pillar;
@@ -198,7 +198,7 @@ export default function ResultsScreen() {
         {showReview && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
             {challenge.questions.map((q: any, qi: number) => {
-              const selected = challenge.answeredIndices?.find((a) => a.index === qi)?.answeredIndex;
+              const selected = challenge.answeredIndices?.find((a: any) => a.index === qi)?.answeredIndex;
               return <QuestionReviewCard key={qi} index={qi} question={q} selectedIndex={selected} />;
             })}
           </div>
