@@ -10,7 +10,7 @@ import { authClient } from "@/lib/auth-client";
 import { BLOG_POSTS } from "@/lib/blog-data";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type TabKey = "stories" | "users" | "blog" | "assets" | "voice" | "settings" | "story-types" | "languages" | "system-prompt";
+type TabKey = "stories" | "users" | "blog" | "assets" | "voice" | "stings" | "settings" | "story-types" | "languages" | "system-prompt";
 type SettingsSubTab = "themes" | "lessons";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -2168,6 +2168,328 @@ function SystemPromptTab({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
+// ─── Tab: Stings ─────────────────────────────────────────────────────────────
+
+const EMOTIONS = [
+  "happy", "excited", "curious", "warm", "playful", "thoughtful",
+  "gentle", "naughty", "surprised", "proud", "calm", "reassuring",
+] as const;
+
+const EMOTION_COLORS: Record<string, { bg: string; color: string }> = {
+  happy:      { bg: "rgba(249,199,0,0.15)",   color: "#8a6900" },
+  excited:    { bg: "rgba(249,115,22,0.12)",  color: "#9a3412" },
+  curious:    { bg: "rgba(139,92,246,0.12)",  color: "#5b21b6" },
+  warm:       { bg: "rgba(217,119,6,0.12)",   color: "#92400e" },
+  playful:    { bg: "rgba(0,201,167,0.12)",   color: "#0d7a6e" },
+  thoughtful: { bg: "rgba(59,130,246,0.12)",  color: "#1d4ed8" },
+  gentle:     { bg: "rgba(236,72,153,0.12)",  color: "#be185d" },
+  naughty:    { bg: "rgba(220,38,38,0.12)",   color: "#b91c1c" },
+  surprised:  { bg: "rgba(249,115,22,0.12)",  color: "#c2410c" },
+  proud:      { bg: "rgba(234,179,8,0.15)",   color: "#713f12" },
+  calm:       { bg: "rgba(14,165,233,0.12)",  color: "#0369a1" },
+  reassuring: { bg: "rgba(16,185,129,0.12)",  color: "#065f46" },
+};
+
+function EmotionBadge({ emotion }: { emotion: string }) {
+  const c = EMOTION_COLORS[emotion] ?? { bg: "rgba(0,0,0,0.06)", color: "rgba(45,45,45,0.6)" };
+  return (
+    <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: 999, background: c.bg, color: c.color, fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.75rem" }}>
+      {emotion}
+    </span>
+  );
+}
+
+function fmtDur(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = Math.round(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+function StingsTab({ isAdmin }: { isAdmin: boolean }) {
+  const stings = useQuery((api as any).stings.listWithUrls, isAdmin ? {} : "skip") as any[] | undefined;
+  const generateUploadUrl = useMutation((api as any).stings.generateUploadUrl);
+  const addSting          = useMutation((api as any).stings.add);
+  const removeSting       = useMutation((api as any).stings.remove);
+  const setActive         = useMutation((api as any).stings.setActive);
+  const replaceSting      = useMutation((api as any).stings.replace);
+
+  const [showForm,   setShowForm]   = useState(false);
+  const [form,       setForm]       = useState({ name: "", emotion: "happy" as string, intensity: "subtle" as string, durationSeconds: "" });
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading,  setUploading]  = useState(false);
+  const [formError,  setFormError]  = useState<string | null>(null);
+
+  const [playingId,      setPlayingId]      = useState<string | null>(null);
+  const [confirmDeleteId,setConfirmDeleteId] = useState<string | null>(null);
+  const [replacingId,    setReplacingId]    = useState<string | null>(null);
+  const [replaceFile,    setReplaceFile]    = useState<File | null>(null);
+  const [replaceDur,     setReplaceDur]     = useState("");
+  const [replaceUploading, setReplaceUploading] = useState(false);
+
+  const currentAudio = useState<{ audio: HTMLAudioElement | null }>({ audio: null })[0];
+
+  function playStingAudio(url: string, id: string) {
+    if (currentAudio.audio) { currentAudio.audio.pause(); currentAudio.audio = null; }
+    if (playingId === id) { setPlayingId(null); return; }
+    const a = new Audio(url);
+    currentAudio.audio = a;
+    setPlayingId(id);
+    a.play();
+    a.onended = () => { currentAudio.audio = null; setPlayingId(null); };
+  }
+
+  async function handleAdd() {
+    if (!form.name.trim())  { setFormError("Name is required"); return; }
+    if (!uploadFile)        { setFormError("Select an audio file"); return; }
+    const dur = parseFloat(form.durationSeconds);
+    if (!dur || dur <= 0)   { setFormError("Enter a valid duration in seconds"); return; }
+    setUploading(true);
+    setFormError(null);
+    try {
+      const postUrl = await generateUploadUrl();
+      const res = await fetch(postUrl, { method: "POST", headers: { "Content-Type": uploadFile.type }, body: uploadFile });
+      const { storageId } = await res.json();
+      await addSting({ name: form.name, filePath: storageId, emotion: form.emotion, durationSeconds: dur, intensity: form.intensity as any });
+      setForm({ name: "", emotion: "happy", intensity: "subtle", durationSeconds: "" });
+      setUploadFile(null);
+      setShowForm(false);
+    } catch (e: any) {
+      setFormError(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleReplace(stingId: string) {
+    if (!replaceFile) return;
+    const dur = parseFloat(replaceDur);
+    if (!dur || dur <= 0) { alert("Enter duration in seconds"); return; }
+    setReplaceUploading(true);
+    try {
+      const postUrl = await generateUploadUrl();
+      const res = await fetch(postUrl, { method: "POST", headers: { "Content-Type": replaceFile.type }, body: replaceFile });
+      const { storageId } = await res.json();
+      await replaceSting({ stingId, filePath: storageId, durationSeconds: dur });
+      setReplacingId(null);
+      setReplaceFile(null);
+      setReplaceDur("");
+    } catch (e: any) {
+      alert(e?.message ?? "Replace failed");
+    } finally {
+      setReplaceUploading(false);
+    }
+  }
+
+  async function handleDelete(stingId: string) {
+    if (confirmDeleteId !== stingId) { setConfirmDeleteId(stingId); return; }
+    setConfirmDeleteId(null);
+    try { await removeSting({ stingId }); } catch (e: any) { alert(e?.message ?? "Delete failed"); }
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <h3 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem", color: "var(--lf-dark)", margin: 0 }}>
+            Sting Library {stings !== undefined ? `(${stings.length})` : ""}
+          </h3>
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.45)", margin: "2px 0 0" }}>
+            Short mood audio clips placed at emotional beats in stories
+          </p>
+        </div>
+        <button
+          onClick={() => { setShowForm(f => !f); setFormError(null); }}
+          style={{ padding: "9px 20px", borderRadius: "0.7rem", background: showForm ? "rgba(0,0,0,0.07)" : "var(--lf-teal)", border: "none", color: showForm ? "rgba(45,45,45,0.7)" : "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", flexShrink: 0 }}
+        >
+          {showForm ? "Cancel" : "+ Add Sting"}
+        </button>
+      </div>
+
+      {/* Add form */}
+      {showForm && (
+        <div style={{ background: "#fff", border: "1.5px solid rgba(0,201,167,0.25)", borderRadius: "1rem", padding: "24px 24px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "var(--lf-dark)", margin: 0 }}>New Sting</p>
+
+          {formError && (
+            <div style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.2)", borderRadius: "0.6rem", padding: "10px 14px", fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "#b91c1c" }}>
+              {formError}
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <label style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", color: "rgba(45,45,45,0.55)" }}>Name *</label>
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. happy-jingle-01" style={InputStyle()} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <label style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", color: "rgba(45,45,45,0.55)" }}>Duration (seconds) *</label>
+              <input type="number" step="0.1" min="0.1" value={form.durationSeconds} onChange={e => setForm(f => ({ ...f, durationSeconds: e.target.value }))} placeholder="e.g. 3.5" style={InputStyle()} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <label style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", color: "rgba(45,45,45,0.55)" }}>Emotion *</label>
+              <select value={form.emotion} onChange={e => setForm(f => ({ ...f, emotion: e.target.value }))} style={{ ...InputStyle(), width: "100%" }}>
+                {EMOTIONS.map(em => <option key={em} value={em}>{em}</option>)}
+              </select>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <label style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", color: "rgba(45,45,45,0.55)" }}>Intensity *</label>
+              <select value={form.intensity} onChange={e => setForm(f => ({ ...f, intensity: e.target.value }))} style={{ ...InputStyle(), width: "100%" }}>
+                <option value="subtle">Subtle</option>
+                <option value="medium">Medium</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", color: "rgba(45,45,45,0.55)" }}>Audio file (MP3/WAV) *</label>
+            <label
+              style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", border: "1.5px dashed rgba(0,0,0,0.15)", borderRadius: "0.7rem", cursor: "pointer", background: uploadFile ? "rgba(0,201,167,0.05)" : "#fafaf9" }}
+            >
+              <input type="file" accept="audio/*" style={{ display: "none" }} onChange={e => setUploadFile(e.target.files?.[0] ?? null)} />
+              <span style={{ fontSize: "1.3rem" }}>🎵</span>
+              <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.88rem", color: uploadFile ? "var(--lf-teal)" : "rgba(45,45,45,0.5)" }}>
+                {uploadFile ? uploadFile.name : "Click to select audio file"}
+              </span>
+            </label>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <button
+              onClick={handleAdd}
+              disabled={uploading}
+              style={{ padding: "10px 26px", borderRadius: "0.7rem", background: "var(--lf-teal)", border: "none", color: "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.9rem", cursor: uploading ? "not-allowed" : "pointer", opacity: uploading ? 0.7 : 1, display: "flex", alignItems: "center", gap: 8 }}
+            >
+              {uploading && <Spinner />}
+              {uploading ? "Uploading…" : "Upload & Save"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
+      {stings === undefined ? (
+        <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Spinner /></div>
+      ) : stings.length === 0 ? (
+        <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", borderRadius: "1rem", padding: "48px 24px", textAlign: "center" }}>
+          <span style={{ fontSize: "2rem" }}>🎵</span>
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, color: "rgba(45,45,45,0.5)", margin: "8px 0 0" }}>No stings yet — add one above</p>
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={TABLE_STYLE}>
+            <thead>
+              <tr>
+                <th style={TH_STYLE}>Name</th>
+                <th style={TH_STYLE}>Emotion</th>
+                <th style={TH_STYLE}>Intensity</th>
+                <th style={TH_STYLE}>Duration</th>
+                <th style={TH_STYLE}>Status</th>
+                <th style={TH_STYLE}>Preview</th>
+                <th style={{ ...TH_STYLE, textAlign: "right" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stings.map((s: any, i: number) => (
+                <>
+                  <tr key={s._id} style={{ background: i % 2 === 0 ? "#fff" : "rgba(0,0,0,0.02)" }}>
+                    <td style={{ ...TD_STYLE, fontWeight: 600 }}>{s.name}</td>
+                    <td style={TD_STYLE}><EmotionBadge emotion={s.emotion} /></td>
+                    <td style={TD_STYLE}>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", fontWeight: 700, background: s.intensity === "medium" ? "rgba(139,92,246,0.1)" : "rgba(0,0,0,0.06)", color: s.intensity === "medium" ? "#5b21b6" : "rgba(45,45,45,0.6)", padding: "2px 9px", borderRadius: 999 }}>
+                        {s.intensity}
+                      </span>
+                    </td>
+                    <td style={{ ...TD_STYLE, fontFamily: "monospace", fontSize: "0.85rem" }}>{fmtDur(s.durationSeconds)}</td>
+                    <td style={TD_STYLE}>
+                      <button
+                        onClick={() => setActive({ stingId: s._id, isActive: !s.isActive })}
+                        style={{ padding: "3px 12px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.75rem", background: s.isActive ? "rgba(0,184,166,0.12)" : "rgba(0,0,0,0.06)", color: s.isActive ? "#0d7a6e" : "rgba(45,45,45,0.45)" }}
+                      >
+                        {s.isActive ? "Active" : "Inactive"}
+                      </button>
+                    </td>
+                    <td style={TD_STYLE}>
+                      {s.url ? (
+                        <button
+                          onClick={() => playStingAudio(s.url, s._id)}
+                          style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: playingId === s._id ? "var(--lf-teal)" : "rgba(0,201,167,0.12)", color: playingId === s._id ? "#fff" : "var(--lf-teal)", cursor: "pointer", fontSize: "0.9rem", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                          {playingId === s._id ? "■" : "▶"}
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: "0.75rem", color: "rgba(45,45,45,0.35)" }}>No file</span>
+                      )}
+                    </td>
+                    <td style={{ ...TD_STYLE, textAlign: "right" }}>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", alignItems: "center" }}>
+                        <button
+                          onClick={() => { setReplacingId(replacingId === s._id ? null : s._id); setReplaceFile(null); setReplaceDur(""); }}
+                          style={{ background: "rgba(59,130,246,0.08)", border: "none", color: "#1d4ed8", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.78rem", padding: "4px 10px", borderRadius: "0.5rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                        >
+                          Replace
+                        </button>
+                        {confirmDeleteId === s._id ? (
+                          <>
+                            <button onClick={() => handleDelete(s._id)} style={{ background: "#dc2626", border: "none", color: "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.78rem", padding: "4px 10px", borderRadius: "0.5rem", cursor: "pointer", whiteSpace: "nowrap" }}>
+                              Confirm
+                            </button>
+                            <button onClick={() => setConfirmDeleteId(null)} style={{ background: "rgba(0,0,0,0.07)", border: "none", color: "rgba(45,45,45,0.6)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.78rem", padding: "4px 8px", borderRadius: "0.5rem", cursor: "pointer" }}>
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={() => handleDelete(s._id)} style={{ background: "rgba(220,38,38,0.08)", border: "none", color: "#ef4444", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.78rem", padding: "4px 10px", borderRadius: "0.5rem", cursor: "pointer" }}>
+                            🗑
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                  {replacingId === s._id && (
+                    <tr key={`${s._id}-replace`} style={{ background: "rgba(59,130,246,0.04)" }}>
+                      <td colSpan={7} style={{ padding: "14px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", border: "1.5px dashed rgba(0,0,0,0.15)", borderRadius: "0.6rem", cursor: "pointer", background: replaceFile ? "rgba(0,201,167,0.06)" : "#fff", flexShrink: 0 }}>
+                            <input type="file" accept="audio/*" style={{ display: "none" }} onChange={e => setReplaceFile(e.target.files?.[0] ?? null)} />
+                            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: replaceFile ? "var(--lf-teal)" : "rgba(45,45,45,0.5)" }}>
+                              🎵 {replaceFile ? replaceFile.name : "Pick new file"}
+                            </span>
+                          </label>
+                          <input
+                            type="number" step="0.1" min="0.1" value={replaceDur}
+                            onChange={e => setReplaceDur(e.target.value)}
+                            placeholder="Duration (s)"
+                            style={{ ...InputStyle(), width: 130 }}
+                          />
+                          <button
+                            onClick={() => handleReplace(s._id)}
+                            disabled={replaceUploading || !replaceFile}
+                            style={{ padding: "9px 18px", borderRadius: "0.6rem", background: "rgba(59,130,246,0.12)", border: "none", color: "#1d4ed8", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.85rem", cursor: replaceUploading || !replaceFile ? "not-allowed" : "pointer", opacity: replaceUploading || !replaceFile ? 0.5 : 1, whiteSpace: "nowrap" }}
+                          >
+                            {replaceUploading ? "Uploading…" : "Save Replace"}
+                          </button>
+                          <button
+                            onClick={() => { setReplacingId(null); setReplaceFile(null); setReplaceDur(""); }}
+                            style={{ background: "none", border: "none", color: "rgba(45,45,45,0.5)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -2176,6 +2498,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "blog", label: "Blog" },
   { key: "assets", label: "Assets" },
   { key: "voice", label: "Voice" },
+  { key: "stings", label: "Stings" },
   { key: "settings", label: "Settings" },
   { key: "story-types", label: "Story Types" },
   { key: "languages", label: "Languages" },
@@ -2373,6 +2696,7 @@ export default function AdminPage() {
           {activeTab === "blog" && <BlogTab isAdmin={isAdmin} />}
           {activeTab === "assets" && <AssetsTab isAdmin={isAdmin} />}
           {activeTab === "voice" && <VoiceTab isAdmin={isAdmin} />}
+          {activeTab === "stings" && <TabErrorBoundary><StingsTab isAdmin={isAdmin} /></TabErrorBoundary>}
           {activeTab === "settings" && <SettingsTab isAdmin={isAdmin} />}
           {activeTab === "story-types" && <TabErrorBoundary><StoryTypesTab isAdmin={isAdmin} /></TabErrorBoundary>}
           {activeTab === "languages" && <TabErrorBoundary><LanguagesTab isAdmin={isAdmin} /></TabErrorBoundary>}
