@@ -141,8 +141,8 @@ export const _generateContent = internalAction({
             role: "user",
             parts: [{
               text: formattedPrompt +
-                `\n\nCRITICAL: Your previous attempt produced ~${wordCount} words. The story body MUST be 430–450 words — no more, no less. ` +
-                "Each of the 5 scenes must be ~85–90 words. Stop at 450 words.",
+                `\n\nCRITICAL: Your previous attempt produced ~${wordCount} words. The story body MUST be ${wordLimits.label} words — no more, no less. ` +
+                `Count your words before finalising. Stop at ${wordLimits.max} words.`,
             }],
           },
         ],

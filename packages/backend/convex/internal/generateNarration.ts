@@ -44,9 +44,31 @@ export const generateNarration = internalAction({
       status: "voice_ready",
     });
 
+    // ── Phase 6: real scene start seconds ────────────────────────────────────
+    // Uses the real audio duration (already stored by generateMergedNarration)
+    // and the scene count from sceneMetadata to produce equal-distribution
+    // timestamps. Equal distribution is a heuristic, but anchored to real total
+    // duration — far more accurate than the 100 wpm fallback used at generation
+    // time. The frontend uses these values to trigger stings at the right moment.
+    const freshStory = await ctx.runQuery(api.stories.get, { storyId });
+    const sceneCount = freshStory?.sceneMetadata?.length ?? 0;
+    const totalDuration = freshStory?.audioDurationSeconds ?? 0;
+    if (sceneCount > 0 && totalDuration > 0) {
+      const sceneStartSeconds: Record<string, number> = {};
+      for (let i = 0; i < sceneCount; i++) {
+        sceneStartSeconds[String(i + 1)] = Math.round((i / sceneCount) * totalDuration);
+      }
+      await ctx.runMutation((api as any).stories._setSceneStartSeconds, {
+        storyId,
+        sceneStartSeconds,
+      });
+      console.log(
+        `[v2] Scene start seconds stored: ${sceneCount} scenes over ${totalDuration}s.`
+      );
+    }
+
     // If images are already done, both pipelines are complete → mark ready.
     // (If images finish after us, generateSceneImage will check narrationFilePath and mark ready.)
-    const freshStory = await ctx.runQuery(api.stories.get, { storyId });
     if (freshStory?.status === "images_ready") {
       await ctx.runMutation(api.stories._markStatus, { storyId, status: "ready" });
     }

@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as adminStats from "../adminStats.js";
+import type * as audioMetadata from "../audioMetadata.js";
 import type * as auth from "../auth.js";
 import type * as blogs from "../blogs.js";
 import type * as credit from "../credit.js";
@@ -15,6 +17,7 @@ import type * as crons from "../crons.js";
 import type * as emailActions from "../emailActions.js";
 import type * as favourites from "../favourites.js";
 import type * as generateStory from "../generateStory.js";
+import type * as generateStoryV2 from "../generateStoryV2.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as internal_generateNarration from "../internal/generateNarration.js";
@@ -31,6 +34,7 @@ import type * as migration_lesson from "../migration/lesson.js";
 import type * as migration_personality from "../migration/personality.js";
 import type * as migration_razorpay_plan from "../migration/razorpay_plan.js";
 import type * as migration_seed_system_prompt from "../migration/seed_system_prompt.js";
+import type * as migration_seed_system_prompt_v5 from "../migration/seed_system_prompt_v5.js";
 import type * as migration_story_types from "../migration/story_types.js";
 import type * as migration_structure from "../migration/structure.js";
 import type * as migration_system_config from "../migration/system_config.js";
@@ -39,6 +43,7 @@ import type * as migration_theme_compatibility from "../migration/theme_compatib
 import type * as migration_update_themes_lessons from "../migration/update_themes_lessons.js";
 import type * as migration_voice_models from "../migration/voice_models.js";
 import type * as narrationGenerator from "../narrationGenerator.js";
+import type * as pillars from "../pillars.js";
 import type * as privateData from "../privateData.js";
 import type * as razorpay_cancel_subscription from "../razorpay/cancel_subscription.js";
 import type * as razorpay_create_subscription from "../razorpay/create_subscription.js";
@@ -51,11 +56,18 @@ import type * as sceneImageGenerator_promptBuilder from "../sceneImageGenerator/
 import type * as sceneImageGenerator_types from "../sceneImageGenerator/types.js";
 import type * as sceneImageGenerator_utils from "../sceneImageGenerator/utils.js";
 import type * as socialMedia from "../socialMedia.js";
+import type * as stings from "../stings.js";
 import type * as stories from "../stories.js";
 import type * as storyElementSelector from "../storyElementSelector.js";
+import type * as storyMemory from "../storyMemory.js";
 import type * as storyPromptFormatter from "../storyPromptFormatter.js";
 import type * as subscription from "../subscription.js";
 import type * as systemConfig from "../systemConfig.js";
+import type * as systemPromptV5 from "../systemPromptV5.js";
+import type * as testserver__shared from "../testserver/_shared.js";
+import type * as testserver_challenge from "../testserver/challenge.js";
+import type * as testserver_consent from "../testserver/consent.js";
+import type * as testserver_parentReport from "../testserver/parentReport.js";
 import type * as userProfiles from "../userProfiles.js";
 import type * as voiceMap from "../voiceMap.js";
 
@@ -66,6 +78,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  adminStats: typeof adminStats;
+  audioMetadata: typeof audioMetadata;
   auth: typeof auth;
   blogs: typeof blogs;
   credit: typeof credit;
@@ -73,6 +87,7 @@ declare const fullApi: ApiFromModules<{
   emailActions: typeof emailActions;
   favourites: typeof favourites;
   generateStory: typeof generateStory;
+  generateStoryV2: typeof generateStoryV2;
   healthCheck: typeof healthCheck;
   http: typeof http;
   "internal/generateNarration": typeof internal_generateNarration;
@@ -89,6 +104,7 @@ declare const fullApi: ApiFromModules<{
   "migration/personality": typeof migration_personality;
   "migration/razorpay_plan": typeof migration_razorpay_plan;
   "migration/seed_system_prompt": typeof migration_seed_system_prompt;
+  "migration/seed_system_prompt_v5": typeof migration_seed_system_prompt_v5;
   "migration/story_types": typeof migration_story_types;
   "migration/structure": typeof migration_structure;
   "migration/system_config": typeof migration_system_config;
@@ -97,6 +113,7 @@ declare const fullApi: ApiFromModules<{
   "migration/update_themes_lessons": typeof migration_update_themes_lessons;
   "migration/voice_models": typeof migration_voice_models;
   narrationGenerator: typeof narrationGenerator;
+  pillars: typeof pillars;
   privateData: typeof privateData;
   "razorpay/cancel_subscription": typeof razorpay_cancel_subscription;
   "razorpay/create_subscription": typeof razorpay_create_subscription;
@@ -109,11 +126,18 @@ declare const fullApi: ApiFromModules<{
   "sceneImageGenerator/types": typeof sceneImageGenerator_types;
   "sceneImageGenerator/utils": typeof sceneImageGenerator_utils;
   socialMedia: typeof socialMedia;
+  stings: typeof stings;
   stories: typeof stories;
   storyElementSelector: typeof storyElementSelector;
+  storyMemory: typeof storyMemory;
   storyPromptFormatter: typeof storyPromptFormatter;
   subscription: typeof subscription;
   systemConfig: typeof systemConfig;
+  systemPromptV5: typeof systemPromptV5;
+  "testserver/_shared": typeof testserver__shared;
+  "testserver/challenge": typeof testserver_challenge;
+  "testserver/consent": typeof testserver_consent;
+  "testserver/parentReport": typeof testserver_parentReport;
   userProfiles: typeof userProfiles;
   voiceMap: typeof voiceMap;
 }>;

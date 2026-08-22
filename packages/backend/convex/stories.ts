@@ -223,6 +223,50 @@ export const _setContent = mutation({
 	},
 });
 
+export const _setVoiceMetadata = mutation({
+	args: {
+		storyId: v.id("stories"),
+		voiceEmotionMetadata: v.optional(v.object({
+			scenes: v.array(v.object({
+				sceneNumber: v.number(),
+				emotion: v.union(
+					v.literal("happy"), v.literal("excited"), v.literal("curious"),
+					v.literal("warm"), v.literal("playful"), v.literal("thoughtful"),
+					v.literal("gentle"), v.literal("naughty"), v.literal("surprised"),
+					v.literal("proud"), v.literal("calm"), v.literal("reassuring")
+				),
+				intensity: v.union(v.literal("subtle"), v.literal("medium")),
+			})),
+			lineOverrides: v.array(v.object({
+				type: v.union(v.literal("fafa_gag"), v.literal("emotional_exchange")),
+				emotion: v.union(
+					v.literal("happy"), v.literal("excited"), v.literal("curious"),
+					v.literal("warm"), v.literal("playful"), v.literal("thoughtful"),
+					v.literal("gentle"), v.literal("naughty"), v.literal("surprised"),
+					v.literal("proud"), v.literal("calm"), v.literal("reassuring")
+				),
+				intensity: v.union(v.literal("subtle"), v.literal("medium")),
+			})),
+		})),
+		stingPlacements: v.optional(v.array(v.object({
+			stingId: v.string(),
+			stingName: v.string(),
+			emotion: v.string(),
+			intensity: v.union(v.literal("subtle"), v.literal("medium")),
+			durationSeconds: v.number(),
+			targetScene: v.number(),
+			placementHint: v.string(),
+			volumeDb: v.number(),
+		}))),
+	},
+	handler: async (ctx, { storyId, voiceEmotionMetadata, stingPlacements }) => {
+		const patch: Record<string, unknown> = {};
+		if (voiceEmotionMetadata !== undefined) patch.voiceEmotionMetadata = voiceEmotionMetadata;
+		if (stingPlacements       !== undefined) patch.stingPlacements       = stingPlacements;
+		if (Object.keys(patch).length > 0) await ctx.db.patch(storyId, patch);
+	},
+});
+
 export const _updateSceneFilePath = mutation({
 	args: { 
 		storyId: v.id("stories"),
@@ -256,6 +300,18 @@ export const _setNarrationFilePath = mutation({
 			narrationFilePath: filePath,
 			updatedAt: Date.now(),
 		});
+	},
+});
+
+export const _setSceneStartSeconds = mutation({
+	args: {
+		storyId: v.id("stories"),
+		sceneStartSeconds: v.record(v.string(), v.number()),
+	},
+	handler: async (ctx, { storyId, sceneStartSeconds }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		await ctx.db.patch(storyId, { sceneStartSeconds, updatedAt: Date.now() });
 	},
 });
 

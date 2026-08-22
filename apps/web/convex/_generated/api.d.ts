@@ -13,6 +13,8 @@ import type * as blogs from "../blogs.js";
 import type * as credit from "../credit.js";
 import type * as crons from "../crons.js";
 import type * as generateStory from "../generateStory.js";
+import type * as generateStoryV2 from "../generateStoryV2.js";
+import type * as stings from "../stings.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as internal_generateNarration from "../internal/generateNarration.js";
@@ -67,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   credit: typeof credit;
   crons: typeof crons;
   generateStory: typeof generateStory;
+  generateStoryV2: typeof generateStoryV2;
   healthCheck: typeof healthCheck;
   http: typeof http;
   "internal/generateNarration": typeof internal_generateNarration;
@@ -94,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   "sceneImageGenerator/promptBuilder": typeof sceneImageGenerator_promptBuilder;
   "sceneImageGenerator/types": typeof sceneImageGenerator_types;
   "sceneImageGenerator/utils": typeof sceneImageGenerator_utils;
+  stings: typeof stings;
   stories: typeof stories;
   storyElementSelector: typeof storyElementSelector;
   storyPromptFormatter: typeof storyPromptFormatter;

@@ -70,7 +70,7 @@ export function formatStoryPrompt(
       ? `FAVOURITE ANIMAL (${childInfo.favoriteAnimal.toUpperCase()}): A ${childInfo.favoriteAnimal} must play a meaningful role in the story — not just mentioned in passing, but an active participant in the adventure (e.g., helps solve a problem, leads the children somewhere, is in danger and needs rescuing, or guards a magical object). Give it a small personality.`
       : null,
     childInfo.favoriteColor
-      ? `FAVOURITE COLOUR (${childInfo.favoriteColor.toUpperCase()}): At least one significant or magical object in the story must be ${childInfo.favoriteColor} (e.g., a ${childInfo.favoriteColor} door, a ${childInfo.favoriteColor} gemstone, a ${childInfo.favoriteColor} flower that glows). This colour should feel special and noticed by ${childInfo.name}.`
+      ? `FAVOURITE COLOUR (${childInfo.favoriteColor.toUpperCase()}): At least one everyday object in the story must be ${childInfo.favoriteColor} (e.g., a ${childInfo.favoriteColor} bag, a ${childInfo.favoriteColor} kite, a ${childInfo.favoriteColor} ribbon, a ${childInfo.favoriteColor} door). This colour should feel natural and noticed by ${childInfo.name} — not a magical or glowing object.`
       : null,
   ].filter(Boolean).join(" ") : null;
 

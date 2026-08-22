@@ -120,7 +120,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
     if (profile === null) router.replace("/onboarding");
   }, [profile, router]);
 
-  const generateStory = useAction(api.generateStory.enqueueStory);
+  const generateStory = useAction(api.generateStoryV2.enqueueStoryV2);
 
   const availableCredits = credits?.[0]?.availableCredits ?? 0;
   const hasSecondChild = !!(profile as { child2Name?: string } | null | undefined)?.child2Name;

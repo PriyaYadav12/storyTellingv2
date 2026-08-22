@@ -71,6 +71,39 @@ export default defineSchema({
 		),
 		error: v.optional(v.string()),
 		content: v.optional(v.string()),
+
+		// Phase 5: voice/emotion metadata (scene-level + hero-line overrides)
+		voiceEmotionMetadata: v.optional(v.object({
+			scenes: v.array(v.object({
+				sceneNumber: v.number(),
+				emotion:     v.string(),   // from closed vocabulary in Section N
+				intensity:   v.union(v.literal("subtle"), v.literal("medium")),
+			})),
+			lineOverrides: v.array(v.object({
+				type:      v.union(v.literal("fafa_gag"), v.literal("emotional_exchange")),
+				emotion:   v.string(),
+				intensity: v.union(v.literal("subtle"), v.literal("medium")),
+			})),
+		})),
+
+		// Phase 5: sting placement decisions for this story
+		stingPlacements: v.optional(v.array(v.object({
+			stingId:         v.id("stings"),
+			stingName:       v.string(),
+			emotion:         v.string(),
+			intensity:       v.union(v.literal("subtle"), v.literal("medium")),
+			durationSeconds: v.number(),
+			targetScene:     v.number(),
+			placementHint:   v.string(),
+			volumeDb:        v.number(),
+		}))),
+
+		// Phase 6: real per-scene start times (seconds) computed after narration.
+		// Keys are scene numbers as strings ("1", "2", …). Replaces the 100 wpm
+		// heuristic used during Phase 5 placement. Frontend uses these to trigger
+		// stings at the right moment during audio playback.
+		sceneStartSeconds: v.optional(v.record(v.string(), v.number())),
+
 		createdAt: v.number(),
 		updatedAt: v.number(),
 	})
@@ -272,6 +305,174 @@ flavor_openings: defineTable({
 	})
 	.index("by_user", ["userId"])
 	.index("by_user_story", ["userId", "storyId"]),
+
+	// ─── TESTSERVER (admin-gated /testserver staging route, Functional Spec v1.1) ───
+	// Additive-only block. Safe to delete entirely, together with
+	// convex/testserver/* and apps/web/src/app/testserver/*, once no longer
+	// needed — nothing outside those locations references these tables.
+	testserver_consent: defineTable({
+		userId: v.string(),
+		parentName: v.string(),
+		childName: v.string(),
+		childAge: v.number(),
+		consentTextVersion: v.string(),
+		method: v.string(),
+		createdAt: v.number(),
+	}).index("by_user", ["userId"]),
+
+	testserver_challenges: defineTable({
+		userId: v.string(),
+		storyId: v.id("stories"),
+		childName: v.string(),
+		childAge: v.number(),
+		theme: v.string(),
+		lesson: v.optional(v.string()),
+		length: v.union(v.literal("short"), v.literal("medium"), v.literal("long")),
+		quickCheck: v.optional(v.object({
+			pillar: v.string(),
+			question: v.string(),
+			options: v.array(v.string()),
+			answeredIndex: v.optional(v.number()),
+		})),
+		questions: v.array(v.object({
+			pillar: v.union(
+				v.literal("listening"),
+				v.literal("attention"),
+				v.literal("emotional"),
+				v.literal("cognitive")
+			),
+			snippet: v.string(),
+			question: v.string(),
+			options: v.array(v.string()),
+			correctIndex: v.optional(v.number()),
+			expectedIndex: v.optional(v.number()),
+		})),
+		// v1.3 (16 Aug 2026): 3 of the 10 `questions` are designated in-story
+		// quick checks (one cognitive/attention/listening each); the other 7
+		// always appear in the Story Challenge. If a quick check goes
+		// unanswered during playback, its index rolls into the Challenge too
+		// instead of being lost — see functional spec §13.5.
+		quickCheckIndices: v.optional(v.array(v.number())),
+		// Every answer given so far, whether from a live in-story quick check
+		// or from the Story Challenge screen — keyed by index into `questions`.
+		answeredIndices: v.optional(v.array(v.object({ index: v.number(), answeredIndex: v.number() }))),
+		// `quickCheck` (above) and `answers` (below) are deprecated pre-v1.3
+		// fields, kept optional only so the one test row from the first build
+		// still validates. No longer written.
+		answers: v.optional(v.array(v.number())),
+		status: v.union(v.literal("ready"), v.literal("completed")),
+		score: v.optional(v.object({
+			gradableCorrect: v.number(),
+			gradableTotal: v.number(),
+			perPillar: v.array(v.object({
+				pillar: v.string(),
+				correct: v.number(),
+				total: v.number(),
+			})),
+			growingInPillar: v.string(),
+			superpowerPillar: v.string(),
+			starsEarned: v.number(),
+			// Which `questions` indices were actually part of this Challenge
+			// submission (base 7 + any unanswered quick checks) — lets the
+			// results review show exactly what was graded.
+			challengeIndices: v.optional(v.array(v.number())),
+		})),
+		createdAt: v.number(),
+		completedAt: v.optional(v.number()),
+	})
+		.index("by_user", ["userId"])
+		.index("by_story", ["storyId"]),
+
+	testserver_stars: defineTable({
+		userId: v.string(),
+		amount: v.number(),
+		reason: v.string(),
+		refId: v.optional(v.string()),
+		createdAt: v.number(),
+	}).index("by_user", ["userId"]),
+
+	// ─── STORY ENGINE v2 ──────────────────────────────────────────────────────
+	// Additive-only block. Nothing outside generateStoryV2.ts and this schema
+	// references these tables during Phase 1–6 development.
+
+	// Per-story memory record used for rotation and anti-repetition (Section L).
+	// Written by generateStoryV2 after each successful generation.
+	story_memory: defineTable({
+		storyId:    v.id("stories"),
+		userId:     v.string(),
+		profileId:  v.id("user_profiles"),
+		childId:    v.union(v.literal("1"), v.literal("2")),
+
+		// Engine decisions for this story
+		mode:           v.union(v.literal("quest"), v.literal("wonder")),
+		primaryPillar:  v.union(
+			v.literal("listening"),
+			v.literal("attention"),
+			v.literal("emotional"),
+			v.literal("cognitive")
+		),
+		secondaryPillar: v.optional(v.union(
+			v.literal("listening"),
+			v.literal("attention"),
+			v.literal("emotional"),
+			v.literal("cognitive")
+		)),
+		structureShape: v.string(),               // "compressed_5beat" | "full_9beat" + variant suffix
+		endingType:     v.optional(v.string()),   // from Section H ending framework; populated from Phase 2
+		storyLength:    v.union(v.literal("quick"), v.literal("big")),
+
+		// World variety selections (Section L) — populated from Phase 2
+		worldVariety: v.optional(v.object({
+			time:        v.string(),
+			location:    v.string(),
+			environment: v.string(),
+		})),
+
+		// Preference usage tiers for this story (Section D) — populated from Phase 2
+		preferenceRoles: v.optional(v.object({
+			favoriteAnimal: v.optional(v.union(
+				v.literal("primary"),
+				v.literal("secondary"),
+				v.literal("background"),
+				v.literal("omitted")
+			)),
+			favoriteColor: v.optional(v.union(
+				v.literal("primary"),
+				v.literal("secondary"),
+				v.literal("background"),
+				v.literal("omitted")
+			)),
+		})),
+
+		// Who resolved the main problem — for resolver rotation tracking (Section I)
+		resolvedBy: v.optional(v.union(
+			v.literal("child"),
+			v.literal("lalli"),
+			v.literal("fafa")
+		)),
+
+		createdAt: v.number(),
+	})
+		.index("by_user",          ["userId"])
+		.index("by_profile_child", ["profileId", "childId"]),
+
+	// Phase 5 — global sting library (uploaded once, reused across every story)
+	stings: defineTable({
+		name:            v.string(),
+		filePath:        v.string(),    // Convex storage key or external URL
+		emotion:         v.union(
+			v.literal("happy"),      v.literal("excited"),   v.literal("curious"),
+			v.literal("warm"),       v.literal("playful"),   v.literal("thoughtful"),
+			v.literal("gentle"),     v.literal("naughty"),   v.literal("surprised"),
+			v.literal("proud"),      v.literal("calm"),      v.literal("reassuring")
+		),
+		durationSeconds: v.number(),    // cached at upload; never probed per placement call
+		intensity:       v.union(v.literal("subtle"), v.literal("medium")),
+		isActive:        v.boolean(),   // soft-delete; retired stings may still appear in old placements
+		createdAt:       v.number(),
+	})
+		.index("by_emotion", ["emotion", "isActive"])
+		.index("by_active",  ["isActive"]),
 });
 
 

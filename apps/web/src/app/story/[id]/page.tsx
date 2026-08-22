@@ -414,6 +414,17 @@ interface SceneMeta {
   text?: string | null;        // legacy — not stored in DB, kept for type safety
   imagePrompt?: string;
 }
+interface StingPlacement {
+  stingId:         string;
+  stingName:       string;
+  emotion:         string;
+  intensity:       "subtle" | "medium";
+  durationSeconds: number;
+  targetScene:     number;
+  placementHint:   string;
+  volumeDb:        number;
+}
+
 interface StoryShape {
   title?: string;
   status?: string;
@@ -421,6 +432,10 @@ interface StoryShape {
   sceneMetadata?: SceneMeta[];
   params?: { theme?: string; language?: string; lesson?: string; childName?: string };
   audioDurationSeconds?: number; // stored at generation time; used when audio can't report duration
+  // Phase 5: audio enrichment
+  stingPlacements?: StingPlacement[];
+  // Phase 6: real scene start timestamps from narration (scene number string → seconds)
+  sceneStartSeconds?: Record<string, number>;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -584,7 +599,7 @@ function StoryViewer({
   }, []);
 
   const storyRouter = useRouter();
-  const generateStoryAction = useAction(api.generateStory.enqueueStory);
+  const generateStoryAction = useAction(api.generateStoryV2.enqueueStoryV2);
 
   const handleSequel = async () => {
     if (sequelLoading || !story) return;
@@ -639,6 +654,69 @@ function StoryViewer({
   const sceneTimelineRef = useRef<Array<{ startFrac: number; endFrac: number }>>([]);
 
   useEffect(() => { userMutedRef.current = muted; }, [muted]);
+
+  /* ── Situational stings (Phase 5/6) ──────────────────────────────────── */
+  const stingIds = useMemo(
+    () => (story?.stingPlacements ?? []).map((p) => p.stingId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(story?.stingPlacements?.map((p) => p.stingId))]
+  );
+  const stingUrlData = useQuery(
+    api.stings.getFileUrls,
+    stingIds.length > 0 ? { stingIds } : "skip"
+  );
+  const stingUrlMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const s of stingUrlData ?? []) m.set(s.stingId, s.url);
+    return m;
+  }, [stingUrlData]);
+
+  // One Audio node per placement, keyed by placement index. Created once, reused.
+  const stingNodesRef = useRef<Map<number, HTMLAudioElement>>(new Map());
+  // Which placement indices have already fired in this playback session.
+  const firedStingsRef = useRef<Set<number>>(new Set());
+
+  // Build/update Audio nodes when URLs become available.
+  useEffect(() => {
+    const placements = story?.stingPlacements ?? [];
+    placements.forEach((p, idx) => {
+      const url = stingUrlMap.get(p.stingId);
+      if (!url || stingNodesRef.current.has(idx)) return;
+      const audio = new Audio(url);
+      audio.preload = "auto";
+      // volumeDb → linear amplitude: 10^(dB/20). Clamp to [0, 1].
+      audio.volume = Math.min(1, Math.pow(10, (p.volumeDb ?? -3) / 20));
+      stingNodesRef.current.set(idx, audio);
+    });
+    return () => {
+      // Cleanup on story change
+      stingNodesRef.current.forEach((a) => { a.pause(); a.src = ""; });
+      stingNodesRef.current.clear();
+      firedStingsRef.current.clear();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stingUrlMap]);
+
+  // Fire stings when currentTime crosses the cue point for a scene.
+  useEffect(() => {
+    if (!isPlaying) return;
+    const placements = story?.stingPlacements ?? [];
+    const startSecs = story?.sceneStartSeconds ?? {};
+    placements.forEach((p, idx) => {
+      if (firedStingsRef.current.has(idx)) return;
+      const cueTime = startSecs[String(p.targetScene)];
+      if (cueTime === undefined) return;
+      if (currentTime >= cueTime && currentTime < cueTime + p.durationSeconds + 2) {
+        const audio = stingNodesRef.current.get(idx);
+        if (audio) {
+          audio.currentTime = 0;
+          audio.play().catch(() => {});
+          firedStingsRef.current.add(idx);
+          console.debug(`[sting] fired "${p.stingName}" at scene ${p.targetScene} (${currentTime.toFixed(1)}s)`);
+        }
+      }
+    });
+  }, [currentTime, isPlaying, story?.stingPlacements, story?.sceneStartSeconds]);
 
   /* Background music — always on, fades with narration */
   const bgAudioRef = useRef<HTMLAudioElement>(null);
@@ -891,6 +969,16 @@ function StoryViewer({
       if (seekUnmuteTimerRef.current) { clearTimeout(seekUnmuteTimerRef.current); seekUnmuteTimerRef.current = null; }
       if (audioRef.current) audioRef.current.muted = userMutedRef.current;
     }
+    // Re-arm any stings whose cue point is now in the future after a seek.
+    const seekTarget = audioRef.current?.currentTime ?? 0;
+    const placements = story?.stingPlacements ?? [];
+    const startSecs = story?.sceneStartSeconds ?? {};
+    placements.forEach((p, idx) => {
+      const cueTime = startSecs[String(p.targetScene)];
+      if (cueTime !== undefined && seekTarget < cueTime) {
+        firedStingsRef.current.delete(idx);
+      }
+    });
   };
 
   // Remembers exactly where playback was paused, in case the browser drops
