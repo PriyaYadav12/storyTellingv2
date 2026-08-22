@@ -47,7 +47,7 @@ export default function ParentReportScreen() {
       <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12.5, color: "rgba(14,10,31,0.5)", margin: "0 0 16px 28px" }}>{report.rangeLabel}</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16, background: "#fff", borderRadius: 18, padding: 14, border: "1px solid rgba(14,10,31,0.06)" }}>
-        {report.trend.map((t) => (
+        {report.trend.map((t: any) => (
           <div key={t.pillar}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
               <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12.5, fontWeight: 800, color: "var(--lf-dark)" }}>

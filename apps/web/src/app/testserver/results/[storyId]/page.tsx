@@ -197,7 +197,7 @@ export default function ResultsScreen() {
 
         {showReview && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
-            {challenge.questions.map((q, qi) => {
+            {challenge.questions.map((q: any, qi: number) => {
               const selected = challenge.answeredIndices?.find((a) => a.index === qi)?.answeredIndex;
               return <QuestionReviewCard key={qi} index={qi} question={q} selectedIndex={selected} />;
             })}
@@ -296,7 +296,7 @@ function QuestionReviewCard({
         {index + 1}. {question.question}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {question.options.map((opt, j) => {
+        {question.options.map((opt: any, j: number) => {
           let style: React.CSSProperties = { border: "1px solid rgba(14,10,31,0.08)", background: "rgba(14,10,31,0.02)", color: "rgba(14,10,31,0.55)" };
           let icon: React.ReactNode = null;
           if (j === targetIndex) {
