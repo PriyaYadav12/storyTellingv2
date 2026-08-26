@@ -36,7 +36,10 @@ function checkCorrect(q: any, answeredData: string, answeredIndex?: number): boo
     const a = JSON.parse(answeredData);
     if (fmt === "mcq") {
       if (q.correctOptionIds?.length) return q.correctOptionIds.includes(a.selectedId);
-      return (q.correctIndex ?? q.expectedIndex) === answeredIndex;
+      if (answeredIndex === undefined) return false;
+      const target = q.correctIndex ?? q.expectedIndex;
+      if (target === undefined || target === -1) return false;
+      return target === answeredIndex;
     }
     if (fmt === "fill_blank") return a.selectedWord === q.correctWord;
     if (fmt === "match_column") {
@@ -404,6 +407,11 @@ export default function StoryChallengeScreen() {
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
   const [wrongMcqId, setWrongMcqId] = useState<string | null>(null);
+  const [selectedMcqId, setSelectedMcqId] = useState<string | null>(null);
+
+  // Prevents rapid double-tap from firing two handleAnswer calls in quick
+  // succession and skipping from first-wrong straight to second-wrong.
+  const answerCooldownRef = useRef(false);
 
   // match_column interaction state (parent-managed so parent can reset on retry)
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
@@ -414,10 +422,12 @@ export default function StoryChallengeScreen() {
 
   // Reset everything when moving to the next question
   useEffect(() => {
+    answerCooldownRef.current = false;
     setWrongAttempts(0);
     setShowReveal(false);
     setAck(false);
     setWrongMcqId(null);
+    setSelectedMcqId(null);
     setSelectedLeft(null);
     setMatchedPairs([]);
     setOrderedIds([]);
@@ -439,6 +449,40 @@ export default function StoryChallengeScreen() {
   const pillar = q.pillar as Pillar;
   const fmt: string = q.format ?? "mcq";
 
+  function playCorrectSound() {
+    try {
+      const ctx = new AudioContext();
+      const play = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = "sine"; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + start);
+        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        osc.start(ctx.currentTime + start); osc.stop(ctx.currentTime + start + dur);
+      };
+      play(523, 0, 0.15);   // C5
+      play(659, 0.1, 0.15); // E5
+      play(784, 0.2, 0.3);  // G5
+    } catch { /**/ }
+  }
+
+  function playWrongSound() {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(320, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(260, ctx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.start(); osc.stop(ctx.currentTime + 0.35);
+    } catch { /**/ }
+  }
+
   async function advance(next: Answer[]) {
     if (index + 1 < total) {
       setIndex(index + 1);
@@ -454,7 +498,7 @@ export default function StoryChallengeScreen() {
   }
 
   function handleAnswer(answeredData: string, answeredIndex?: number) {
-    if (ack) return;
+    if (ack || answerCooldownRef.current) return;
     const correct = checkCorrect(q, answeredData, answeredIndex);
     const newAnswer: Answer = {
       index: q.index,
@@ -466,16 +510,20 @@ export default function StoryChallengeScreen() {
       const next = [...answers, newAnswer];
       setAnswers(next);
       setAck(true);
+      playCorrectSound();
       setTimeout(() => advance(next), 700);
       return;
     }
 
     if (wrongAttempts === 0) {
-      // First wrong — gentle feedback, reset format state, allow retry
+      // First wrong — lock briefly to prevent double-tap racing to second-wrong
+      answerCooldownRef.current = true;
+      setTimeout(() => { answerCooldownRef.current = false; }, 700);
       setWrongAttempts(1);
       setSelectedLeft(null);
       setMatchedPairs([]);
       setOrderedIds([]);
+      playWrongSound();
       return;
     }
 
@@ -484,17 +532,19 @@ export default function StoryChallengeScreen() {
     setAnswers(next);
     setShowReveal(true);
     setAck(true);
+    playWrongSound();
     setTimeout(() => advance(next), 2400);
   }
 
   function chooseMCQ(opt: { id: string; text: string }, i: number) {
-    if (ack) return;
+    if (ack || answerCooldownRef.current) return;
     const isLegacy = !q.richOptions?.length && !q.correctOptionIds?.length;
     const data = JSON.stringify({ selectedId: opt.id });
     const answeredIndex = isLegacy ? i : undefined;
+    setSelectedMcqId(opt.id);
     if (!checkCorrect(q, data, answeredIndex)) {
       setWrongMcqId(opt.id);
-      setTimeout(() => setWrongMcqId(null), 600);
+      setTimeout(() => setWrongMcqId(null), 700);
     }
     handleAnswer(data, answeredIndex);
   }
@@ -570,7 +620,7 @@ export default function StoryChallengeScreen() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {opts.map((opt, i) => {
             const isWrong = wrongMcqId === opt.id;
-            const isCorrectAck = ack && !showReveal;
+            const isCorrect = ack && !showReveal && selectedMcqId === opt.id;
             return (
               <button
                 key={opt.id}
@@ -582,15 +632,15 @@ export default function StoryChallengeScreen() {
                   borderRadius: 16,
                   border: `2px solid ${
                     isWrong
-                      ? "#ff5722"
-                      : isCorrectAck
-                      ? PILLAR_COLORS[pillar]
+                      ? "#e57373"
+                      : isCorrect
+                      ? "#4caf50"
                       : "rgba(14,10,31,0.1)"
                   }`,
                   background: isWrong
-                    ? "rgba(255,87,34,0.08)"
-                    : isCorrectAck
-                    ? `${PILLAR_COLORS[pillar]}1a`
+                    ? "rgba(229,115,115,0.1)"
+                    : isCorrect
+                    ? "rgba(76,175,80,0.1)"
                     : "#fff",
                   color: "var(--lf-dark)",
                   fontFamily: "'Nunito', sans-serif",
@@ -598,7 +648,8 @@ export default function StoryChallengeScreen() {
                   fontSize: 15,
                   textAlign: "left",
                   cursor: ack ? "default" : "pointer",
-                  transition: "all 0.15s",
+                  transform: isCorrect ? "scale(1.02)" : "scale(1)",
+                  transition: "all 0.18s",
                 }}
               >
                 {opt.text}
@@ -651,8 +702,8 @@ export default function StoryChallengeScreen() {
 
       {/* Feedback strip */}
       {wrongAttempts === 1 && !ack && (
-        <p style={{ textAlign: "center", fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 15, color: "#e65100", margin: "12px 0 0" }}>
-          Not quite — give it another try! 🌟
+        <p style={{ textAlign: "center", fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 15, color: "#b85c00", margin: "12px 0 0" }}>
+          Hmm, not quite — give it another go! 🌟
         </p>
       )}
       {showReveal && (
@@ -663,9 +714,16 @@ export default function StoryChallengeScreen() {
         </div>
       )}
       {ack && !showReveal && (
-        <p style={{ textAlign: "center", fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 16, color: "var(--lf-teal)", margin: "12px 0 0" }}>
-          {submitting ? "Adding it all up… ✨" : "Nice thinking! ✨"}
-        </p>
+        <div style={{ textAlign: "center", margin: "14px 0 0" }}>
+          <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 20, color: "#4caf50", margin: 0, lineHeight: 1.2 }}>
+            {submitting ? "Adding it all up… ✨" : "Great job! ✨"}
+          </p>
+          {!submitting && (
+            <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 13, color: "rgba(14,10,31,0.5)", margin: "4px 0 0" }}>
+              ⭐ Lalli and Fafa are proud of you!
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

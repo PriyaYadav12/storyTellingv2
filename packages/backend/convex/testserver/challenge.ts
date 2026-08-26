@@ -238,6 +238,9 @@ function validateQuestions(
           return { ok: false, retryHint: `Question ${i + 1} (match_column) has a correctPair referencing an id not in leftItems/rightItems.` };
         }
       }
+      if (pairs.length < 3) {
+        return { ok: false, retryHint: `Question ${i + 1} (match_column) must have at least 3 pairs, got ${pairs.length}.` };
+      }
       // Every item must appear exactly once
       const pairedLeft = pairs.map(([l]) => l);
       const pairedRight = pairs.map(([, r]) => r);
@@ -944,7 +947,7 @@ FORMAT RULES -- WHICH FORMAT FOR WHICH PILLAR
 FORMAT RULES -- WHAT'S ALLOWED BY AGE BAND (age_group is in the payload)
 
 - age_group "A": multiple choice ONLY, every question. Keep options short, favor concrete words a pre-reader would recognize read aloud.
-- age_group "B": multiple choice, fill-in-the-blank, or 2-item match-the-column.
+- age_group "B": multiple choice, fill-in-the-blank, or 3-item match-the-column.
 - age_group "C": all of the above, plus 3-4 item match-the-column and sequencing.
 
 Never use a format outside what's allowed for the given age_group, even if a pillar technically permits it.

@@ -67,6 +67,7 @@ import type * as systemPromptV5 from "../systemPromptV5.js";
 import type * as testserver__shared from "../testserver/_shared.js";
 import type * as testserver_challenge from "../testserver/challenge.js";
 import type * as testserver_consent from "../testserver/consent.js";
+import type * as testserver_debugTools from "../testserver/debugTools.js";
 import type * as testserver_parentReport from "../testserver/parentReport.js";
 import type * as userProfiles from "../userProfiles.js";
 import type * as voiceMap from "../voiceMap.js";
@@ -137,6 +138,7 @@ declare const fullApi: ApiFromModules<{
   "testserver/_shared": typeof testserver__shared;
   "testserver/challenge": typeof testserver_challenge;
   "testserver/consent": typeof testserver_consent;
+  "testserver/debugTools": typeof testserver_debugTools;
   "testserver/parentReport": typeof testserver_parentReport;
   userProfiles: typeof userProfiles;
   voiceMap: typeof voiceMap;

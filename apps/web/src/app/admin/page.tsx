@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, Component } from "react";
 import type { ReactNode } from "react";
 import { useRouter, notFound } from "next/navigation";
 import Link from "next/link";
-import { useQuery, useMutation, useConvexAuth } from "convex/react";
+import { useQuery, useMutation, useAction, useConvexAuth } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { BLOG_POSTS } from "@/lib/blog-data";
@@ -401,13 +401,31 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 // ─── Tab: Stories ─────────────────────────────────────────────────────────────
 
 function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undefined }) {
+  const router = useRouter();
   const stories = useQuery(api.stories.listAll, isAdmin ? {} : "skip") as any[] | undefined;
   const deleteStory = useMutation((api as any).stories.adminDeleteStory);
+  const generateChallenge = useAction((api as any).testserver.challenge.generateChallenge);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedStory, setSelectedStory] = useState<any | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [genResult, setGenResult] = useState<Record<string, "ok" | "error">>({});
+
+  async function handleGenerateChallenge(e: React.MouseEvent, storyId: string) {
+    e.stopPropagation();
+    if (generatingId) return;
+    setGeneratingId(storyId);
+    try {
+      await generateChallenge({ storyId: storyId as any });
+      setGenResult(prev => ({ ...prev, [storyId]: "ok" }));
+      router.push(`/testserver/challenge/${storyId}`);
+    } catch {
+      setGenResult(prev => ({ ...prev, [storyId]: "error" }));
+      setGeneratingId(null);
+    }
+  }
 
   async function handleQuickDelete(e: React.MouseEvent, storyId: string) {
     e.stopPropagation();
@@ -610,6 +628,14 @@ function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undef
                               style={{ background: "rgba(0,184,166,0.1)", border: "none", color: "var(--lf-teal)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", padding: "4px 12px", borderRadius: "0.5rem", cursor: "pointer", whiteSpace: "nowrap" }}
                             >
                               View →
+                            </button>
+                            <button
+                              onClick={e => handleGenerateChallenge(e, s._id)}
+                              disabled={generatingId === s._id}
+                              style={{ background: genResult[s._id] === "error" ? "rgba(220,38,38,0.08)" : "rgba(124,77,255,0.1)", border: "none", color: genResult[s._id] === "error" ? "#ef4444" : "#7c4dff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.8rem", padding: "4px 10px", borderRadius: "0.5rem", cursor: generatingId === s._id ? "default" : "pointer", whiteSpace: "nowrap" }}
+                              title="Generate a new Story Challenge for this story"
+                            >
+                              {generatingId === s._id ? "…" : genResult[s._id] === "ok" ? "✓ Done" : genResult[s._id] === "error" ? "✗ Error" : "⚡ Challenge"}
                             </button>
                           </div>
                         </td>
@@ -2381,7 +2407,7 @@ FORMAT RULES -- WHICH FORMAT FOR WHICH PILLAR
 FORMAT RULES -- WHAT'S ALLOWED BY AGE BAND (age_group is in the payload)
 
 - age_group "A": multiple choice ONLY, every question. Keep options short, favor concrete words a pre-reader would recognize read aloud.
-- age_group "B": multiple choice, fill-in-the-blank, or 2-item match-the-column.
+- age_group "B": multiple choice, fill-in-the-blank, or 3-item match-the-column.
 - age_group "C": all of the above, plus 3-4 item match-the-column and sequencing.
 
 Never use a format outside what's allowed for the given age_group, even if a pillar technically permits it.

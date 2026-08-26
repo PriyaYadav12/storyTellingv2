@@ -312,7 +312,7 @@ FORMAT RULES -- WHICH FORMAT FOR WHICH PILLAR
 FORMAT RULES -- WHAT'S ALLOWED BY AGE BAND (age_group is in the payload)
 
 - age_group "A": multiple choice ONLY, every question. Keep options short, favor concrete words a pre-reader would recognize read aloud.
-- age_group "B": multiple choice, fill-in-the-blank, or 2-item match-the-column.
+- age_group "B": multiple choice, fill-in-the-blank, or 3-item match-the-column.
 - age_group "C": all of the above, plus 3-4 item match-the-column and sequencing.
 
 Never use a format outside what's allowed for the given age_group, even if a pillar technically permits it.
@@ -438,5 +438,50 @@ OUTPUT SCHEMA:
     }
 
     return results;
+  },
+});
+
+// ─── Fetch recent challenge questions for a userId ───────────────────────────
+//
+// Returns the N most recent testserver_challenges for a given userId, with
+// just enough question data to diagnose retry / correctness issues.
+//
+// Usage: internal > testserver > debugTools > getRecentChallenges
+//   Args: { "userId": "<id>", "limit": 1 }
+export const getRecentChallenges = internalQuery({
+  args: {
+    userId: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { userId, limit = 1 }) => {
+    const rows = await ctx.db
+      .query("testserver_challenges")
+      .withIndex("by_user", (q: any) => q.eq("userId", userId))
+      .order("desc")
+      .take(limit);
+
+    return rows.map((row: any) => ({
+      _id: row._id,
+      storyId: row.storyId,
+      status: row.status,
+      createdAt: row._creationTime,
+      questionCount: (row.questions ?? []).length,
+      questions: (row.questions ?? []).map((q: any, i: number) => ({
+        arrayIndex: i,
+        index: q.index,
+        pillar: q.pillar,
+        format: q.format,
+        promptText: (q.promptText ?? "").slice(0, 80),
+        isQuickCheckEligible: q.isQuickCheckEligible,
+        hasRichOptions: !!(q.richOptions?.length),
+        richOptionCount: q.richOptions?.length ?? 0,
+        correctOptionIds: q.correctOptionIds ?? null,
+        hasCorrectWord: !!q.correctWord,
+        hasCorrectPairs: !!(q.correctPairs?.length),
+        hasCorrectOrder: !!(q.correctOrder?.length),
+        correctIndex: q.correctIndex ?? null,
+        expectedIndex: q.expectedIndex ?? null,
+      })),
+    }));
   },
 });
