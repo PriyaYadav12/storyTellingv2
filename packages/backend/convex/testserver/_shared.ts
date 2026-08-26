@@ -54,10 +54,11 @@ export async function assertAdminInAction(
 // checks; the remaining 7 (indices 1,2,4,6,7,8,9) always appear in the Story
 // Challenge. Any of these 3 left unanswered during playback rolls into the
 // Challenge as an 8th/9th/10th question instead of being skipped for good.
+// Default quick-check indices for the 3-2-2-3 (quick story) distribution:
+// index 0 = first cognitive, index 3 = first attention, index 5 = first listening.
+// generateChallenge recomputes these from config; this constant is kept as the
+// legacy fallback for any existing challenge rows that pre-date v2.1.
 export const QUICK_CHECK_INDICES = [0, 3, 5];
 
-export const STARS = {
-  quickCheck: 2,
-  challengeComplete: 10,
-  challengeBonusMax: 5,
-} as const;
+// STARS removed in v2.1 — star values are now config-driven via ChallengeConfigV1
+// in system_config. Do not add them back here.

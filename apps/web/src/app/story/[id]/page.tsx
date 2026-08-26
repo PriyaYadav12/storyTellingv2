@@ -186,7 +186,7 @@ type NarrationLine = { speaker: "Narrator" | "Lalli" | "Fafa" | "Child"; text: s
 const SPEAKER_STYLES: Record<string, { color: string; bg: string; border: string; emoji: string }> = {
   Lalli:    { color: "#FFD700", bg: "rgba(255,215,0,0.1)",    border: "rgba(255,215,0,0.45)",    emoji: "✨" },
   Fafa:     { color: "#00C9A7", bg: "rgba(0,201,167,0.1)",    border: "rgba(0,201,167,0.45)",    emoji: "🐰" },
-  Child:    { color: "#FF9F43", bg: "rgba(255,159,67,0.1)",   border: "rgba(255,159,67,0.45)",   emoji: "⭐" },
+  Child:    { color: "#FF6B35", bg: "rgba(255,107,53,0.1)",   border: "rgba(255,107,53,0.45)",   emoji: "⭐" },
   Narrator: { color: "rgba(255,255,255,0.82)", bg: "transparent", border: "transparent",         emoji: ""  },
 };
 
@@ -267,15 +267,31 @@ function ComicNarration({ text, childName }: { text: string; childName: string }
 const CHARACTERS: { name: string; color: string }[] = [
   { name: "Lalli", color: "#f9c700" },
   { name: "Fafa",  color: "#00c9a7" },
+  { name: "Child", color: "#FF6B35" }, // mango orange — brand's 4th core color
 ];
 
-function detectSpeaker(sentence: string): { name: string; color: string } | null {
-  // Match patterns like: Lalli said, "…" / "…" said Lalli / Lalli: / Lalli smiled and said
-  for (const char of CHARACTERS) {
-    const pattern = new RegExp(`\\b${char.name}\\b`, "i");
-    if (pattern.test(sentence)) return char;
+function detectSpeaker(
+  sentence: string,
+  childName?: string
+): { name: string; displayName: string; color: string } | null {
+  const lower = sentence.trim().toLowerCase();
+  const childLabel = (childName ?? "").trim().toLowerCase();
+
+  // Speaker-label detection (colon prefix) — most reliable signal, checked first
+  if (lower.startsWith("lalli:")) return { name: "Lalli", displayName: "Lalli", color: "#f9c700" };
+  if (lower.startsWith("fafa:"))  return { name: "Fafa",  displayName: "Fafa",  color: "#00c9a7" };
+  if (/^(child|girl child|boy child)\s*:/i.test(sentence))
+    return { name: "Child", displayName: childName || "Child", color: "#FF6B35" };
+  if (childLabel && lower.startsWith(childLabel + ":"))
+    return { name: "Child", displayName: childName!, color: "#FF6B35" };
+
+  // Fallback: name-mention detection for Lalli/Fafa (existing behavior)
+  for (const char of [CHARACTERS[0], CHARACTERS[1]]) {
+    if (new RegExp(`\\b${char.name}\\b`, "i").test(sentence))
+      return { name: char.name, displayName: char.name, color: char.color };
   }
-  return null;
+
+  return null; // Narrator — no badge, grey text
 }
 
 /**
@@ -546,6 +562,14 @@ function StoryViewer({
 
   /* Audio state */
   const audioRef = useRef<HTMLAudioElement>(null);
+  // Pre-buffer the narration MP3 as a local blob so the browser can range-request it.
+  // Convex storage does not support Accept-Ranges; without this, every pause/resume
+  // triggers a full re-download from byte 0 and currentTime snaps back toward 0.
+  const [audioBlobUrl, setAudioBlobUrl] = useState<string | null>(null);
+  const audioBlobRef = useRef<string | null>(null);
+  // Ref tracks whether the user is actively hearing audio (not just muted autoplay).
+  // Used in the blob pre-buffer to avoid swapping src mid-playback on slow connections.
+  const isPlayingRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   // `duration` = what we show on the progress bar (may use stored estimate as fallback)
@@ -554,6 +578,43 @@ function StoryViewer({
   // Scene auto-advance ONLY uses this — never the stored estimate — to prevent iOS/Safari
   // from racing through all scenes when the stored audioDurationSeconds is stale/wrong.
   const [reliableDuration, setReliableDuration] = useState(0);
+
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  // Fetch narration as a blob so the browser can range-request it locally.
+  // Guarded: if the user is already playing on the direct Convex URL (slow connection),
+  // we skip the src swap to avoid restarting playback from the beginning.
+  useEffect(() => {
+    if (!narrationUrl) return;
+    let cancelled = false;
+    fetch(narrationUrl)
+      .then(r => r.blob())
+      .then(blob => {
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        if (audioBlobRef.current) URL.revokeObjectURL(audioBlobRef.current);
+        audioBlobRef.current = url;
+        // Only apply if the user hasn't started playing yet — no mid-playback restarts.
+        if (!isPlayingRef.current) {
+          console.log("[narration:blob] applying blob URL immediately (not playing)", url.slice(0, 60));
+          setAudioBlobUrl(url);
+        } else {
+          // Deferred: store the blob URL so togglePlay can apply it before next play().
+          // effectiveSrc will pick it up on the next render after the user pauses.
+          // We do NOT call setAudioBlobUrl here — no src change while audio is playing.
+          console.log("[narration:blob] blob ready but audio is playing — deferred to next pause");
+        }
+      })
+      .catch(err => console.warn("[narration] blob pre-buffer failed, using direct URL:", err));
+    return () => {
+      cancelled = true;
+      if (audioBlobRef.current) {
+        URL.revokeObjectURL(audioBlobRef.current);
+        audioBlobRef.current = null;
+        setAudioBlobUrl(null);
+      }
+    };
+  }, [narrationUrl]);
 
   // Seed display duration from stored value when audio element can't report it (Safari/Convex streaming).
   useEffect(() => {
@@ -801,8 +862,14 @@ function StoryViewer({
      a fresh user gesture. If even muted playback is rejected, we leave
      playback paused and the user starts it with the Play button. */
   const autoplayTriedRef = useRef(false);
+  // When the blob URL arrives (replaces the Convex direct URL), allow autoplay to re-fire
+  // so the first actual play attempt uses the local blob with proper range-request support.
   useEffect(() => {
-    if (autoplayTriedRef.current || !narrationUrl || !audioRef.current) return;
+    if (audioBlobUrl) autoplayTriedRef.current = false;
+  }, [audioBlobUrl]);
+  const effectiveSrc = audioBlobUrl ?? narrationUrl;
+  useEffect(() => {
+    if (autoplayTriedRef.current || !effectiveSrc || !audioRef.current) return;
     autoplayTriedRef.current = true;
     const audio = audioRef.current;
     audio.muted = true;
@@ -817,7 +884,7 @@ function StoryViewer({
         /* autoplay blocked — user taps Play */
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [narrationUrl]);
+  }, [effectiveSrc]);
 
   /* Seek audio to scene's start position using character-weighted timeline.
      Uses reliableDuration (audio element's actual value) for accurate seeking;
@@ -930,10 +997,10 @@ function StoryViewer({
     const guard = resumeGuardRef.current;
     if (guard) {
       if (performance.now() > guard.until) {
-        console.debug("[narration] resume guard expired", { currentTime: audio.currentTime, target: guard.target });
+        console.log("[narration] resume guard expired", { currentTime: audio.currentTime, target: guard.target });
         resumeGuardRef.current = null;
       } else if (Math.abs(audio.currentTime - guard.target) > 1.5) {
-        console.debug("[narration] resume guard correcting", { from: audio.currentTime, to: guard.target });
+        console.log("[narration] resume guard correcting", { from: audio.currentTime, to: guard.target });
         audio.currentTime = guard.target;
       } else {
         resumeGuardRef.current = null;
@@ -969,6 +1036,15 @@ function StoryViewer({
       if (seekUnmuteTimerRef.current) { clearTimeout(seekUnmuteTimerRef.current); seekUnmuteTimerRef.current = null; }
       if (audioRef.current) audioRef.current.muted = userMutedRef.current;
     }
+    // Apply deferred blob URL if it arrived while audio was playing and hasn't been applied yet.
+    // seekToScene briefly mutes the audio, making this the first safe moment to swap src for
+    // users who navigate scenes before ever pausing (the only other swap point is togglePlay pause).
+    if (audioBlobRef.current && !audioBlobUrl) {
+      console.log("[narration:blob] applying deferred blob URL on seeked event");
+      setAudioBlobUrl(audioBlobRef.current);
+    }
+    const postSeekTime = audioRef.current?.currentTime ?? 0;
+    console.log("[narration:seek] seeked event — currentTime after seek:", postSeekTime, "src type:", audioBlobRef.current ? "blob" : "convex");
     // Re-arm any stings whose cue point is now in the future after a seek.
     const seekTarget = audioRef.current?.currentTime ?? 0;
     const placements = story?.stingPlacements ?? [];
@@ -991,14 +1067,20 @@ function StoryViewer({
     if (!audio) return;
     if (isPlaying) {
       pausePositionRef.current = audio.currentTime || lastPositionRef.current;
-      console.debug("[narration] pause at", pausePositionRef.current);
+      console.log("[narration] pause at", pausePositionRef.current, "src:", audio.src.startsWith("blob:") ? "blob" : "convex");
       audio.pause();
       setIsPlaying(false);
+      // If the blob URL arrived while we were playing on the direct Convex URL (deferred
+      // because we didn't want to restart mid-playback), apply it now while paused so the
+      // next play() uses the local blob with proper range-request support.
+      if (audioBlobRef.current && !audioBlobUrl) {
+        setAudioBlobUrl(audioBlobRef.current);
+      }
       return;
     }
 
     const resumeAt = pausePositionRef.current;
-    console.debug("[narration] resume requested", { resumeAt, currentTime: audio.currentTime, readyState: audio.readyState });
+    console.log("[narration] resume requested", { resumeAt, currentTime: audio.currentTime, readyState: audio.readyState, src: audio.src.startsWith("blob:") ? "blob" : "convex" });
     setIsPlaying(true);
 
     if (resumeAt <= 0.25 || Math.abs(audio.currentTime - resumeAt) <= 0.25) {
@@ -1011,7 +1093,7 @@ function StoryViewer({
       if (settled) return;
       settled = true;
       audio.removeEventListener("seeked", onSeeked);
-      console.debug("[narration] resuming playback", { source, currentTime: audio.currentTime });
+      console.log("[narration] resuming playback", { source, currentTime: audio.currentTime, resumeAt, delta: Math.abs(audio.currentTime - resumeAt) });
       // Keep correcting for a few seconds in case Convex's lack of range-request
       // support causes the buffer to silently snap currentTime back toward 0
       // after playback has already started.
@@ -1160,15 +1242,26 @@ function StoryViewer({
   const sceneSentences = sceneNarrativeText ? splitSentences(sceneNarrativeText) : [];
   const adjustedTime = Math.max(0, currentTime + subtitleOffset);
   const subtitleText = getCurrentSubtitle(adjustedTime, duration, currentScene, sceneSentences, titleOffset, sceneTimeline);
-  const speaker = subtitleText ? detectSpeaker(subtitleText) : null;
+  const childNameForSubtitle = (story as any).params?.childName as string ?? "";
+  const speaker = subtitleText ? detectSpeaker(subtitleText, childNameForSubtitle) : null;
   /* Index of the currently highlighted sentence (for the text panel) */
   const activeSubtitleIdx = sceneSentences.indexOf(subtitleText);
 
-  /* Strip "Lalli said" / "Fafa replied" framing so subtitle shows clean dialogue */
-  const cleanSubtitle = (subtitleText || "")
-    .replace(/^(Lalli|Fafa)\s+(said|replied|whispered|shouted|asked|cried|laughed|smiled and said)[,:]?\s*/i, "")
-    .replace(/,?\s*(said|replied|whispered|shouted|asked|cried|laughed)\s+(Lalli|Fafa)\s*\.?$/i, "")
-    .trim();
+  /* Strip speaker-label prefix (e.g. "Lalli:", "Narrator:") then "said/replied" framing */
+  const cleanSubtitle = (() => {
+    let s = (subtitleText || "")
+      .replace(/^(Narrator|Lalli|Fafa|Child|Girl Child|Boy Child)\s*:\s*/i, "")
+      .replace(/^(Lalli|Fafa)\s+(said|replied|whispered|shouted|asked|cried|laughed|smiled and said)[,:]?\s*/i, "")
+      .replace(/,?\s*(said|replied|whispered|shouted|asked|cried|laughed)\s+(Lalli|Fafa)\s*\.?$/i, "")
+      .trim();
+    if (childNameForSubtitle) {
+      s = s.replace(
+        new RegExp(`^${childNameForSubtitle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*:\\s*`, "i"),
+        ""
+      );
+    }
+    return s;
+  })();
 
   /* ── Loading / error states ── */
   if (story === undefined) return <LoadingScreen />;
@@ -1322,10 +1415,10 @@ function StoryViewer({
                   <span style={{ fontSize: "1.2rem" }}>🌙</span>
                   <div className="text-left">
                     <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.82rem", color: "#fff", lineHeight: 1 }}>
-                      Lalli has 999 more stories...
+                      Tonight&apos;s story is just the beginning.
                     </p>
                     <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.3 }}>
-                      Unlock unlimited stories with Magic Pass
+                      Get more stories every month — Magic Pass from ₹199
                     </p>
                   </div>
                 </div>
@@ -1649,8 +1742,8 @@ function StoryViewer({
               )}
 
               {/* Hidden audio elements */}
-              {narrationUrl && (
-                <audio ref={audioRef} src={narrationUrl} onTimeUpdate={onTimeUpdate} onLoadedMetadata={onLoadedMetadata} onDurationChange={onDurationChange} onEnded={onEnded} onSeeked={onNarrationSeeked} preload="auto" />
+              {effectiveSrc && (
+                <audio ref={audioRef} src={effectiveSrc} onTimeUpdate={onTimeUpdate} onLoadedMetadata={onLoadedMetadata} onDurationChange={onDurationChange} onEnded={onEnded} onSeeked={onNarrationSeeked} preload="auto" />
               )}
               <audio ref={bgAudioRef} src={bgPlaylist[bgTrackIdx]} preload="auto" onEnded={() => setBgTrackIdx(i => (i + 1) % bgPlaylist.length)} />
 
@@ -1676,14 +1769,15 @@ function StoryViewer({
                       className="px-2.5 py-0.5 rounded-full text-xs font-black tracking-widest"
                       style={{
                         background: speaker.color,
-                        color: speaker.name === "Lalli" ? "#131020" : "#fff",
+                        // Lalli (yellow) and Child (mango orange) are light → dark text; Fafa (teal) is dark → white text
+                        color: (speaker.name === "Lalli" || speaker.name === "Child") ? "#131020" : "#fff",
                         fontFamily: "'Baloo 2', sans-serif",
                         textTransform: "uppercase",
                         fontSize: "0.65rem",
                         letterSpacing: "0.08em",
                       }}
                     >
-                      {speaker.name}
+                      {speaker.displayName}
                     </span>
                   )}
                   <p
@@ -1693,7 +1787,7 @@ function StoryViewer({
                       fontWeight: speaker ? 700 : 500,
                       fontStyle: speaker ? "normal" : "italic",
                       lineHeight: 1.5,
-                      color: speaker ? speaker.color : t.text,
+                      color: speaker ? speaker.color : t.textSoft,
                       margin: 0,
                     }}
                   >

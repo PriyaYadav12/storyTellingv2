@@ -198,8 +198,16 @@ export default function ResultsScreen() {
         {showReview && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
             {challenge.questions.map((q: any, qi: number) => {
-              const selected = challenge.answeredIndices?.find((a: any) => a.index === qi)?.answeredIndex;
-              return <QuestionReviewCard key={qi} index={qi} question={q} selectedIndex={selected} />;
+              const entry = challenge.answeredIndices?.find((a: any) => a.index === qi);
+              return (
+                <QuestionReviewCard
+                  key={qi}
+                  index={qi}
+                  question={q}
+                  selectedIndex={entry?.answeredIndex}
+                  answeredData={entry?.answeredData}
+                />
+              );
             })}
           </div>
         )}
@@ -269,51 +277,178 @@ function QuestionReviewCard({
   index,
   question,
   selectedIndex,
+  answeredData,
 }: {
   index: number;
-  question: { pillar: string; question: string; options: string[]; correctIndex?: number; expectedIndex?: number };
+  question: any;
   selectedIndex?: number;
+  answeredData?: string;
 }) {
   const pillar = question.pillar as Pillar;
-  // v1.3.2: Emotional questions are now scored like the rest — expectedIndex
-  // stands in for correctIndex — since the score is out of all 10.
-  const targetIndex = pillar === "emotional" ? question.expectedIndex : question.correctIndex;
-  const isCorrect = targetIndex !== undefined && selectedIndex === targetIndex;
+  const fmt: string = question.format ?? "mcq";
+
+  // Determine correctness per format
+  let isCorrect = false;
+  try {
+    if (fmt === "mcq") {
+      if (answeredData) {
+        const a = JSON.parse(answeredData);
+        if (question.correctOptionIds?.length) {
+          isCorrect = question.correctOptionIds.includes(a.selectedId);
+        } else {
+          const target = question.correctIndex ?? question.expectedIndex;
+          isCorrect = target !== undefined && Number(a.selectedId) === target;
+        }
+      } else {
+        const target = question.correctIndex ?? question.expectedIndex;
+        isCorrect = target !== undefined && selectedIndex === target;
+      }
+    } else if (fmt === "fill_blank" && answeredData) {
+      isCorrect = JSON.parse(answeredData).selectedWord === question.correctWord;
+    } else if (fmt === "match_column" && answeredData) {
+      const { pairs: answered } = JSON.parse(answeredData);
+      const correct: [string, string][] = question.correctPairs ?? [];
+      isCorrect =
+        correct.length === answered.length &&
+        correct.every(([l, r]: [string, string]) =>
+          answered.some(([al, ar]: [string, string]) => al === l && ar === r)
+        );
+    } else if (fmt === "sequence" && answeredData) {
+      const { order: answered } = JSON.parse(answeredData);
+      const correct: string[] = question.correctOrder ?? [];
+      isCorrect =
+        correct.length === answered.length && correct.every((id: string, i: number) => answered[i] === id);
+    }
+  } catch { /**/ }
 
   return (
     <div style={{ background: "#fff", borderRadius: 16, padding: 12, border: `1.5px solid ${isCorrect ? "rgba(0,201,167,0.35)" : "rgba(255,87,34,0.3)"}` }}>
+      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
         <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 10, fontWeight: 800, color: "#fff", background: PILLAR_COLORS[pillar], borderRadius: 999, padding: "2px 8px" }}>
           {PILLAR_EMOJI[pillar]} {PILLAR_LABELS[pillar]}
         </span>
         {isCorrect ? (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 800, color: "#00806c" }}><Check size={12} /> Correct</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 800, color: "#00806c" }}>
+            <Check size={12} /> Correct
+          </span>
         ) : (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 800, color: "#c62828" }}><X size={12} /> Not quite</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 800, color: "#c62828" }}>
+            <X size={12} /> Not quite
+          </span>
         )}
       </div>
+
       <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 13, color: "var(--lf-dark)", margin: "0 0 8px" }}>
-        {index + 1}. {question.question}
+        {index + 1}. {question.promptText ?? question.question}
       </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {question.options.map((opt: any, j: number) => {
-          let style: React.CSSProperties = { border: "1px solid rgba(14,10,31,0.08)", background: "rgba(14,10,31,0.02)", color: "rgba(14,10,31,0.55)" };
-          let icon: React.ReactNode = null;
-          if (j === targetIndex) {
-            style = { border: "1.5px solid #00c9a7", background: "rgba(0,201,167,0.1)", color: "#00695c" };
-            icon = <Check size={13} color="#00c9a7" />;
-          } else if (j === selectedIndex) {
-            style = { border: "1.5px solid #ff5722", background: "rgba(255,87,34,0.08)", color: "#c62828" };
-            icon = <X size={13} color="#ff5722" />;
-          }
-          return (
-            <div key={j} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 10, fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 12.5, ...style }}>
-              {icon}
-              {opt}
+
+      {/* MCQ review */}
+      {fmt === "mcq" && (() => {
+        const opts: { id: string; text: string }[] = question.richOptions?.length
+          ? question.richOptions
+          : (question.options ?? []).map((t: string, i: number) => ({ id: String(i), text: t }));
+        const selectedId = answeredData
+          ? JSON.parse(answeredData).selectedId
+          : selectedIndex !== undefined ? String(selectedIndex) : null;
+        const correctId = question.correctOptionIds?.length
+          ? question.correctOptionIds[0]
+          : String(question.correctIndex ?? question.expectedIndex);
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {opts.map((opt) => {
+              const isThis = opt.id === correctId;
+              const isSel = opt.id === selectedId && opt.id !== correctId;
+              const style: React.CSSProperties = isThis
+                ? { border: "1.5px solid #00c9a7", background: "rgba(0,201,167,0.1)", color: "#00695c" }
+                : isSel
+                ? { border: "1.5px solid #ff5722", background: "rgba(255,87,34,0.08)", color: "#c62828" }
+                : { border: "1px solid rgba(14,10,31,0.08)", background: "rgba(14,10,31,0.02)", color: "rgba(14,10,31,0.55)" };
+              return (
+                <div key={opt.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 10, fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 12.5, ...style }}>
+                  {isThis && <Check size={13} color="#00c9a7" />}
+                  {isSel && <X size={13} color="#ff5722" />}
+                  {opt.text}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* Fill-blank review */}
+      {fmt === "fill_blank" && (() => {
+        const answered = answeredData ? JSON.parse(answeredData).selectedWord : undefined;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "rgba(14,10,31,0.5)" }}>Your answer:</span>
+              <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12.5, fontWeight: 700, color: isCorrect ? "#00695c" : "#c62828", background: isCorrect ? "rgba(0,201,167,0.1)" : "rgba(255,87,34,0.08)", padding: "2px 10px", borderRadius: 8 }}>
+                {answered ?? "—"}
+              </span>
             </div>
-          );
-        })}
-      </div>
+            {!isCorrect && (
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "rgba(14,10,31,0.5)" }}>Correct:</span>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12.5, fontWeight: 700, color: "#00695c", background: "rgba(0,201,167,0.1)", padding: "2px 10px", borderRadius: 8 }}>
+                  {question.correctWord}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Match-column review */}
+      {fmt === "match_column" && (() => {
+        const answered: [string, string][] = answeredData ? JSON.parse(answeredData).pairs : [];
+        const correct: [string, string][] = question.correctPairs ?? [];
+        const left: { id: string; text: string }[] = question.leftItems ?? [];
+        const right: { id: string; text: string }[] = question.rightItems ?? [];
+        const lt = (id: string) => left.find((x) => x.id === id)?.text ?? id;
+        const rt = (id: string) => right.find((x) => x.id === id)?.text ?? id;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {correct.map(([l, r], i) => {
+              const userR = answered.find(([al]) => al === l)?.[1];
+              const ok = userR === r;
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 10, border: `1px solid ${ok ? "#00c9a7" : "#ff5722"}`, background: ok ? "rgba(0,201,167,0.06)" : "rgba(255,87,34,0.06)", flexWrap: "wrap" }}>
+                  {ok ? <Check size={12} color="#00c9a7" /> : <X size={12} color="#ff5722" />}
+                  <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "var(--lf-dark)" }}>{lt(l)}</span>
+                  <span style={{ color: "rgba(14,10,31,0.35)" }}>→</span>
+                  <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "var(--lf-dark)" }}>{rt(userR ?? r)}</span>
+                  {!ok && <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 11, color: "#00695c" }}>(should be: {rt(r)})</span>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* Sequence review */}
+      {fmt === "sequence" && (() => {
+        const userOrder: string[] = answeredData ? JSON.parse(answeredData).order : [];
+        const correct: string[] = question.correctOrder ?? [];
+        const items: { id: string; text: string }[] = question.sequenceItems ?? [];
+        const gt = (id: string) => items.find((x) => x.id === id)?.text ?? id;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {correct.map((id, i) => {
+              const userIdx = userOrder.indexOf(id);
+              const ok = userIdx === i;
+              return (
+                <div key={id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 10, border: `1px solid ${ok ? "#00c9a7" : "#ff5722"}`, background: ok ? "rgba(0,201,167,0.06)" : "rgba(255,87,34,0.06)" }}>
+                  {ok ? <Check size={12} color="#00c9a7" /> : <X size={12} color="#ff5722" />}
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: ok ? "#00c9a7" : "#ff5722", color: "#fff", fontWeight: 800, fontSize: 11, flexShrink: 0 }}>{i + 1}</span>
+                  <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "var(--lf-dark)" }}>{gt(id)}</span>
+                  {!ok && userIdx >= 0 && <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 11, color: "#c62828" }}>(you put #{userIdx + 1})</span>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
     </div>
   );
 }

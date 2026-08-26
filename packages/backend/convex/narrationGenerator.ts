@@ -138,6 +138,13 @@ function parseStoryToSpeakerLines(title: string, content: string, childName: str
       out.push({ order: orderIdx++, speaker: childName, text: line.slice(childName.length + 1).trim() });
     } else if (lower.startsWith("child:") || lower.startsWith("girl child:") || lower.startsWith("boy child:")) {
       out.push({ order: orderIdx++, speaker: "Child", text: line.replace(/^(child|girl child|boy child):/i, "").trim() });
+    } else if (lower.startsWith("narrator:")) {
+      // Strip the "Narrator:" label before TTS — otherwise ElevenLabs reads it aloud.
+      const stripped = line.replace(/^narrator:\s*/i, "").trim();
+      const sentences = splitToSentences(stripped);
+      for (const sentence of sentences) {
+        out.push({ order: orderIdx++, speaker: "Narrator", text: sentence });
+      }
     } else {
       // Narrator: split long paragraphs into individual sentences.
       // Each sentence gets its own TTS call so the voice resets between them.
@@ -157,8 +164,18 @@ function parseStoryToSpeakerLines(title: string, content: string, childName: str
  * the "Lalli" spelling), respell every occurrence as "Laalli" so the TTS
  * voice says it correctly. Preserves the original capitalisation.
  */
-function applyPronunciationFixes(text: string): string {
-  let result = text.replace(/\bLalli\b/gi, (match) => {
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+function applyPronunciationFixes(text: string, childName?: string, childPhoneticName?: string): string {
+  // Strip sound-effect stage directions (*Click!*, *Whoosh!*, etc.) — reader cues, not spoken words.
+  let result = text.replace(/\*[^*\n]+\*/g, "").replace(/\s{2,}/g, " ").trim();
+  result = result.replace(/\bLalli\b/gi, (match) => {
     if (match === match.toUpperCase()) return "LAALI";
     if (match[0] === match[0].toUpperCase()) return "Laali";
     return "laali";
@@ -168,13 +185,19 @@ function applyPronunciationFixes(text: string): string {
     if (match[0] === match[0].toUpperCase()) return "Faafa";
     return "faafa";
   });
+  // Apply per-child phonetic override — TTS audio only, never stored text.
+  if (childName && childPhoneticName && childPhoneticName !== childName) {
+    result = result.replace(
+      new RegExp(`\\b${escapeRegExp(childName)}\\b`, "gi"),
+      (match) => {
+        if (match === match.toUpperCase()) return childPhoneticName.toUpperCase();
+        if (match[0] === match[0].toUpperCase()) return capitalize(childPhoneticName);
+        return childPhoneticName.toLowerCase();
+      }
+    );
+  }
   return result;
 }
-
-const LANGUAGE_CODES: Record<string, string> = {
-  hindi: "hi", bengali: "bn", gujarati: "gu",
-  tamil: "ta", marathi: "mr", telugu: "te",
-};
 
 async function ttsArrayBuffer(voiceId: string, text: string, language: string): Promise<ArrayBuffer> {
   const apiKey = process.env.ELEVEN_LABS_API_KEY;
@@ -182,7 +205,6 @@ async function ttsArrayBuffer(voiceId: string, text: string, language: string): 
 
   const isMultilingual = isMultilingualLanguage(language);
   const modelId = isMultilingual ? "eleven_multilingual_v2" : "eleven_turbo_v2_5";
-  const langCode = LANGUAGE_CODES[language.toLowerCase()];
 
   const body: Record<string, unknown> = {
     text,
@@ -196,7 +218,9 @@ async function ttsArrayBuffer(voiceId: string, text: string, language: string): 
       speed: 0.82,
     },
   };
-  if (langCode) body.language_code = langCode;
+  // Do NOT set language_code for eleven_multilingual_v2 — the model auto-detects language.
+  // Setting it (e.g. "hi" for Hindi) forces phonetic rules onto all text including English
+  // words/names embedded in Hinglish, causing mispronunciation of names and loanwords.
 
   const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: "POST",
@@ -276,10 +300,11 @@ export async function generateMergedNarration(
     childName: string;
     childGender: Gender;
     language: string;
+    childPhoneticName?: string;
   }
 ) {
   console.log("Generating voice narration for story");
-  const { storyId, title, content, childName, childGender, language } = args;
+  const { storyId, title, content, childName, childGender, language, childPhoneticName } = args;
 
   // Load voice map from database once
   const voiceMap = await loadVoiceMap(ctx);
@@ -290,16 +315,17 @@ export async function generateMergedNarration(
   const lines = parseStoryToSpeakerLines(title, content, childName);
   console.log(`[Narration] ${lines.length} lines to TTS. Language: ${language}. First 3:`, lines.slice(0, 3).map(l => `${l.speaker}: ${l.text.slice(0, 40)}`));
 
-  // Limit concurrency to 2 TTS calls at a time.
+  // ElevenLabs Starter plan allows 3 concurrent streams. Upgrading beyond 3 requires
+  // a plan change first — do not increase this number without confirming the active plan tier.
   const isEnglish = !isMultilingualLanguage(language);
-  const results = await mapWithConcurrencyLimit(lines, 2, async (l, _idx) => {
+  const results = await mapWithConcurrencyLimit(lines, 3, async (l, _idx) => {
     const voiceId = pickVoiceForSpeaker(voiceMap, l.speaker, childName, childGender, language);
     if (!voiceId) {
       console.error(`[TTS] No voice ID for speaker: ${l.speaker}`);
       return null;
     }
     // Pronunciation fixes apply to all languages (names stay in English in Hindi text)
-    const fixedText = applyPronunciationFixes(l.text);
+    const fixedText = applyPronunciationFixes(l.text, childName, childPhoneticName);
     const pauseSuffix = isEnglish ? " ..." : " ।";
     const ab = await ttsArrayBuffer(voiceId, fixedText + pauseSuffix, language);
     return { order: l.order, ab };
@@ -308,6 +334,17 @@ export async function generateMergedNarration(
   // Filter out failed lines and merge in order
   const successful = results.filter((r): r is { order: number; ab: ArrayBuffer } => r !== null);
   console.log(`[Narration] ${successful.length}/${lines.length} lines succeeded.`);
+
+  // If many segments failed, block storage — a truncated story stored as "ready" can never
+  // be fixed by the user and is worse than a clean error they can re-generate.
+  if (successful.length > 0 && successful.length < lines.length * 0.8) {
+    throw new Error(
+      `[Narration] Only ${successful.length}/${lines.length} TTS segments succeeded ` +
+      `(${Math.round((successful.length / lines.length) * 100)}%). ` +
+      `Likely cause: ElevenLabs account issue (low credits?). ` +
+      `Story NOT stored — re-generate once the ElevenLabs account issue is resolved.`
+    );
+  }
 
   // If every single TTS call failed, throw so the story is properly marked as error
   // instead of silently storing an empty audio file that plays as silence.

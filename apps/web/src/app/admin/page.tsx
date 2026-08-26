@@ -10,7 +10,7 @@ import { authClient } from "@/lib/auth-client";
 import { BLOG_POSTS } from "@/lib/blog-data";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type TabKey = "stories" | "users" | "blog" | "assets" | "voice" | "stings" | "settings" | "story-types" | "languages" | "system-prompt";
+type TabKey = "stories" | "users" | "blog" | "assets" | "voice" | "stings" | "settings" | "story-types" | "languages" | "system-prompt" | "challenge-config";
 type SettingsSubTab = "themes" | "lessons";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -2168,6 +2168,299 @@ function SystemPromptTab({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
+// ─── Tab: Challenge Config ────────────────────────────────────────────────────
+
+const DEFAULT_CHALLENGE_CONFIG_JSON = JSON.stringify({
+  pillarDistribution: {
+    quick: { cognitive: 3, attention: 2, listening: 2, emotional: 3 },
+    big:   { cognitive: 4, attention: 2, listening: 2, emotional: 4 },
+  },
+  rewardTiers: [
+    { minPercent: 0,  maxPercent: 24,  stars: 5  },
+    { minPercent: 25, maxPercent: 49,  stars: 10 },
+    { minPercent: 50, maxPercent: 79,  stars: 15 },
+    { minPercent: 80, maxPercent: 100, stars: 25 },
+  ],
+  retryCap: 2,
+  quickCheckStars: 2,
+}, null, 2);
+
+function ChallengeConfigTab({ isAdmin }: { isAdmin: boolean }) {
+  const promptRow = useQuery((api as any).systemConfig.get, isAdmin ? { key: "QuestionGenPromptV1" } : "skip") as any | undefined;
+  const configRow = useQuery((api as any).systemConfig.get, isAdmin ? { key: "ChallengeConfigV1" } : "skip") as any | undefined;
+  const setConfig = useMutation((api as any).systemConfig.set);
+
+  const [promptDraft, setPromptDraft] = useState<string | null>(null);
+  const [configDraft, setConfigDraft] = useState<string | null>(null);
+  const [saving, setSaving] = useState<"prompt" | "config" | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const promptValue = promptDraft !== null ? promptDraft : (promptRow?.value ?? "");
+  const configValue = configDraft !== null ? configDraft : (configRow?.value ?? "");
+  const promptDirty = promptDraft !== null && promptDraft !== (promptRow?.value ?? "");
+  const configDirty = configDraft !== null && configDraft !== (configRow?.value ?? "");
+
+  async function save(key: "QuestionGenPromptV1" | "ChallengeConfigV1", value: string, which: "prompt" | "config") {
+    setSaving(which);
+    setResult(null);
+    try {
+      if (which === "config") {
+        JSON.parse(value); // validate JSON before saving
+      }
+      await setConfig({ key, value });
+      if (which === "prompt") setPromptDraft(null);
+      else setConfigDraft(null);
+      setResult({ ok: true, msg: `${which === "prompt" ? "Generation prompt" : "Scoring config"} saved.` });
+      setTimeout(() => setResult(null), 5000);
+    } catch (e: any) {
+      setResult({ ok: false, msg: e?.message ?? "Failed to save." });
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  function seedDefaults() {
+    setPromptDraft(FALLBACK_QUESTION_GEN_PROMPT);
+    setConfigDraft(DEFAULT_CHALLENGE_CONFIG_JSON);
+  }
+
+  const isLoading = promptRow === undefined || configRow === undefined;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 860 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <h3 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.1rem", color: "var(--lf-dark)", margin: "0 0 4px" }}>
+            Story Challenge — Question Engine Config
+          </h3>
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(45,45,45,0.5)", margin: 0 }}>
+            Generation prompt (QuestionGenPromptV1) and scoring config (ChallengeConfigV1) stored in system_config.
+            Edits take effect on the next Challenge generation. Click "Seed Defaults" to pre-fill both if not yet set.
+          </p>
+        </div>
+        <button
+          onClick={seedDefaults}
+          style={{ padding: "8px 18px", borderRadius: "0.6rem", background: "rgba(0,0,0,0.06)", border: "1.5px solid rgba(0,0,0,0.12)", color: "rgba(45,45,45,0.7)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+        >
+          Seed Defaults
+        </button>
+      </div>
+
+      {result && (
+        <div style={{ padding: "10px 16px", background: result.ok ? "rgba(0,184,166,0.1)" : "rgba(220,38,38,0.08)", border: `1px solid ${result.ok ? "rgba(0,184,166,0.2)" : "rgba(220,38,38,0.15)"}`, borderRadius: "0.7rem" }}>
+          <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.85rem", color: result.ok ? "#0d7a6e" : "#b91c1c" }}>{result.msg}</span>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Spinner /></div>
+      ) : (
+        <>
+          {/* ── Section 1: Generation prompt ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.9rem", color: "var(--lf-dark)", margin: "0 0 2px" }}>
+                  QuestionGenPromptV1
+                </p>
+                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.45)", margin: 0 }}>
+                  System instruction sent to the model for every Challenge generation. Matches §8.1 of the spec.
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {promptDirty && (
+                  <button
+                    onClick={() => setPromptDraft(null)}
+                    style={{ padding: "7px 14px", borderRadius: "0.6rem", background: "none", border: "1.5px solid rgba(0,0,0,0.12)", color: "rgba(45,45,45,0.6)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}
+                  >
+                    Discard
+                  </button>
+                )}
+                <button
+                  onClick={() => save("QuestionGenPromptV1", promptValue, "prompt")}
+                  disabled={saving !== null || !promptDirty}
+                  style={{ padding: "7px 18px", borderRadius: "0.6rem", background: promptDirty ? "var(--lf-teal)" : "rgba(0,0,0,0.06)", border: "none", color: promptDirty ? "#fff" : "rgba(45,45,45,0.4)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", cursor: !promptDirty || saving !== null ? "not-allowed" : "pointer" }}
+                >
+                  {saving === "prompt" ? "Saving…" : "Save Prompt"}
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={promptValue}
+              onChange={(e) => setPromptDraft(e.target.value)}
+              rows={22}
+              style={{
+                ...InputStyle({ fontFamily: "monospace", fontSize: "0.78rem", lineHeight: "1.55", resize: "vertical" as const }),
+                background: promptDirty ? "#fffef5" : "#fff",
+                border: promptDirty ? "1.5px solid rgba(249,199,0,0.5)" : "1.5px solid rgba(0,0,0,0.12)",
+              }}
+              placeholder="QuestionGenPromptV1 — click Seed Defaults to pre-fill from spec §8.1…"
+            />
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: "rgba(45,45,45,0.4)" }}>
+              {promptValue.length.toLocaleString()} chars
+              {promptDirty && <span style={{ color: "#8a6900", fontWeight: 700, marginLeft: 8 }}>⚠ Unsaved changes</span>}
+            </span>
+          </div>
+
+          {/* ── Section 2: Scoring / generation config ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.9rem", color: "var(--lf-dark)", margin: "0 0 2px" }}>
+                  ChallengeConfigV1
+                </p>
+                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.45)", margin: 0 }}>
+                  JSON config: pillarDistribution (quick/big), rewardTiers, retryCap, quickCheckStars.
+                  All generation and scoring code reads these at runtime.
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {configDirty && (
+                  <button
+                    onClick={() => setConfigDraft(null)}
+                    style={{ padding: "7px 14px", borderRadius: "0.6rem", background: "none", border: "1.5px solid rgba(0,0,0,0.12)", color: "rgba(45,45,45,0.6)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}
+                  >
+                    Discard
+                  </button>
+                )}
+                <button
+                  onClick={() => save("ChallengeConfigV1", configValue, "config")}
+                  disabled={saving !== null || !configDirty}
+                  style={{ padding: "7px 18px", borderRadius: "0.6rem", background: configDirty ? "var(--lf-teal)" : "rgba(0,0,0,0.06)", border: "none", color: configDirty ? "#fff" : "rgba(45,45,45,0.4)", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", cursor: !configDirty || saving !== null ? "not-allowed" : "pointer" }}
+                >
+                  {saving === "config" ? "Saving…" : "Save Config"}
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={configValue}
+              onChange={(e) => setConfigDraft(e.target.value)}
+              rows={18}
+              style={{
+                ...InputStyle({ fontFamily: "monospace", fontSize: "0.82rem", lineHeight: "1.55", resize: "vertical" as const }),
+                background: configDirty ? "#fffef5" : "#fff",
+                border: configDirty ? "1.5px solid rgba(249,199,0,0.5)" : "1.5px solid rgba(0,0,0,0.12)",
+              }}
+              placeholder="ChallengeConfigV1 JSON — click Seed Defaults to pre-fill…"
+            />
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: "rgba(45,45,45,0.4)" }}>
+              {configValue.length.toLocaleString()} chars
+              {configDirty && <span style={{ color: "#8a6900", fontWeight: 700, marginLeft: 8 }}>⚠ Unsaved changes</span>}
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Mirrors the FALLBACK_SYSTEM_PROMPT in convex/testserver/challenge.ts exactly.
+// Used to seed the admin textarea when clicking "Seed Defaults".
+// When editing the prompt, update BOTH files together — they must stay identical.
+// The authoritative runtime version lives in system_config once seeded.
+const FALLBACK_QUESTION_GEN_PROMPT = `You are generating the Story Challenge for Lalli & Fafa -- a short set of playful questions Lalli and Fafa ask together after a story, to help a child remember, notice, feel, and think about what just happened.
+
+CORE RULE -- GROUND EVERY QUESTION IN THIS SPECIFIC STORY
+
+Every question must reference something that actually happened in the story you were given -- a real line of dialogue, a real detail from a scene, a real moment. Never write a generic question that could apply to any story. If you cannot find real story content to ground a question in a given pillar, choose a different angle within that pillar rather than inventing a detail that isn't in the story.
+
+THE FOUR PILLARS -- WHAT EACH ONE ACTUALLY TESTS
+
+- Listening: the child must recall or interpret something a character SAID or that was narrated aloud -- not something they merely saw.
+- Attention and focus: the child must recall a specific visual or descriptive DETAIL -- a color, a number, an object -- something noticed, not the main plot event.
+- Cognitive growth: the child must reason -- word meaning, cause and effect, opposites, comparing two things, predicting what happens next.
+- Emotional intelligence: the child must identify a feeling a character had, or how a feeling changed, grounded in a real story moment. There is no single "correct" feeling -- see the EQ rules below.
+
+FORMAT RULES -- WHICH FORMAT FOR WHICH PILLAR
+
+- Emotional intelligence questions are ALWAYS multiple choice. Never fill-in-the-blank, never match-the-column, never sequencing.
+- Listening and Attention questions are multiple choice by default.
+- Cognitive growth questions may use multiple choice, fill-in-the-blank, or match-the-column -- this pillar carries most of the format variety.
+- Sequencing (ordering 3 story moments) may only be used for a Listening question, and only when age_group is "C".
+
+FORMAT RULES -- WHAT'S ALLOWED BY AGE BAND (age_group is in the payload)
+
+- age_group "A": multiple choice ONLY, every question. Keep options short, favor concrete words a pre-reader would recognize read aloud.
+- age_group "B": multiple choice, fill-in-the-blank, or 2-item match-the-column.
+- age_group "C": all of the above, plus 3-4 item match-the-column and sequencing.
+
+Never use a format outside what's allowed for the given age_group, even if a pillar technically permits it.
+
+HARD RULE -- NO FREE TEXT, EVER
+
+Every answer must be selectable by tapping, never typed. Fill-in-the-blank means the child taps a word from a small provided word bank into the blank -- never an open text field. This applies at every age band.
+
+EMOTIONAL INTELLIGENCE -- ACCEPTED ANSWER SETS, NOT ONE RIGID ANSWER
+
+Feelings are genuinely more ambiguous than facts. For every EQ question, define 2 to 3 reasonably valid feeling words for that moment as the accepted set, not a single correct answer -- for example, both "nervous" and "worried" should be accepted for a child who felt scared but not frightened. The remaining wrong options should be feelings that clearly do NOT fit the scene, not near-misses.
+
+MULTIPLE CHOICE OPTION RULES
+
+- Use between 2 and 4 options per question -- vary this across the set.
+- Vary where the correct answer sits -- do not put it in the same position across multiple questions in the same set.
+- Vary option style where natural.
+
+DO NOT REPEAT THE SAME PILLAR-FORMAT PAIRING AS RECENT STORIES
+
+You will be given a short history of which pillar used which format in this child's last few Story Challenges. Avoid repeating an identical pairing where a different valid format exists for that pillar and age band. A child noticing "the format always tells me which pillar this is" is a pattern worth actively avoiding.
+
+QUESTION ORDERING -- MANDATORY
+
+You MUST output questions in this exact pillar sequence:
+  1. All Cognitive growth questions (e.g. 3 in a row)
+  2. All Attention and focus questions
+  3. All Listening questions
+  4. All Emotional intelligence questions
+
+The array index of a question determines whether it is quick-check eligible. Outputting questions in any other order will cause the wrong questions to be treated as in-story quick checks. Do not reorder for "narrative flow" or any other reason.
+
+QUICK-CHECK ELIGIBILITY
+
+Exactly three questions in every set are eligible to double as in-story "quick checks" during playback. They are always:
+  - Question at index 0 (the FIRST Cognitive growth question)
+  - Question at index [cognitive count] (the FIRST Attention and focus question)
+  - Question at index [cognitive count + attention count] (the FIRST Listening question)
+
+The payload includes a "questionSequence" array listing the exact pillar for every index -- use it to confirm which three indices these are.
+
+Mark those three questions with "isQuickCheckEligible": true. All other questions -- including every Emotional intelligence question and every subsequent Cognitive/Attention/Listening question -- must have "isQuickCheckEligible": false.
+
+IMPORTANT: All three quick-check-eligible questions must use format: "mcq". Quick checks appear mid-story during audio playback and require simple tap-to-select interaction -- fill-in-the-blank, match-the-column, and sequencing are not available in that context.
+
+TONE -- LALLI AND FAFA ARE ASKING, NOT TESTING
+
+Every question and every reveal line should sound like Lalli and Fafa are curious and warm, not like a teacher grading an exam. Never phrase a question or a reveal as "the correct answer is" -- reveal lines should sound like a character speaking, e.g. "Close! Fafa was actually nervous here," never "Incorrect. The answer is nervous."
+
+REVEAL FRAMING IS PART OF YOUR OUTPUT
+
+For every question, write a one-line "revealFraming" string -- the warm line shown if a child gets two tries wrong. It should reference the correct answer naturally, in Lalli or Fafa's voice, grounded in the same story moment as the question itself.
+
+OUTPUT FORMAT
+
+Return ONLY valid JSON matching the schema you were given. No preamble, no explanation, no markdown code fences -- the raw JSON object only.
+
+OUTPUT SCHEMA:
+{
+  "questions": [
+    {
+      "id": "q1",
+      "pillar": "listening" | "attention" | "cognitive" | "emotional",
+      "format": "mcq" | "fill_blank" | "match_column" | "sequence",
+      "isQuickCheckEligible": true | false,
+      "storyGrounding": "brief note on which story moment this references",
+      "promptText": "the question shown to the child",
+      "content": {
+        // mcq: { "options": [{"id":"a","text":"..."},...], "correctOptionIds": ["b"] }
+        // EQ mcq: { "options": [...], "correctOptionIds": ["b","c"] }
+        // fill_blank: { "sentenceWithBlank": "Fafa felt ___ when he saw the puppy.", "wordBank": ["nervous","excited","sleepy","angry"], "correctWord": "nervous" }
+        // match_column: { "leftItems": [{"id":"l1","text":"..."}], "rightItems": [{"id":"r1","text":"..."}], "correctPairs": [["l1","r1"]] }
+        // sequence: { "items": [{"id":"s1","text":"..."}], "correctOrder": ["s2","s1","s3"] }
+      },
+      "revealFraming": "warm one-line reveal, in Lalli or Fafa voice"
+    }
+  ]
+}`;
+
 // ─── Tab: Stings ─────────────────────────────────────────────────────────────
 
 const EMOTIONS = [
@@ -2503,6 +2796,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "story-types", label: "Story Types" },
   { key: "languages", label: "Languages" },
   { key: "system-prompt", label: "System Prompt" },
+  { key: "challenge-config", label: "Challenge Config" },
 ];
 
 export default function AdminPage() {
@@ -2701,6 +2995,7 @@ export default function AdminPage() {
           {activeTab === "story-types" && <TabErrorBoundary><StoryTypesTab isAdmin={isAdmin} /></TabErrorBoundary>}
           {activeTab === "languages" && <TabErrorBoundary><LanguagesTab isAdmin={isAdmin} /></TabErrorBoundary>}
           {activeTab === "system-prompt" && <TabErrorBoundary><SystemPromptTab isAdmin={isAdmin} /></TabErrorBoundary>}
+          {activeTab === "challenge-config" && <TabErrorBoundary><ChallengeConfigTab isAdmin={isAdmin} /></TabErrorBoundary>}
         </div>
       </main>
     </div>

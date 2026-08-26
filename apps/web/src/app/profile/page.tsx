@@ -121,7 +121,7 @@ function animalEmoji(animal?: string) {
 type ProfileFields = {
   parentName: string; childName: string; childNickName: string;
   childAge: string; childGender: string; favoriteColor: string; favoriteAnimal: string;
-  city: string; country: string;
+  city: string; country: string; childPhoneticName: string;
 };
 
 function EditModal({
@@ -211,6 +211,20 @@ function EditModal({
               <label style={labelStyle}>Nickname</label>
               <input style={inputStyle} value={form.childNickName} onChange={(e) => set("childNickName", e.target.value)} placeholder="e.g. Vany" />
             </div>
+          </div>
+
+          {/* Phonetic pronunciation hint */}
+          <div className="flex flex-col gap-1.5">
+            <label style={labelStyle}>How to say their name <span style={{ fontWeight: 500, opacity: 0.6 }}>(optional)</span></label>
+            <input
+              style={inputStyle}
+              value={form.childPhoneticName}
+              onChange={(e) => set("childPhoneticName", e.target.value.slice(0, 30))}
+              placeholder="e.g. Aan-ya, Dhruv, Krish-iv"
+            />
+            <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", fontWeight: 600 }}>
+              Helps the narrator say your child&apos;s name correctly in audio stories.
+            </p>
           </div>
 
           {/* Age + gender */}
@@ -353,6 +367,7 @@ export default function ProfilePage() {
       favoriteAnimal: form.favoriteAnimal || undefined,
       city: form.city || undefined,
       country: form.country || undefined,
+      childPhoneticName: form.childPhoneticName.trim() || undefined,
     });
     toast.success("Profile updated! ✨");
   }, [updateProfile]);
@@ -430,15 +445,16 @@ export default function ProfilePage() {
           return (
             <EditModal
               initial={{
-                parentName:    (p as { parentName?: string }).parentName    ?? "",
-                childName:     (p as { childName?: string }).childName      ?? "",
-                childNickName: (p as { childNickName?: string }).childNickName ?? "",
-                childAge:      String((p as { childAge?: number }).childAge ?? ""),
-                childGender:   (p as { childGender?: string }).childGender  ?? "female",
-                favoriteColor: (p as { favoriteColor?: string }).favoriteColor ?? "",
-                favoriteAnimal:(p as { favoriteAnimal?: string }).favoriteAnimal ?? "",
-                city:          (p as { city?: string }).city ?? "",
-                country:       (p as { country?: string }).country ?? "",
+                parentName:       (p as { parentName?: string }).parentName       ?? "",
+                childName:        (p as { childName?: string }).childName         ?? "",
+                childNickName:    (p as { childNickName?: string }).childNickName ?? "",
+                childAge:         String((p as { childAge?: number }).childAge    ?? ""),
+                childGender:      (p as { childGender?: string }).childGender     ?? "female",
+                favoriteColor:    (p as { favoriteColor?: string }).favoriteColor ?? "",
+                favoriteAnimal:   (p as { favoriteAnimal?: string }).favoriteAnimal ?? "",
+                city:             (p as { city?: string }).city                   ?? "",
+                country:          (p as { country?: string }).country             ?? "",
+                childPhoneticName:(p as { childPhoneticName?: string }).childPhoneticName ?? "",
               }}
               onSave={handleSaveProfile}
               onClose={() => setEditOpen(false)}

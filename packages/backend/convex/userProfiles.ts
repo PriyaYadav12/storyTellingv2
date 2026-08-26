@@ -1,4 +1,4 @@
-﻿import { mutation, query } from "./_generated/server";
+﻿import { mutation, query, internalQuery, internalMutation } from "./_generated/server";
 import { authComponent } from "./auth";
 import { v, GenericId } from "convex/values";
 import { action } from "./_generated/server";
@@ -60,6 +60,13 @@ export const createProfile = mutation({
 	},
 });
 
+export const _getProfileById = internalQuery({
+	args: { profileId: v.string() },
+	handler: async (ctx, { profileId }) => {
+		return await ctx.db.get(profileId as GenericId<"user_profiles">);
+	},
+});
+
 export const updateProfile = mutation({
 	args: {
 		parentName: v.string(),
@@ -71,6 +78,7 @@ export const updateProfile = mutation({
 		favoriteAnimal: v.optional(v.string()),
 		city: v.optional(v.string()),
 		country: v.optional(v.string()),
+		childPhoneticName: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const user = await authComponent.getAuthUser(ctx);
@@ -104,6 +112,7 @@ export const updateChild2 = mutation({
 		child2NickName: v.optional(v.string()),
 		child2FavoriteColor: v.optional(v.string()),
 		child2FavoriteAnimal: v.optional(v.string()),
+		child2PhoneticName: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const user = await authComponent.getAuthUser(ctx);
@@ -135,6 +144,7 @@ export const updateChild2 = mutation({
 			updateData.child2NickName = undefined;
 			updateData.child2FavoriteColor = undefined;
 			updateData.child2FavoriteAnimal = undefined;
+			updateData.child2PhoneticName = undefined;
 		} else {
 			// Update with provided values
 			if (args.child2Name !== undefined) updateData.child2Name = args.child2Name;
@@ -143,6 +153,7 @@ export const updateChild2 = mutation({
 			if (args.child2NickName !== undefined) updateData.child2NickName = args.child2NickName;
 			if (args.child2FavoriteColor !== undefined) updateData.child2FavoriteColor = args.child2FavoriteColor;
 			if (args.child2FavoriteAnimal !== undefined) updateData.child2FavoriteAnimal = args.child2FavoriteAnimal;
+			if (args.child2PhoneticName !== undefined) updateData.child2PhoneticName = args.child2PhoneticName;
 		}
 
 		return await ctx.db.patch(profile._id, updateData);
@@ -259,6 +270,24 @@ export const _updateAvatarStorageId = mutation({
     }
 
     return await ctx.db.patch(profile._id, updateData);
+  },
+});
+
+// Called from internalAction (no auth context) — takes profileId directly.
+export const _updateAvatarStorageIdById = internalMutation({
+  args: {
+    profileId: v.id("user_profiles"),
+    avatarStorageId: v.string(),
+    childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
+  },
+  handler: async (ctx, { profileId, avatarStorageId, childId = "1" }) => {
+    const updateData: any = { updatedAt: Date.now() };
+    if (childId === "1") {
+      updateData.childAvatarStorageId = avatarStorageId;
+    } else {
+      updateData.child2AvatarStorageId = avatarStorageId;
+    }
+    return await ctx.db.patch(profileId, updateData);
   },
 });
 
