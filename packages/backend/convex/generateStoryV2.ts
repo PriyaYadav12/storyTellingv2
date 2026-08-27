@@ -34,7 +34,7 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type AgeGroup = "A" | "B" | "C";
+export type AgeGroup = "A" | "B" | "C";
 type Mode = "quest" | "wonder";
 type StoryLength = "quick" | "big";
 type PreferenceRole = "primary" | "secondary" | "background" | "omitted";
@@ -113,7 +113,7 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function computeSpeakerWordShares(
+export function computeSpeakerWordShares(
   body:      string,
   childName: string
 ): { narrator: number; lalli: number; fafa: number; child: number; total: number } {
@@ -219,6 +219,11 @@ function runDeterministicValidation(
   });
 
   // 6. Prohibited emotion words
+  // §M/§O TRACKED OPEN ITEM — deliberate deferral: only these 4 words are checked here.
+  // The spec enumerates ~19 safety categories (violence, discrimination, adult themes, etc.).
+  // Post-generation safety relies on Gemini's built-in content filtering + these 4 keyword
+  // checks. Closing the full gap requires an additional content-safety LLM call or a curated
+  // blocklist. Revisit before any paid marketing push or meaningful user-count scale-up.
   for (const word of ["afraid", "angry", "terrified", "furious"]) {
     if (new RegExp(`\\b${word}\\b`, "i").test(body)) {
       issues.push({
@@ -242,7 +247,30 @@ function runDeterministicValidation(
     }
   }
 
-  // 8. Dialogue word-share against age-group targets (§I — ±15pp tolerance)
+  // 8. Fafa gag-line presence (SystemPromptV5 §character spec — exactly 1 line ≤8 words)
+  const fafaDialogueLines = body
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => /^Fafa:\s*/i.test(l))
+    .map((l) => l.replace(/^Fafa:\s*/i, "").trim());
+  if (fafaDialogueLines.length > 0) {
+    const gagCandidates = fafaDialogueLines.filter(
+      (l) => l.split(/\s+/).filter(Boolean).length <= 8
+    );
+    if (gagCandidates.length === 0) {
+      issues.push({
+        code:        "FAFA_GAG_LINE_MISSING",
+        severity:    "warning",
+        description: `Fafa has ${fafaDialogueLines.length} line(s) but none are ≤8 words. The gag line must be brief and punchy (under 8 words).`,
+        repairHint:  "Shorten one of Fafa's lines to 8 words or fewer for the gag beat.",
+      });
+    }
+  }
+
+  // 9. Dialogue word-share against age-group targets (§I — ±15pp tolerance)
+  // NOTE: real per-speaker baseline numbers from existing stories have not been verified against
+  // these targets. Pull a sample from the Convex dashboard and confirm ±15pp is realistic before
+  // tightening this tolerance.
   const targets = resolveDialogueTargets(ageGroup);
   const shares  = computeSpeakerWordShares(body, childName);
   if (shares.total > 0) {
@@ -264,9 +292,13 @@ function runDeterministicValidation(
       }
     }
     if (offTarget.length > 0) {
+      // Downgraded from "critical" to "warning" — real LLM output averages 66-96% narrator
+      // vs the 30-45% spec targets. Repair was firing on ~88% of stories and consistently
+      // failing to fix the distribution, wasting 20-60s per story. Keeping as warning retains
+      // the diagnostic signal; target calibration or prompt tuning is a separate decision.
       issues.push({
         code:        "DIALOGUE_WORD_SHARE_OFF_TARGET",
-        severity:    "critical",
+        severity:    "warning",
         description: `Word-share distribution off-target: ${offTarget.join("; ")}.`,
         repairHint:  `Rebalance dialogue so each speaker stays within 15pp of age-group ${ageGroup} targets — narrator ${Math.round(targets.narrator * 100)}%, Lalli ${Math.round(targets.lalli * 100)}%, Fafa ${Math.round(targets.fafa * 100)}%, ${childName} ${Math.round(targets.child * 100)}%.`,
       });
@@ -278,6 +310,10 @@ function runDeterministicValidation(
 
 // ─── LLM validator ────────────────────────────────────────────────────────────
 
+// §M/§O TRACKED OPEN ITEM — LLM validation covers 3 semantic rules (pillar, resolver, brand voice).
+// The spec enumerates additional safety dimensions not checked here. Post-generation safety relies
+// on Gemini's built-in content filtering plus the 4 prohibited-word checks in runDeterministicValidation.
+// Revisit before any paid marketing push or meaningful user-count scale-up.
 async function runLLMValidation(
   content:     string,
   primaryPillar: Pillar,
@@ -376,12 +412,31 @@ async function runTargetedRepair(
     const resp    = await makeRequest(0.3, prompt);
     const repaired = resp.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if (repaired && repaired.length > 200) return repaired;
-    console.warn("[v2] Repair returned unusable content — keeping original.");
-    return content;
+    console.warn("[v2] Repair returned unusable content — trying constrained fallback (§O).");
   } catch (err) {
-    console.warn("[v2] Targeted repair failed (soft fail):", err);
-    return content;
+    console.warn("[v2] Targeted repair failed — trying constrained fallback (§O):", err);
   }
+
+  // §O — second fallback: constrained regeneration with a shorter, directive-only prompt.
+  // Focuses only on the top 3 critical issues to reduce prompt complexity.
+  const topIssues = criticals.slice(0, 3);
+  const fallbackPrompt =
+    `Rewrite this children's story to fix these problems:\n` +
+    topIssues.map((i, n) => `${n + 1}. ${i.repairHint}`).join("\n") +
+    `\n\nRules: keep the same characters, setting, and plot. Stay close to ${wordCountLabel} words. ` +
+    `Preserve all structural labels (SCENE METADATA, Scene N:, Lalli:, Fafa:). Return the complete story.\n\n` +
+    `STORY:\n${content}\n\nREWRITTEN STORY:`;
+
+  try {
+    const fallbackResp = await makeRequest(0.2, fallbackPrompt);
+    const fallback = fallbackResp.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (fallback && fallback.length > 200) return fallback;
+    console.warn("[v2] Constrained fallback also returned unusable content — keeping original.");
+  } catch (err) {
+    console.warn("[v2] Constrained fallback failed (soft fail):", err);
+  }
+
+  return content;
 }
 
 // ─── Resolution helpers ───────────────────────────────────────────────────────
@@ -412,7 +467,7 @@ function resolveWordCount(
     : { min: 630, target: 720, max: 800, label: "650–800" };
 }
 
-function resolveDialogueTargets(ageGroup: AgeGroup) {
+export function resolveDialogueTargets(ageGroup: AgeGroup) {
   const map: Record<AgeGroup, { narrator: number; lalli: number; fafa: number; child: number }> = {
     A: { narrator: 0.45, lalli: 0.25, fafa: 0.20, child: 0.10 },
     B: { narrator: 0.35, lalli: 0.25, fafa: 0.20, child: 0.20 },
@@ -460,10 +515,16 @@ function resolvePrimaryPillarFromHistory(
 function resolveSecondaryPillar(
   primaryPillar: Pillar,
   storyLength: StoryLength,
-  recentRecords: Array<{ primaryPillar: Pillar; secondaryPillar?: Pillar }>
+  recentRecords: Array<{ primaryPillar: Pillar; secondaryPillar?: Pillar }>,
+  totalStoriesForChild: number
 ): Pillar | undefined {
   if (storyLength === "quick") return undefined;
   if (recentRecords.length < 2) return undefined; // need history to pick sensibly
+
+  // §E — true 33% frequency gate (1-in-3 cycle, deterministic).
+  // Uses the monotonic total story count (all-time, not capped at 8) so the gate
+  // varies correctly for established users. Fetched via storyMemory.countForChild.
+  if (totalStoriesForChild % 3 !== 0) return undefined;
 
   const recentlyUsed = new Set(
     recentRecords.slice(0, 4).flatMap((r) =>
@@ -480,17 +541,20 @@ function resolveSecondaryPillar(
 }
 
 /**
- * Preference role cycle: primary → secondary → background → primary (repeating).
- * "omitted" is reserved for Phase 3+ when theme inference deems the preference a poor fit.
+ * Preference role cycle: primary → secondary → background → omitted → primary (repeating).
+ * §D — "omitted" is now a reachable state (~25% of stories, 1 in every 4-step cycle).
+ * The spec targets ~30% omission; 25% is the closest achievable with a clean 4-step cycle.
  */
 function resolvePreferenceRole(
   recentRoles: Array<PreferenceRole | undefined>
 ): PreferenceRole {
   if (recentRoles.length === 0) return "primary";
   const last = recentRoles[0];
-  if (!last || last === "background" || last === "omitted") return "primary";
+  // 4-step cycle: primary → secondary → background → omitted → (restart at primary)
+  if (!last || last === "omitted") return "primary";
   if (last === "primary") return "secondary";
   if (last === "secondary") return "background";
+  if (last === "background") return "omitted";
   return "primary";
 }
 
@@ -566,7 +630,7 @@ function resolveComedicDial(
 // ─── Preference payload builder ───────────────────────────────────────────────
 
 const PREFERENCE_GUIDANCE: Record<PreferenceRole, string> = {
-  primary:    "Must be a major character or central to the problem. Give it personality and let it contribute meaningfully to the resolution.",
+  primary:    "Can be a meaningful presence — a companion, a source of comfort, wonder, or fun. It does not need to drive the plot or solve the problem; even a warm cameo that a child would notice and smile at counts.",
   secondary:  "Appears in 2–3 moments as a supporting element — visible and noticed but not the main focus.",
   background: "A single natural mention only — in the setting or passing. No emphasis, no plot role.",
   omitted:    "Do not include this preference anywhere in the story.",
@@ -704,10 +768,26 @@ function buildPayload(args: {
     };
   }
 
+  // Per-speaker word count targets derived from dialogue distribution fractions × word count target.
+  // Rounded to nearest 10 to give a clean instruction without implying false precision.
+  const round10 = (n: number) => Math.round(n / 10) * 10;
+  const speakerWordTargets = {
+    narrator: round10(wordCount.target * dialogueTargets.narrator),
+    lalli:    round10(wordCount.target * dialogueTargets.lalli),
+    fafa:     round10(wordCount.target * dialogueTargets.fafa),
+    child:    round10(wordCount.target * dialogueTargets.child),
+  };
+
   payload.instructions =
     `BEGIN STORY NOW. ` +
     `MANDATORY: The story body must be ${wordCount.label} words (title excluded, SCENE METADATA excluded). ` +
-    `Count your words before finalising.`;
+    `Count your words before finalising. ` +
+    `MANDATORY DIALOGUE BALANCE: narrator narration ≈ ${speakerWordTargets.narrator} words, ` +
+    `Lalli dialogue ≈ ${speakerWordTargets.lalli} words, ` +
+    `Fafa dialogue ≈ ${speakerWordTargets.fafa} words, ` +
+    `${args.child.name} dialogue ≈ ${speakerWordTargets.child} words. ` +
+    `Count each speaker's words separately before finalising. ` +
+    `Narrator narration must not dominate — the story is a dialogue-driven co-adventure, not a narrated tale.`;
 
   return JSON.stringify(payload, null, 2);
 }
@@ -727,6 +807,7 @@ export const _generateContentV2 = internalAction({
       nickname:        v.optional(v.string()),
       favoriteAnimal:  v.optional(v.string()),
       favoriteColor:   v.optional(v.string()),
+      phoneticName:    v.optional(v.string()),
     }),
     userId:   v.string(),
     theme:    v.string(),
@@ -793,7 +874,11 @@ export const _generateContentV2 = internalAction({
     const mode            = requestedMode ?? resolveModeFromHistory(recentMemory);
     const pillarSource    = challengeSignal ? "challenge_signal" : "lru_rotation";
     const primaryPillar   = challengeSignal ?? resolvePrimaryPillarFromHistory(recentMemory);
-    const secondaryPillar = resolveSecondaryPillar(primaryPillar, storyLength, recentMemory);
+    const totalStoriesForChild: number = await ctx.runQuery(
+      (api as any).storyMemory.countForChild,
+      { profileId, childId }
+    );
+    const secondaryPillar = resolveSecondaryPillar(primaryPillar, storyLength, recentMemory, totalStoriesForChild);
     const structureShape  = resolveStructureShape(storyLength, ageGroup);
     const narrativeArc    = resolveNarrativeArc(structureShape, recordCount);
     const comedicDial     = resolveComedicDial(mode, ageGroup, recordCount);
@@ -987,43 +1072,8 @@ export const _generateContentV2 = internalAction({
       console.log("[v2] Validation passed.");
     }
 
-    // ── 5c. Voice/emotion metadata extraction ────────────────────────────
-    // Plain analysis call — no system instruction, low temperature.
-    const makeAnalysisRequest = (text: string) =>
-      gemini.models.generateContent({
-        model:    "gemini-2.5-pro",
-        config:   { temperature: 0.1 },
-        contents: [{ role: "user", parts: [{ text }] }],
-      });
-
-    const voiceMetadata = await extractVoiceEmotionMetadata(content, makeAnalysisRequest);
-
-    // ── 5d. Situational sting placement ──────────────────────────────────
-    const activeStings: { _id: string; name: string; emotion: string; intensity: "subtle" | "medium"; durationSeconds: number }[] =
-      await ctx.runQuery((api as any).stings.listActive, {});
-
-    const availableStings: import("./audioMetadata").AvailableSting[] = activeStings.map((s) => ({
-      stingId:         s._id,
-      stingName:       s.name,
-      emotion:         s.emotion,
-      intensity:       s.intensity,
-      durationSeconds: s.durationSeconds,
-    }));
-
-    const stingPlacements = await computeStingPlacements(
-      content, voiceMetadata, availableStings, makeAnalysisRequest
-    );
-
     // ── 6. Persist story content ──────────────────────────────────────────
     await ctx.runMutation(api.stories._setContent, { storyId, content });
-
-    // Persist Phase 5 audio metadata (non-blocking — soft fail already handled above)
-    await ctx.runMutation((api as any).stories._setVoiceMetadata, {
-      storyId,
-      voiceEmotionMetadata: voiceMetadata.scenes.length > 0 ? voiceMetadata : undefined,
-      stingPlacements:      stingPlacements.length > 0       ? stingPlacements : undefined,
-    });
-
     await ctx.runMutation(api.stories._markStatus, { storyId, status: "text_ready" });
 
     // ── 7. Deduct credits ─────────────────────────────────────────────────
@@ -1053,8 +1103,11 @@ export const _generateContentV2 = internalAction({
     console.log(`[v2] primaryPillar="${primaryPillar}" source="${pillarSource}"${challengeSignal ? ` (challenge window hit)` : ""}`);
 
     // ── 9. Fire image + narration pipelines ──────────────────────────────
+    // Scheduled before metadata extraction so the image and narration pipelines run
+    // in parallel with 5c/5d below, rather than waiting an extra 20-40s for them.
     await ctx.scheduler.runAfter(0, internal.internal.generateSceneImage.generateImages, {
       storyId,
+      profileId,
       child: {
         id:              childId,
         name:            childInfo.name,
@@ -1066,7 +1119,42 @@ export const _generateContentV2 = internalAction({
 
     await ctx.scheduler.runAfter(0, internal.internal.generateNarration.generateNarration, {
       storyId,
-      child: { name: childInfo.name, gender: childInfo.gender },
+      child: { name: childInfo.name, gender: childInfo.gender, phoneticName: childInfo.phoneticName },
+    });
+
+    // ── 5c. Voice/emotion metadata extraction ────────────────────────────
+    // Runs after scheduling so it is in parallel with the image/narration pipelines.
+    // Soft-fails with empty result — never blocks the story from being viewable.
+    const makeAnalysisRequest = (text: string) =>
+      gemini.models.generateContent({
+        model:    "gemini-2.5-pro",
+        config:   { temperature: 0.1 },
+        contents: [{ role: "user", parts: [{ text }] }],
+      });
+
+    const voiceMetadata = await extractVoiceEmotionMetadata(content, makeAnalysisRequest);
+
+    // ── 5d. Situational sting placement ──────────────────────────────────
+    const activeStings: { _id: string; name: string; emotion: string; intensity: "subtle" | "medium"; durationSeconds: number }[] =
+      await ctx.runQuery((api as any).stings.listActive, {});
+
+    const availableStings: import("./audioMetadata").AvailableSting[] = activeStings.map((s) => ({
+      stingId:         s._id,
+      stingName:       s.name,
+      emotion:         s.emotion,
+      intensity:       s.intensity,
+      durationSeconds: s.durationSeconds,
+    }));
+
+    const stingPlacements = await computeStingPlacements(
+      content, voiceMetadata, availableStings, makeAnalysisRequest
+    );
+
+    // Persist Phase 5 audio metadata (non-blocking — soft fail already handled above)
+    await ctx.runMutation((api as any).stories._setVoiceMetadata, {
+      storyId,
+      voiceEmotionMetadata: voiceMetadata.scenes.length > 0 ? voiceMetadata : undefined,
+      stingPlacements:      stingPlacements.length > 0       ? stingPlacements : undefined,
     });
   },
 });
@@ -1097,10 +1185,9 @@ export const enqueueStoryV2: ReturnType<typeof action> = action({
     if (!profile) throw new Error("Profile not found");
 
     const childId = params.childId || "1";
-    const name =
-      childId === "1"
-        ? profile.childName  || profile.childNickName?.trim()
-        : profile.child2Name || profile.child2NickName?.trim();
+    const rawName = childId === "1" ? profile.childName : profile.child2Name;
+    // Always use first name only; legacy nickname is preserved separately below.
+    const name = rawName?.trim().split(" ")[0] || rawName?.trim() || "Child";
     const age =
       childId === "1" ? (profile.childAge  ?? 0) : (profile.child2Age  ?? 0);
     const gender =
@@ -1119,6 +1206,10 @@ export const enqueueStoryV2: ReturnType<typeof action> = action({
       childId === "1"
         ? profile.favoriteColor?.trim()        || undefined
         : profile.child2FavoriteColor?.trim()  || undefined;
+    const phoneticName =
+      childId === "1"
+        ? (profile as any).childPhoneticName?.trim()  || undefined
+        : (profile as any).child2PhoneticName?.trim() || undefined;
 
     // Credit gate
     const storyLength     = resolveStoryLength(params.length);
@@ -1167,6 +1258,7 @@ export const enqueueStoryV2: ReturnType<typeof action> = action({
         nickname,
         favoriteAnimal,
         favoriteColor,
+        phoneticName,
       },
       theme:                params.theme,
       lesson:               params.lesson,

@@ -52,7 +52,7 @@ export default function PrivacyPage() {
               <p><strong>Information you provide directly:</strong></p>
               <ul>
                 <li>Account information: your name, email address, and password when you register</li>
-                <li>Child profile: your child&apos;s first name, nickname, age, gender, favourite colour, and favourite animal — used solely to personalise stories</li>
+                <li>Child profile: your child&apos;s first name, age, gender, favourite colour, and favourite animal — used solely to personalise stories</li>
                 <li>Payment information: processed securely by Razorpay; we do not store card or bank details</li>
               </ul>
               <p><strong>Information collected automatically:</strong></p>

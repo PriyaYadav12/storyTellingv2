@@ -201,16 +201,10 @@ function EditModal({
 
           <div className="h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
 
-          {/* Child name + nickname */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label style={labelStyle}>Child's name</label>
-              <input style={inputStyle} value={form.childName} onChange={(e) => set("childName", e.target.value)} placeholder="e.g. Vanya" required />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label style={labelStyle}>Nickname</label>
-              <input style={inputStyle} value={form.childNickName} onChange={(e) => set("childNickName", e.target.value)} placeholder="e.g. Vany" />
-            </div>
+          {/* Child name */}
+          <div className="flex flex-col gap-1.5">
+            <label style={labelStyle}>Child's name</label>
+            <input style={inputStyle} value={form.childName} onChange={(e) => set("childName", e.target.value)} placeholder="e.g. Vanya" required />
           </div>
 
           {/* Phonetic pronunciation hint */}

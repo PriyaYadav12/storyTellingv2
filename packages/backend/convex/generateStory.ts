@@ -242,10 +242,9 @@ export const enqueueStory: ReturnType<typeof action> = action({
     if (!profile) throw new Error("Profile not found");
 
     const childId = params.childId || "1";
-    const name =
-      childId === "1"
-        ? profile.childName || profile.childNickName?.trim()
-        : profile.child2Name || profile.child2NickName?.trim();
+    const rawName = childId === "1" ? profile.childName : profile.child2Name;
+    // Always use first name only; legacy nickname is preserved separately below.
+    const name = rawName?.trim().split(" ")[0] || rawName?.trim() || "Child";
     const age =
       childId === "1"
         ? profile.childAge ?? 0

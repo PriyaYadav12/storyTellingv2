@@ -200,12 +200,13 @@ export const generateAndStoreAvatar: ReturnType<typeof action> = action({
 	console.log('profile', profile);
 
     // Get child info based on childId
+    const rawAvatarName = childId === "1" ? profile.childName : profile.child2Name;
     const childInfo = childId === "1" ? {
-      name: profile.childName || profile.childNickName || "Child",
+      name: rawAvatarName?.trim().split(" ")[0] || rawAvatarName?.trim() || "Child",
       gender: profile.childGender,
       age: profile.childAge,
     } : {
-      name: profile.child2Name || profile.child2NickName || "Child",
+      name: rawAvatarName?.trim().split(" ")[0] || rawAvatarName?.trim() || "Child",
       gender: profile.child2Gender || "male",
       age: profile.child2Age || 0,
     };

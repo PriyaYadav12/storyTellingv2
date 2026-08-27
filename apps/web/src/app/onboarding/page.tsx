@@ -63,7 +63,6 @@ type Gender = "male" | "female" | "other" | "";
 interface FormData {
   parentName: string;
   childName: string;
-  childNickName: string;
   childAge: number | null;
   childGender: Gender;
   favoriteColor: string;
@@ -168,7 +167,6 @@ function OnboardingForm() {
     return {
       parentName: "",
       childName: "",
-      childNickName: "",
       childAge: null,
       childGender: "" as Gender,
       favoriteColor: "",
@@ -183,14 +181,13 @@ function OnboardingForm() {
       sessionStorage.setItem("lf_onboarding_step1", JSON.stringify({
         parentName: form.parentName,
         childName: form.childName,
-        childNickName: form.childNickName,
         childAge: form.childAge,
         childGender: form.childGender,
         city: form.city,
         country: form.country,
       }));
     } catch {}
-  }, [form.parentName, form.childName, form.childNickName, form.childAge, form.childGender, form.city, form.country]);
+  }, [form.parentName, form.childName, form.childAge, form.childGender, form.city, form.country]);
 
   function update(field: keyof FormData, value: string | number) {
     setForm((f) => ({
@@ -241,7 +238,6 @@ function OnboardingForm() {
         childName: form.childName.trim(),
         childAge: form.childAge ?? 5,
         childGender: form.childGender,
-        childNickName: form.childNickName.trim() || undefined,
         favoriteColor: form.favoriteColor || undefined,
         favoriteAnimal: form.favoriteAnimal || undefined,
         city: form.city.trim() || undefined,
@@ -429,32 +425,17 @@ function OnboardingForm() {
                   </div>
 
                   <div className="flex flex-col gap-5">
-                    {/* Name + Nickname row */}
-                    <div className="flex gap-3">
-                      <div className="flex flex-col gap-2" style={{ flex: 3 }}>
-                        <label style={labelStyle}>Child&apos;s full name</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Aryan Sharma"
-                          value={form.childName}
-                          onChange={(e) => { update("childName", e.target.value); if (fieldErrors.childName) setFieldErrors((f) => ({ ...f, childName: undefined })); }}
-                          style={{ ...inputStyle, borderColor: fieldErrors.childName ? "rgba(248,113,113,0.6)" : "rgba(255,255,255,0.13)" }}
-                          autoFocus
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2" style={{ flex: 2 }}>
-                        <label style={labelStyle}>Nickname <span style={{ opacity: 0.5, textTransform: "none", fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Aru"
-                          value={form.childNickName}
-                          onChange={(e) => update("childNickName", e.target.value)}
-                          style={inputStyle}
-                        />
-                        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: "rgba(255,255,255,0.28)", margin: 0, lineHeight: 1.4 }}>
-                          Used in narration instead of full name
-                        </p>
-                      </div>
+                    {/* Child's name */}
+                    <div className="flex flex-col gap-2">
+                      <label style={labelStyle}>Child&apos;s full name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Aryan Sharma"
+                        value={form.childName}
+                        onChange={(e) => { update("childName", e.target.value); if (fieldErrors.childName) setFieldErrors((f) => ({ ...f, childName: undefined })); }}
+                        style={{ ...inputStyle, borderColor: fieldErrors.childName ? "rgba(248,113,113,0.6)" : "rgba(255,255,255,0.13)" }}
+                        autoFocus
+                      />
                     </div>
 
                     {/* Age picker */}

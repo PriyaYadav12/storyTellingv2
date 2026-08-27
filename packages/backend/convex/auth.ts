@@ -137,6 +137,27 @@ function createAuth(
         }
       },
       sendOnSignUp: true,
+      // Send the welcome email only after verification is confirmed — not at
+      // account creation — to avoid sending to unverified/wrong addresses.
+      afterEmailVerification: async (user) => {
+        const resendKey = process.env.RESEND_API_KEY;
+        if (!resendKey || !user.email) return;
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: "Lalli Fafa <raj@lallifafa.com>",
+              to: [user.email],
+              subject: "Welcome to Lalli Fafa — your child's story journey begins 🌙",
+              html: buildWelcomeEmail(user.name ?? undefined),
+              text: buildWelcomeText(user.name ?? undefined),
+            }),
+          });
+        } catch (err) {
+          console.error("Failed to send welcome email after verification:", err);
+        }
+      },
     },
     emailAndPassword: {
       enabled: true,
@@ -204,6 +225,9 @@ function createAuth(
               console.error("Failed to initialize user role record:", err);
             }
 
+            // Welcome email is sent via afterEmailVerification (for email+password users)
+            // or at this point only for social-login users whose email is already verified.
+            if (!(user as any).emailVerified) return;
             const resendKey = process.env.RESEND_API_KEY;
             if (!resendKey || !user.email) return;
             try {
