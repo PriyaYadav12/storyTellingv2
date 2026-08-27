@@ -94,7 +94,7 @@ export function UserPill({ variant = "light" }: Props) {
   // Don't render until profile data is ready (avoids flash)
   if (!isAuthenticated || profile === undefined) return null;
 
-  const childName = profile?.childName?.trim().split(" ")[0] || profile?.childNickName || "there";
+  const childName = profile?.childName?.trim().split(" ")[0] || "there";
   const initial   = childName[0].toUpperCase();
   const grad      = avatarGrad(profile?.favoriteColor);
 
