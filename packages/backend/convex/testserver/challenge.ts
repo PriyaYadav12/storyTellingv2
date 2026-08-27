@@ -340,6 +340,11 @@ export const generateChallenge = action({
   handler: async (ctx, { storyId }): Promise<{ challengeId: string }> => {
     const { userId } = await assertAdminInAction(ctx);
 
+    // If a completed challenge already exists for this story+user, return it.
+    // Prevents children from retaking a challenge on any child-facing path.
+    const completed = await ctx.runQuery(internal.testserver.challenge._getCompletedForStory, { userId, storyId });
+    if (completed) return { challengeId: completed._id };
+
     const story = await ctx.runQuery(api.stories.get, { storyId });
     if (!story || !story.content) throw new Error("Story not ready yet");
 
@@ -758,8 +763,9 @@ export const submitChallenge = mutation({
     challengeId: v.id("testserver_challenges"),
     answers: v.array(v.object({
       index: v.number(),
-      answeredData: v.optional(v.string()),  // new-format JSON answer
-      answeredIndex: v.optional(v.number()), // legacy MCQ fallback
+      answeredData: v.optional(v.string()),      // new-format JSON answer
+      answeredIndex: v.optional(v.number()),     // legacy MCQ fallback
+      firstAttemptCorrect: v.optional(v.boolean()), // captured at first tap, used for scoring
     })),
   },
   handler: async (ctx, { challengeId, answers }) => {
@@ -779,6 +785,12 @@ export const submitChallenge = mutation({
     const answerMap = new Map(answers.map((a) => [a.index, a]));
     if (challengeIndices.some((i) => !answerMap.has(i))) throw new Error("Missing an answer");
 
+    // Build first-attempt map from challenge answers (quick-check answers don't carry this)
+    const firstAttemptMap = new Map<number, boolean>();
+    for (const [i, a] of answerMap) {
+      if (a.firstAttemptCorrect !== undefined) firstAttemptMap.set(i, a.firstAttemptCorrect);
+    }
+
     // Merge quick-check answers + challenge answers
     const fullAnswerMap = new Map<number, { answeredData?: string; answeredIndex?: number }>();
     for (const a of row.answeredIndices ?? []) fullAnswerMap.set(a.index, a);
@@ -794,7 +806,12 @@ export const submitChallenge = mutation({
       if (!ans) return;
       const bucket = perPillar.get(q.pillar as Pillar)!;
       bucket.total += 1;
-      const correct = isAnswerCorrect(q, ans.answeredData, ans.answeredIndex);
+      // Use first-attempt correctness for scoring if available (challenge questions);
+      // fall back to final-answer correctness for quick-check questions.
+      const firstAttempt = firstAttemptMap.get(i);
+      const correct = firstAttempt !== undefined
+        ? firstAttempt
+        : isAnswerCorrect(q, ans.answeredData, ans.answeredIndex);
       if (correct) { bucket.correct += 1; gradableCorrect += 1; }
     });
 
@@ -818,12 +835,17 @@ export const submitChallenge = mutation({
       challengeIndices,
     };
 
-    // Merge all answered records
+    // Merge all answered records (persist firstAttemptCorrect for auditability)
     const mergedAnswered = [...(row.answeredIndices ?? [])];
     for (const i of challengeIndices) {
       if (!mergedAnswered.some((a) => a.index === i)) {
         const ans = answerMap.get(i)!;
-        mergedAnswered.push({ index: i, answeredData: ans.answeredData, answeredIndex: ans.answeredIndex });
+        mergedAnswered.push({
+          index: i,
+          answeredData: ans.answeredData,
+          answeredIndex: ans.answeredIndex,
+          ...(ans.firstAttemptCorrect !== undefined ? { firstAttemptCorrect: ans.firstAttemptCorrect } : {}),
+        });
       }
     }
 
@@ -843,6 +865,18 @@ export const submitChallenge = mutation({
     });
 
     return score;
+  },
+});
+
+// Internal helper: returns an existing completed challenge for this story+user, if any.
+export const _getCompletedForStory = internalQuery({
+  args: { userId: v.string(), storyId: v.id("stories") },
+  handler: async (ctx, { userId, storyId }) => {
+    return await ctx.db
+      .query("testserver_challenges")
+      .withIndex("by_story", (q) => q.eq("storyId", storyId))
+      .filter((q) => q.and(q.eq(q.field("userId"), userId), q.eq(q.field("status"), "completed")))
+      .first();
   },
 });
 

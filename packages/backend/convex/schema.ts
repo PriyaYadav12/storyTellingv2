@@ -33,6 +33,10 @@ export default defineSchema({
 		child2FavoriteAnimal: v.optional(v.string()),
 		child2AvatarStorageId: v.optional(v.string()),
 		child2ProfilePicture: v.optional(v.string()),
+		// Phonetic pronunciation hints — stored as-is and substituted into TTS text only.
+		// Never modifies the displayed story text; affects narration audio only.
+		childPhoneticName: v.optional(v.string()),
+		child2PhoneticName: v.optional(v.string()),
 		// Streak tracking
 		currentStreak: v.optional(v.number()),
 		longestStreak: v.optional(v.number()),
@@ -341,11 +345,36 @@ flavor_openings: defineTable({
 				v.literal("emotional"),
 				v.literal("cognitive")
 			),
+			// Legacy MCQ-only fields (kept for backward compat with old rows)
 			snippet: v.string(),
-			question: v.string(),
-			options: v.array(v.string()),
+			question: v.optional(v.string()),
+			options: v.optional(v.array(v.string())),
 			correctIndex: v.optional(v.number()),
 			expectedIndex: v.optional(v.number()),
+			// v2.1 new fields — all optional for backward compat
+			id: v.optional(v.string()),
+			format: v.optional(v.union(
+				v.literal("mcq"), v.literal("fill_blank"),
+				v.literal("match_column"), v.literal("sequence")
+			)),
+			isQuickCheckEligible: v.optional(v.boolean()),
+			storyGrounding: v.optional(v.string()),
+			promptText: v.optional(v.string()),
+			revealFraming: v.optional(v.string()),
+			// MCQ new-style: {id,text} options + accepted-set correctOptionIds
+			richOptions: v.optional(v.array(v.object({ id: v.string(), text: v.string() }))),
+			correctOptionIds: v.optional(v.array(v.string())),
+			// fill_blank
+			sentenceWithBlank: v.optional(v.string()),
+			wordBank: v.optional(v.array(v.string())),
+			correctWord: v.optional(v.string()),
+			// match_column
+			leftItems: v.optional(v.array(v.object({ id: v.string(), text: v.string() }))),
+			rightItems: v.optional(v.array(v.object({ id: v.string(), text: v.string() }))),
+			correctPairs: v.optional(v.array(v.array(v.string()))),
+			// sequence
+			sequenceItems: v.optional(v.array(v.object({ id: v.string(), text: v.string() }))),
+			correctOrder: v.optional(v.array(v.string())),
 		})),
 		// v1.3 (16 Aug 2026): 3 of the 10 `questions` are designated in-story
 		// quick checks (one cognitive/attention/listening each); the other 7
@@ -355,7 +384,19 @@ flavor_openings: defineTable({
 		quickCheckIndices: v.optional(v.array(v.number())),
 		// Every answer given so far, whether from a live in-story quick check
 		// or from the Story Challenge screen — keyed by index into `questions`.
-		answeredIndices: v.optional(v.array(v.object({ index: v.number(), answeredIndex: v.number() }))),
+		// answeredIndex is legacy MCQ (option position); answeredData is new-format
+		// JSON (selectedId / selectedWord / pairs / order).
+		answeredIndices: v.optional(v.array(v.object({
+			index: v.number(),
+			answeredIndex: v.optional(v.number()),
+			answeredData: v.optional(v.string()),
+			// Captured at the moment of the child's first tap — true if first attempt
+			// was correct, false if they needed a retry. Used for first-attempt scoring.
+			firstAttemptCorrect: v.optional(v.boolean()),
+		}))),
+		// Pillar→format pairings recorded after generation — used as
+		// recentPillarFormatHistory for the NEXT challenge's generation payload.
+		pillarFormatHistory: v.optional(v.array(v.object({ pillar: v.string(), format: v.string() }))),
 		// `quickCheck` (above) and `answers` (below) are deprecated pre-v1.3
 		// fields, kept optional only so the one test row from the first build
 		// still validates. No longer written.

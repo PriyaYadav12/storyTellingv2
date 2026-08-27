@@ -23,7 +23,7 @@ import {
 const BG_TRACKS = ["/music/bg-1.mp3", "/music/bg-2.mp3", "/music/bg-3.mp3", "/music/bg-4.mp3", "/music/bg-5.mp3"];
 const BG_VOLUME = 0.16;
 
-type Answer = { index: number; answeredIndex?: number; answeredData?: string };
+type Answer = { index: number; answeredIndex?: number; answeredData?: string; firstAttemptCorrect: boolean };
 
 function getOpts(q: any): { id: string; text: string }[] {
   if (q.richOptions?.length) return q.richOptions;
@@ -65,14 +65,21 @@ function FillBlankArea({
   question,
   onSubmit,
   disabled,
+  wrongWords,
 }: {
   question: any;
   onSubmit: (word: string) => void;
   disabled: boolean;
+  wrongWords: Set<string>;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const parts: string[] = (question.sentenceWithBlank ?? "___").split("___");
   const wordBank: string[] = question.wordBank ?? [];
+
+  // Clear the blank when the selected word becomes wrong (parent signals via wrongWords)
+  useEffect(() => {
+    if (selected !== null && wrongWords.has(selected)) setSelected(null);
+  }, [wrongWords, selected]);
 
   return (
     <div>
@@ -114,27 +121,30 @@ function FillBlankArea({
       </p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {wordBank.map((word) => {
-          const isSelected = selected === word;
+          const isWrong = wrongWords.has(word);
+          const isSelected = !isWrong && selected === word;
+          const isDisabled = disabled || isWrong;
           return (
             <button
               key={word}
               onClick={() => {
-                if (disabled) return;
+                if (isDisabled) return;
                 setSelected(word);
                 onSubmit(word);
               }}
-              disabled={disabled}
+              disabled={isDisabled}
               style={{
                 minHeight: 52,
                 padding: "10px 18px",
                 borderRadius: 14,
-                border: `2px solid ${isSelected ? "var(--lf-teal)" : "rgba(14,10,31,0.12)"}`,
-                background: isSelected ? "rgba(0,201,167,0.1)" : "#fff",
+                border: `2px solid ${isWrong ? "#e57373" : isSelected ? "var(--lf-teal)" : "rgba(14,10,31,0.12)"}`,
+                background: isWrong ? "rgba(229,115,115,0.1)" : isSelected ? "rgba(0,201,167,0.1)" : "#fff",
                 fontFamily: "'Nunito', sans-serif",
                 fontWeight: 700,
                 fontSize: 15,
-                color: "var(--lf-dark)",
-                cursor: disabled ? "default" : "pointer",
+                color: isWrong ? "#c62828" : "var(--lf-dark)",
+                cursor: isDisabled ? "default" : "pointer",
+                opacity: isWrong ? 0.7 : 1,
                 transition: "all 0.15s",
               }}
             >
@@ -153,6 +163,7 @@ function MatchColumnArea({
   question,
   selectedLeft,
   matchedPairs,
+  wrongPairs,
   onTapLeft,
   onTapRight,
   disabled,
@@ -160,12 +171,16 @@ function MatchColumnArea({
   question: any;
   selectedLeft: string | null;
   matchedPairs: [string, string][];
+  wrongPairs: [string, string][];
   onTapLeft: (id: string) => void;
   onTapRight: (id: string) => void;
   disabled: boolean;
 }) {
   const leftItems: { id: string; text: string }[] = question.leftItems ?? [];
   const rightItems: { id: string; text: string }[] = question.rightItems ?? [];
+
+  const wrongLeftIds = new Set(wrongPairs.map(([l]) => l));
+  const wrongRightIds = new Set(wrongPairs.map(([, r]) => r));
 
   return (
     <div>
@@ -178,8 +193,11 @@ function MatchColumnArea({
             const pairIdx = matchedPairs.findIndex(([l]) => l === item.id);
             const isMatched = pairIdx >= 0;
             const isSelected = selectedLeft === item.id;
+            const isWrong = !isMatched && wrongLeftIds.has(item.id);
             const borderColor = isMatched
               ? PAIR_COLORS[pairIdx % PAIR_COLORS.length]
+              : isWrong
+              ? "#e57373"
               : isSelected
               ? "var(--lf-teal)"
               : "rgba(14,10,31,0.12)";
@@ -195,13 +213,15 @@ function MatchColumnArea({
                   border: `2px solid ${borderColor}`,
                   background: isMatched
                     ? `${PAIR_COLORS[pairIdx % PAIR_COLORS.length]}18`
+                    : isWrong
+                    ? "rgba(229,115,115,0.08)"
                     : isSelected
                     ? "rgba(0,201,167,0.08)"
                     : "#fff",
                   fontFamily: "'Nunito', sans-serif",
                   fontWeight: 700,
                   fontSize: 13,
-                  color: "var(--lf-dark)",
+                  color: isWrong ? "#c62828" : "var(--lf-dark)",
                   cursor: disabled || isMatched ? "default" : "pointer",
                   textAlign: "left",
                   transition: "all 0.15s",
@@ -220,6 +240,7 @@ function MatchColumnArea({
           {rightItems.map((item) => {
             const pairIdx = matchedPairs.findIndex(([, r]) => r === item.id);
             const isMatched = pairIdx >= 0;
+            const isWrong = !isMatched && wrongRightIds.has(item.id);
             const canTap = !!selectedLeft && !isMatched && !disabled;
             return (
               <button
@@ -230,15 +251,15 @@ function MatchColumnArea({
                   minHeight: 52,
                   padding: "10px 12px",
                   borderRadius: 14,
-                  border: `2px solid ${isMatched ? PAIR_COLORS[pairIdx % PAIR_COLORS.length] : "rgba(14,10,31,0.12)"}`,
-                  background: isMatched ? `${PAIR_COLORS[pairIdx % PAIR_COLORS.length]}18` : "#fff",
+                  border: `2px solid ${isMatched ? PAIR_COLORS[pairIdx % PAIR_COLORS.length] : isWrong ? "#e57373" : "rgba(14,10,31,0.12)"}`,
+                  background: isMatched ? `${PAIR_COLORS[pairIdx % PAIR_COLORS.length]}18` : isWrong ? "rgba(229,115,115,0.08)" : "#fff",
                   fontFamily: "'Nunito', sans-serif",
                   fontWeight: 700,
                   fontSize: 13,
-                  color: "var(--lf-dark)",
+                  color: isWrong ? "#c62828" : "var(--lf-dark)",
                   cursor: canTap ? "pointer" : "default",
                   textAlign: "left",
-                  opacity: !canTap && !isMatched ? 0.55 : 1,
+                  opacity: !canTap && !isMatched && !isWrong ? 0.55 : 1,
                   transition: "all 0.15s",
                 }}
               >
@@ -411,9 +432,19 @@ export default function StoryChallengeScreen() {
   const [wrongMcqIds, setWrongMcqIds] = useState<Set<string>>(new Set());
   const [selectedMcqId, setSelectedMcqId] = useState<string | null>(null);
 
+  // fill_blank: word-bank tiles tapped wrong (stay red+disabled for question lifetime)
+  const [wrongFillWords, setWrongFillWords] = useState<Set<string>>(new Set());
+
+  // match_column: pairs from the most recent wrong submission (shown as red on retry)
+  const [wrongMatchPairs, setWrongMatchPairs] = useState<[string, string][]>([]);
+
   // Prevents rapid double-tap from firing two handleAnswer calls in quick
   // succession and skipping from first-wrong straight to second-wrong.
   const answerCooldownRef = useRef(false);
+
+  // Captures correctness of the child's very first tap per question.
+  // Never overwritten after the first call — used for first-attempt scoring.
+  const firstAttemptCorrectRef = useRef<boolean | null>(null);
 
   // match_column interaction state (parent-managed so parent can reset on retry)
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
@@ -425,11 +456,14 @@ export default function StoryChallengeScreen() {
   // Reset everything when moving to the next question
   useEffect(() => {
     answerCooldownRef.current = false;
+    firstAttemptCorrectRef.current = null;
     setWrongAttempts(0);
     setShowReveal(false);
     setAck(false);
     setWrongMcqIds(new Set());
     setSelectedMcqId(null);
+    setWrongFillWords(new Set());
+    setWrongMatchPairs([]);
     setSelectedLeft(null);
     setMatchedPairs([]);
     setOrderedIds([]);
@@ -503,10 +537,17 @@ export default function StoryChallengeScreen() {
   function handleAnswer(answeredData: string, answeredIndex?: number) {
     if (ack || answerCooldownRef.current) return;
     const correct = checkCorrect(q, answeredData, answeredIndex);
+
+    // Capture first-attempt correctness exactly once per question
+    if (firstAttemptCorrectRef.current === null) {
+      firstAttemptCorrectRef.current = correct;
+    }
+
     const newAnswer: Answer = {
       index: q.index,
       answeredData,
       ...(answeredIndex !== undefined ? { answeredIndex } : {}),
+      firstAttemptCorrect: firstAttemptCorrectRef.current,
     };
 
     if (correct) {
@@ -526,6 +567,14 @@ export default function StoryChallengeScreen() {
       setSelectedLeft(null);
       setMatchedPairs([]);
       setOrderedIds([]);
+      // Persist wrong fill-blank word as red+disabled
+      if (fmt === "fill_blank") {
+        try { setWrongFillWords(prev => new Set(prev).add(JSON.parse(answeredData).selectedWord)); } catch { /**/ }
+      }
+      // Persist wrong match pairs as red on retry
+      if (fmt === "match_column") {
+        try { setWrongMatchPairs(JSON.parse(answeredData).pairs ?? []); } catch { /**/ }
+      }
       playWrongSound();
       return;
     }
@@ -665,13 +714,14 @@ export default function StoryChallengeScreen() {
         </div>
       )}
 
-      {/* Fill in the blank — remount on retry via key */}
+      {/* Fill in the blank — keyed to question only; wrong words stay red without remounting */}
       {fmt === "fill_blank" && (
         <FillBlankArea
-          key={`fb-${index}-${wrongAttempts}`}
+          key={`fb-${index}`}
           question={q}
           onSubmit={(word) => handleAnswer(JSON.stringify({ selectedWord: word }))}
           disabled={ack}
+          wrongWords={wrongFillWords}
         />
       )}
 
@@ -681,6 +731,7 @@ export default function StoryChallengeScreen() {
           question={q}
           selectedLeft={selectedLeft}
           matchedPairs={matchedPairs}
+          wrongPairs={wrongMatchPairs}
           onTapLeft={tapLeft}
           onTapRight={tapRight}
           disabled={ack}

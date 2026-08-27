@@ -206,6 +206,7 @@ export default function ResultsScreen() {
                   question={q}
                   selectedIndex={entry?.answeredIndex}
                   answeredData={entry?.answeredData}
+                  firstAttemptCorrect={entry?.firstAttemptCorrect}
                 />
               );
             })}
@@ -278,18 +279,23 @@ function QuestionReviewCard({
   question,
   selectedIndex,
   answeredData,
+  firstAttemptCorrect,
 }: {
   index: number;
   question: any;
   selectedIndex?: number;
   answeredData?: string;
+  firstAttemptCorrect?: boolean;
 }) {
   const pillar = question.pillar as Pillar;
   const fmt: string = question.format ?? "mcq";
 
-  // Determine correctness per format
+  // Use stored first-attempt flag when available (accurate for scoring);
+  // fall back to computing from final answer (older rows / quick-check entries).
   let isCorrect = false;
-  try {
+  if (firstAttemptCorrect !== undefined) {
+    isCorrect = firstAttemptCorrect;
+  } else try {
     if (fmt === "mcq") {
       if (answeredData) {
         const a = JSON.parse(answeredData);
