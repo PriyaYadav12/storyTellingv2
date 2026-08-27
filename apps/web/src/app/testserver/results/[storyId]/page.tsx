@@ -351,23 +351,24 @@ function QuestionReviewCard({
         const selectedId = answeredData
           ? JSON.parse(answeredData).selectedId
           : selectedIndex !== undefined ? String(selectedIndex) : null;
-        const correctId = question.correctOptionIds?.length
-          ? question.correctOptionIds[0]
-          : String(question.correctIndex ?? question.expectedIndex);
+        // All valid answers for this question — may be >1 for EQ multi-accept sets
+        const correctIds: Set<string> = question.correctOptionIds?.length
+          ? new Set<string>(question.correctOptionIds)
+          : new Set<string>([String(question.correctIndex ?? question.expectedIndex)]);
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             {opts.map((opt) => {
-              const isThis = opt.id === correctId;
-              const isSel = opt.id === selectedId && opt.id !== correctId;
-              const style: React.CSSProperties = isThis
+              const isAccepted = correctIds.has(opt.id);
+              const isWrongSel = opt.id === selectedId && !isAccepted;
+              const style: React.CSSProperties = isAccepted
                 ? { border: "1.5px solid #00c9a7", background: "rgba(0,201,167,0.1)", color: "#00695c" }
-                : isSel
-                ? { border: "1.5px solid #ff5722", background: "rgba(255,87,34,0.08)", color: "#c62828" }
+                : isWrongSel
+                ? { border: "1.5px solid #e57373", background: "rgba(229,115,115,0.1)", color: "#c62828" }
                 : { border: "1px solid rgba(14,10,31,0.08)", background: "rgba(14,10,31,0.02)", color: "rgba(14,10,31,0.55)" };
               return (
                 <div key={opt.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 10, fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 12.5, ...style }}>
-                  {isThis && <Check size={13} color="#00c9a7" />}
-                  {isSel && <X size={13} color="#ff5722" />}
+                  {isAccepted && <Check size={13} color="#00c9a7" />}
+                  {isWrongSel && <X size={13} color="#e57373" />}
                   {opt.text}
                 </div>
               );

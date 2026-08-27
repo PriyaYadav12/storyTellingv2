@@ -406,7 +406,9 @@ export default function StoryChallengeScreen() {
   // Retry state — per question, reset by useEffect below
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
-  const [wrongMcqId, setWrongMcqId] = useState<string | null>(null);
+  // wrongMcqIds: all option IDs tapped wrong this question (stays marked red for the
+  // remainder of the question so a child can't accidentally pick the same wrong answer twice)
+  const [wrongMcqIds, setWrongMcqIds] = useState<Set<string>>(new Set());
   const [selectedMcqId, setSelectedMcqId] = useState<string | null>(null);
 
   // Prevents rapid double-tap from firing two handleAnswer calls in quick
@@ -426,7 +428,7 @@ export default function StoryChallengeScreen() {
     setWrongAttempts(0);
     setShowReveal(false);
     setAck(false);
-    setWrongMcqId(null);
+    setWrongMcqIds(new Set());
     setSelectedMcqId(null);
     setSelectedLeft(null);
     setMatchedPairs([]);
@@ -474,12 +476,13 @@ export default function StoryChallengeScreen() {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(320, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(260, ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.start(); osc.stop(ctx.currentTime + 0.35);
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(370, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(280, ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.32, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+      osc.start(); osc.stop(ctx.currentTime + 0.55);
     } catch { /**/ }
   }
 
@@ -537,14 +540,13 @@ export default function StoryChallengeScreen() {
   }
 
   function chooseMCQ(opt: { id: string; text: string }, i: number) {
-    if (ack || answerCooldownRef.current) return;
+    if (ack || answerCooldownRef.current || wrongMcqIds.has(opt.id)) return;
     const isLegacy = !q.richOptions?.length && !q.correctOptionIds?.length;
     const data = JSON.stringify({ selectedId: opt.id });
     const answeredIndex = isLegacy ? i : undefined;
     setSelectedMcqId(opt.id);
     if (!checkCorrect(q, data, answeredIndex)) {
-      setWrongMcqId(opt.id);
-      setTimeout(() => setWrongMcqId(null), 700);
+      setWrongMcqIds(prev => new Set(prev).add(opt.id));
     }
     handleAnswer(data, answeredIndex);
   }
@@ -610,22 +612,25 @@ export default function StoryChallengeScreen() {
         </p>
       )}
 
-      {/* Question text */}
-      <p style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 19, fontWeight: 700, color: "var(--lf-dark)", margin: "0 0 18px" }}>
-        {q.promptText ?? q.question}
-      </p>
+      {/* Question text — skipped for fill_blank (FillBlankArea renders the sentence with blank itself) */}
+      {fmt !== "fill_blank" && (
+        <p style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 19, fontWeight: 700, color: "var(--lf-dark)", margin: "0 0 18px" }}>
+          {q.promptText ?? q.question}
+        </p>
+      )}
 
       {/* MCQ */}
       {fmt === "mcq" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {opts.map((opt, i) => {
-            const isWrong = wrongMcqId === opt.id;
+            const isWrong = wrongMcqIds.has(opt.id);
             const isCorrect = ack && !showReveal && selectedMcqId === opt.id;
+            const isDisabled = ack || submitting || isWrong;
             return (
               <button
                 key={opt.id}
                 onClick={() => chooseMCQ(opt, i)}
-                disabled={ack || submitting}
+                disabled={isDisabled}
                 style={{
                   minHeight: 56,
                   padding: "12px 18px",
@@ -642,12 +647,13 @@ export default function StoryChallengeScreen() {
                     : isCorrect
                     ? "rgba(76,175,80,0.1)"
                     : "#fff",
-                  color: "var(--lf-dark)",
+                  color: isWrong ? "#c62828" : "var(--lf-dark)",
                   fontFamily: "'Nunito', sans-serif",
                   fontWeight: 700,
                   fontSize: 15,
                   textAlign: "left",
-                  cursor: ack ? "default" : "pointer",
+                  cursor: isDisabled ? "default" : "pointer",
+                  opacity: isWrong ? 0.7 : 1,
                   transform: isCorrect ? "scale(1.02)" : "scale(1)",
                   transition: "all 0.18s",
                 }}

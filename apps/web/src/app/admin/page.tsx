@@ -2386,6 +2386,10 @@ function ChallengeConfigTab({ isAdmin }: { isAdmin: boolean }) {
 // The authoritative runtime version lives in system_config once seeded.
 const FALLBACK_QUESTION_GEN_PROMPT = `You are generating the Story Challenge for Lalli & Fafa -- a short set of playful questions Lalli and Fafa ask together after a story, to help a child remember, notice, feel, and think about what just happened.
 
+OUTPUT LANGUAGE -- MANDATORY
+
+Every word in your JSON output -- promptText, options text, revealFraming, storyGrounding, wordBank, and all other string fields -- must be written in English. This is non-negotiable regardless of the language the story is written in. The story may be in Hindi, Hinglish, or any other language; that does not change the output requirement. Do not translate story character names or story-specific proper nouns, but write everything else in English.
+
 CORE RULE -- GROUND EVERY QUESTION IN THIS SPECIFIC STORY
 
 Every question must reference something that actually happened in the story you were given -- a real line of dialogue, a real detail from a scene, a real moment. Never write a generic question that could apply to any story. If you cannot find real story content to ground a question in a given pillar, choose a different angle within that pillar rather than inventing a detail that isn't in the story.
