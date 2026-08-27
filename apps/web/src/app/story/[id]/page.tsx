@@ -1242,7 +1242,7 @@ function StoryViewer({
   const sceneSentences = sceneNarrativeText ? splitSentences(sceneNarrativeText) : [];
   const adjustedTime = Math.max(0, currentTime + subtitleOffset);
   const subtitleText = getCurrentSubtitle(adjustedTime, duration, currentScene, sceneSentences, titleOffset, sceneTimeline);
-  const childNameForSubtitle = (story as any).params?.childName as string ?? "";
+  const childNameForSubtitle = (story as any)?.params?.childName as string ?? "";
   const speaker = subtitleText ? detectSpeaker(subtitleText, childNameForSubtitle) : null;
   /* Index of the currently highlighted sentence (for the text panel) */
   const activeSubtitleIdx = sceneSentences.indexOf(subtitleText);
