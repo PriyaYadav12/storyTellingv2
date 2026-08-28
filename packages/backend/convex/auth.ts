@@ -161,7 +161,6 @@ function createAuth(
     },
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
         const resendKey = process.env.RESEND_API_KEY;
         if (resendKey) {

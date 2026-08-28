@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, Loader2, Eye, EyeOff, MailCheck } from "lucide-react";
+import { Sparkles, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { trackSignUp } from "@/lib/analytics";
@@ -23,8 +23,6 @@ declare global {
     };
   }
 }
-
-const RESEND_COOLDOWN_SECONDS = 60;
 
 export function SignUpForm() {
   const router = useRouter();
@@ -48,9 +46,6 @@ export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [verifyEmailSent, setVerifyEmailSent] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   // Turnstile
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -83,12 +78,6 @@ export function SignUpForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteKey]);
 
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const timer = setInterval(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000);
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password.length < 8) { toast.error("Password must be at least 8 characters."); return; }
@@ -115,14 +104,10 @@ export function SignUpForm() {
     await authClient.signUp.email(
       { name, email, password },
       {
-        onSuccess: async () => {
+        onSuccess: () => {
           trackSignUp("email");
-          try {
-            await authClient.sendVerificationEmail({ email, callbackURL: onboardingDest });
-          } catch { /* verification email send failed; verification screen still shown */ }
-          setVerifyEmailSent(true);
-          setResendCooldown(RESEND_COOLDOWN_SECONDS);
           setLoading(false);
+          router.push(onboardingDest);
         },
         onError: (ctx) => {
           toast.error(ctx.error.message || "Sign up failed.");
@@ -132,23 +117,6 @@ export function SignUpForm() {
         },
       }
     );
-  }
-
-  async function handleResendVerification() {
-    if (resendCooldown > 0) return;
-    setResendLoading(true);
-    try {
-      await authClient.sendVerificationEmail({
-        email,
-        callbackURL: plan ? `/onboarding?plan=${plan}` : "/onboarding",
-      });
-      toast.success("Verification email resent!");
-      setResendCooldown(RESEND_COOLDOWN_SECONDS);
-    } catch {
-      toast.error("Couldn't resend — please try again.");
-    } finally {
-      setResendLoading(false);
-    }
   }
 
   async function handleGoogle() {
@@ -182,115 +150,6 @@ export function SignUpForm() {
     color: "var(--lf-dark)",
     fontFamily: "'Nunito', sans-serif",
   };
-
-  // ── Verify-email screen (shown after signup) ──────────────────────────────
-  if (verifyEmailSent) {
-    return (
-      <div className="min-h-screen flex" style={{ background: "var(--lf-dark)" }}>
-
-        {/* Left panel */}
-        <div
-          className="hidden lg:flex flex-col justify-between p-12 flex-shrink-0 relative overflow-hidden"
-          style={{ width: 420, background: "linear-gradient(160deg,#131020 0%,#1c1640 100%)" }}
-        >
-          <div className="absolute pointer-events-none" style={{ top: -80, right: -60, width: 300, height: 300, background: "radial-gradient(circle,rgba(0,201,167,0.18) 0%,transparent 70%)" }} />
-          <div className="absolute pointer-events-none" style={{ bottom: 60, left: -60, width: 240, height: 240, background: "radial-gradient(circle,rgba(249,199,0,0.12) 0%,transparent 70%)" }} />
-
-          <Link href="/" className="flex items-center gap-2 relative z-10">
-            <div className="relative" style={{ width: 44, height: 44 }}>
-              <Image src="/lf-logo.png" alt="Lalli Fafa" fill className="object-contain" />
-            </div>
-            <span style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 20, fontWeight: 800, color: "#fff" }}>
-              Lalli <span style={{ color: "var(--lf-teal)" }}>Fafa</span>
-            </span>
-          </Link>
-
-          <div className="flex flex-col items-center gap-6 relative z-10">
-            <div className="relative" style={{ width: 180, height: 180 }}>
-              <Image src="/lf-hero.png" alt="Lalli and Fafa" fill className="object-contain animate-float-slow" />
-            </div>
-            <div className="flex flex-col gap-3 text-center">
-              <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.5rem", color: "#fff", lineHeight: 1.25 }}>
-                One last step!
-              </h2>
-              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.88rem", lineHeight: 1.7 }}>
-                Tap the link in your email and your child&apos;s first adventure will be ready to create.
-              </p>
-            </div>
-          </div>
-
-          <p style={{ color: "rgba(255,255,255,0.18)", fontSize: "0.8rem", position: "relative", zIndex: 10 }}>
-            &copy; {new Date().getFullYear()} Lalli Fafa
-          </p>
-        </div>
-
-        {/* Right panel */}
-        <div
-          className="flex-1 flex flex-col items-center justify-center px-6 py-12"
-          style={{ background: "#FFF8E7", minHeight: "100vh" }}
-        >
-          {/* Mobile logo */}
-          <Link href="/" className="flex items-center gap-2 mb-10 lg:hidden">
-            <div className="relative" style={{ width: 36, height: 36 }}>
-              <Image src="/lf-logo.png" alt="Lalli Fafa" fill className="object-contain" />
-            </div>
-            <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.15rem", color: "var(--lf-dark)" }}>
-              Lalli <span style={{ color: "var(--lf-teal)" }}>Fafa</span>
-            </span>
-          </Link>
-
-          <div className="w-full flex flex-col items-center gap-6" style={{ maxWidth: 420 }}>
-            {/* Icon */}
-            <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "rgba(0,201,167,0.12)" }}>
-              <MailCheck size={38} style={{ color: "var(--lf-teal)" }} />
-            </div>
-
-            <div className="flex flex-col items-center gap-3 text-center">
-              <h1 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "clamp(1.7rem,3vw,2.1rem)", color: "var(--lf-dark)", lineHeight: 1.2 }}>
-                Check your email!
-              </h1>
-              <p style={{ color: "rgba(45,45,45,0.6)", fontSize: "1rem", lineHeight: 1.65, maxWidth: 360 }}>
-                We sent a verification link to{" "}
-                <strong style={{ color: "var(--lf-dark)" }}>{email}</strong>.
-                Click it to finish creating your account.
-              </p>
-              <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem" }}>
-                Link expires in 24 hours · Check spam if you don&apos;t see it
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 w-full items-center">
-              <button
-                onClick={handleResendVerification}
-                disabled={resendLoading || resendCooldown > 0}
-                className="btn-primary w-full justify-center"
-                style={{
-                  fontSize: "1rem",
-                  padding: "0.9rem 2rem",
-                  opacity: resendCooldown > 0 ? 0.55 : 1,
-                  cursor: resendCooldown > 0 ? "default" : "pointer",
-                }}
-              >
-                {resendLoading && <Loader2 size={18} className="animate-spin" />}
-                {resendLoading ? "Sending…" : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
-              </button>
-
-              <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem", fontFamily: "'Nunito', sans-serif" }}>
-                Wrong email?{" "}
-                <button
-                  onClick={() => setVerifyEmailSent(false)}
-                  style={{ background: "none", border: "none", color: "var(--lf-teal)", cursor: "pointer", fontWeight: 700, padding: 0, fontSize: "inherit", fontFamily: "inherit" }}
-                >
-                  Go back
-                </button>
-                {" "}and sign up with a different address.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ── Sign-up form ──────────────────────────────────────────────────────────
   const turnstileReady = !siteKey || !!turnstileToken;

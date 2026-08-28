@@ -28,6 +28,9 @@ import { toast } from "sonner";
 import { UserPill } from "@/components/layout/UserPill";
 import { trackStoryGenerated, trackUpgradeClick } from "@/lib/analytics";
 import { UpgradeModal, type UpgradeTrigger } from "@/components/ui/UpgradeModal";
+import { authClient } from "@/lib/auth-client";
+
+const OTP_RESEND_COOLDOWN = 60;
 
 const THEME_ICONS: Record<string, string> = {
   "Magical Forest": "🌳",
@@ -146,6 +149,20 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [generating, setGenerating] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger: UpgradeTrigger; lockedLength?: "medium" | "long" }>({ open: false, trigger: "no_credits" });
 
+  const { data: session } = authClient.useSession();
+  const [otpModal, setOtpModal] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [otpCooldown, setOtpCooldown] = useState(0);
+
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const t = setInterval(() => setOtpCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(t);
+  }, [otpCooldown]);
+
   const CREDIT_COST = LENGTHS.find((l) => l.value === length)?.credits ?? 80;
   const canAfford = availableCredits >= CREDIT_COST;
   // If the user can't afford the story, the button is always clickable to open the upgrade modal.
@@ -153,18 +170,11 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const canGenerate = !canAfford ? true : (!!theme && !generating);
   const childName = (childId === "1" ? profile?.childName : (profile as any)?.child2Name) ?? undefined;
 
-  async function handleGenerate() {
-    if (!theme || generating) return;
-    if (!canAfford) {
-      setUpgradeModal({ open: true, trigger: "no_credits" });
-      return;
-    }
+  async function doGenerate() {
     setGenerating(true);
     try {
-      // Resolve language name from code
       const langRecord = resolvedLanguages.find((l: any) => l.code === languageCode);
       const languageName = langRecord?.name ?? "English";
-
       const result = await generateStory({
         params: {
           theme,
@@ -185,6 +195,62 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
       const msg = err instanceof Error ? err.message : "Story generation failed. Please try again.";
       toast.error(msg);
       setGenerating(false);
+    }
+  }
+
+  async function handleGenerate() {
+    if (!theme || generating) return;
+    if (!canAfford) {
+      setUpgradeModal({ open: true, trigger: "no_credits" });
+      return;
+    }
+    if (!session?.user?.emailVerified) {
+      const email = session?.user?.email ?? "";
+      setOtpError("");
+      setOtpValue("");
+      setOtpSending(true);
+      try {
+        await authClient.emailOtp.sendVerificationOtp({ email, type: "email-verification" });
+        setOtpCooldown(OTP_RESEND_COOLDOWN);
+        setOtpModal(true);
+      } catch {
+        toast.error("Couldn't send verification code — please try again.");
+      } finally {
+        setOtpSending(false);
+      }
+      return;
+    }
+    await doGenerate();
+  }
+
+  async function handleVerifyOtp() {
+    const email = session?.user?.email ?? "";
+    setOtpError("");
+    setOtpVerifying(true);
+    try {
+      const res = await authClient.emailOtp.verifyEmail({ email, otp: otpValue });
+      if (res.error) {
+        setOtpError(res.error.message ?? "Invalid code — please try again.");
+        setOtpVerifying(false);
+        return;
+      }
+      setOtpModal(false);
+      await doGenerate();
+    } catch {
+      setOtpError("Verification failed — please try again.");
+      setOtpVerifying(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    if (otpCooldown > 0) return;
+    const email = session?.user?.email ?? "";
+    setOtpError("");
+    try {
+      await authClient.emailOtp.sendVerificationOtp({ email, type: "email-verification" });
+      setOtpCooldown(OTP_RESEND_COOLDOWN);
+    } catch {
+      toast.error("Couldn't resend — please try again.");
     }
   }
 
@@ -517,19 +583,24 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                 )}
                 <button
                   onClick={handleGenerate}
-                  disabled={canAfford && !canGenerate}
+                  disabled={(canAfford && !canGenerate) || otpSending}
                   className="btn-primary w-full justify-center"
                   style={{
                     fontSize: "1.05rem",
                     padding: "1rem",
-                    opacity: canGenerate ? 1 : 0.45,
-                    cursor: canGenerate ? "pointer" : "not-allowed",
+                    opacity: (canGenerate && !otpSending) ? 1 : 0.45,
+                    cursor: (canGenerate && !otpSending) ? "pointer" : "not-allowed",
                   }}
                 >
                   {generating ? (
                     <>
                       <Loader2 size={18} className="animate-spin" />
                       Starting your story…
+                    </>
+                  ) : otpSending ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Sending code…
                     </>
                   ) : (
                     <>
@@ -556,6 +627,101 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
         lockedLength={upgradeModal.lockedLength}
         childName={childName}
       />
+
+      {/* OTP verification modal */}
+      {otpModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(19,16,32,0.72)", backdropFilter: "blur(4px)" }}
+        >
+          <div
+            className="w-full flex flex-col gap-5 rounded-3xl p-8"
+            style={{ maxWidth: 420, background: "#FFF8E7", boxShadow: "0 20px 60px rgba(0,0,0,0.35)" }}
+          >
+            <div className="flex flex-col gap-1 text-center">
+              <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.5rem", color: "var(--lf-dark)" }}>
+                Verify your email
+              </h2>
+              <p style={{ fontSize: "0.9rem", color: "rgba(45,45,45,0.6)", lineHeight: 1.6 }}>
+                We sent a 6-digit code to <strong style={{ color: "var(--lf-dark)" }}>{session?.user?.email}</strong>. Enter it below to generate your story.
+              </p>
+            </div>
+
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="000000"
+              value={otpValue}
+              onChange={(e) => { setOtpValue(e.target.value.replace(/\D/g, "").slice(0, 6)); setOtpError(""); }}
+              disabled={otpVerifying}
+              className="w-full text-center outline-none rounded-2xl"
+              style={{
+                fontSize: "2rem",
+                fontWeight: 800,
+                letterSpacing: "0.35em",
+                padding: "0.75rem 1rem",
+                background: "#fff",
+                border: `2px solid ${otpError ? "#e53935" : "var(--lf-teal)"}`,
+                color: "var(--lf-dark)",
+                fontFamily: "'Nunito', sans-serif",
+              }}
+            />
+
+            {otpError && (
+              <p style={{ fontSize: "0.82rem", color: "#e53935", textAlign: "center", marginTop: -8 }}>{otpError}</p>
+            )}
+
+            <button
+              onClick={handleVerifyOtp}
+              disabled={otpVerifying || otpValue.length < 6}
+              className="btn-primary justify-center"
+              style={{
+                fontSize: "1rem",
+                padding: "0.85rem",
+                opacity: otpValue.length < 6 ? 0.55 : 1,
+                cursor: otpValue.length < 6 ? "default" : "pointer",
+              }}
+            >
+              {otpVerifying ? <Loader2 size={18} className="animate-spin" /> : null}
+              {otpVerifying ? "Verifying…" : "Verify & generate story"}
+            </button>
+
+            <div className="flex items-center justify-between" style={{ fontSize: "0.82rem" }}>
+              <button
+                onClick={handleResendOtp}
+                disabled={otpCooldown > 0}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: otpCooldown > 0 ? "rgba(45,45,45,0.35)" : "var(--lf-teal)",
+                  cursor: otpCooldown > 0 ? "default" : "pointer",
+                  fontWeight: 700,
+                  fontFamily: "'Nunito', sans-serif",
+                  padding: 0,
+                  fontSize: "inherit",
+                }}
+              >
+                {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : "Resend code"}
+              </button>
+              <button
+                onClick={() => setOtpModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "rgba(45,45,45,0.4)",
+                  cursor: "pointer",
+                  fontFamily: "'Nunito', sans-serif",
+                  padding: 0,
+                  fontSize: "inherit",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
