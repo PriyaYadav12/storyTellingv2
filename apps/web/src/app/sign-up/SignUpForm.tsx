@@ -262,7 +262,6 @@ export function SignUpForm() {
             </div>
           ))}
         </div>
-        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem" }}>Loved by 10,000+ Indian families</p>
       </div>
 
       {/* Right panel */}

@@ -36,6 +36,7 @@ import {
   Plus,
   ChevronRight,
   CreditCard,
+  Trophy,
 } from "lucide-react";
 import { UserPill } from "@/components/layout/UserPill";
 import { trackUpgradeClick } from "@/lib/analytics";
@@ -654,7 +655,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-3 gap-4">
                   {[
                     { icon: <BookOpen size={20} />, label: "Stories created", value: storyCount, bg: "linear-gradient(135deg,#00c9a7 0%,#00a38d 100%)", glow: "rgba(0,201,167,0.35)", textColor: "#fff" },
-                    { icon: <Sparkles size={20} />, label: "Credits left", value: availableCredits, bg: "linear-gradient(135deg,#a855f7 0%,#7c3aed 100%)", glow: "rgba(168,85,247,0.35)", textColor: "#fff" },
+                    { icon: <Sparkles size={20} />, label: "Credits left", value: availableCredits, bg: "linear-gradient(135deg,var(--lf-electric) 0%,#7c3aed 100%)", glow: "rgba(168,85,247,0.35)", textColor: "#fff" },
                     { icon: <Star size={20} />, label: `Badges ${earnedCount}/${totalCount}`, value: earnedCount, bg: "linear-gradient(135deg,#f9c700 0%,#e6ac00 100%)", glow: "rgba(249,199,0,0.4)", textColor: "#1a1630" },
                   ].map((s) => (
                     <div
@@ -684,8 +685,8 @@ export default function ProfilePage() {
                     style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
                   >
                     <div className="flex items-center justify-between">
-                      <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.15rem", color: "var(--lf-dark)" }}>
-                        🏆 Achievements
+                      <h2 className="flex items-center gap-2" style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.15rem", color: "var(--lf-dark)" }}>
+                        <Trophy size={20} style={{ color: "var(--lf-sunshine)" }} /> Achievements
                       </h2>
                       <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.8rem", color: "rgba(45,45,45,0.4)", fontWeight: 700 }}>
                         {earnedCount}/{totalCount} unlocked
@@ -708,7 +709,7 @@ export default function ProfilePage() {
                             key={a.name}
                             className="flex items-center gap-4 p-4 rounded-xl"
                             style={{
-                              background: a.earned ? "rgba(0,184,166,0.05)" : "rgba(0,0,0,0.02)",
+                              background: a.earned ? "rgba(0,184,166,0.05)" : "#ede6da",
                               border: `1.5px solid ${a.earned ? "rgba(0,184,166,0.18)" : "rgba(0,0,0,0.06)"}`,
                             }}
                           >
@@ -770,7 +771,7 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-between px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(168,85,247,0.1)" }}>
-                        <CreditCard size={15} style={{ color: "#a855f7" }} />
+                        <CreditCard size={15} style={{ color: "var(--lf-electric)" }} />
                       </div>
                       <div>
                         <p style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--lf-dark)" }}>
@@ -790,7 +791,7 @@ export default function ProfilePage() {
                         <Link
                           href="/pricing"
                           className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:scale-105 whitespace-nowrap"
-                          style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", color: "#fff", fontFamily: "'Nunito', sans-serif", textDecoration: "none" }}
+                          style={{ background: "linear-gradient(135deg,#7c3aed,var(--lf-electric))", color: "#fff", fontFamily: "'Nunito', sans-serif", textDecoration: "none" }}
                         >
                           ⬆ Magic Pass Pro
                         </Link>
@@ -808,7 +809,7 @@ export default function ProfilePage() {
                         <Link
                           href="/pricing"
                           className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:scale-105"
-                          style={{ background: "linear-gradient(135deg,#a855f7,#7c3aed)", color: "#fff", fontFamily: "'Nunito', sans-serif", textDecoration: "none" }}
+                          style={{ background: "linear-gradient(135deg,var(--lf-electric),#7c3aed)", color: "#fff", fontFamily: "'Nunito', sans-serif", textDecoration: "none" }}
                         >
                           Upgrade ✨
                         </Link>

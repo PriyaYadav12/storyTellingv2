@@ -74,6 +74,18 @@ const LENGTHS: { value: "short" | "medium" | "long"; label: string; desc: string
 // Subtle pastel backgrounds cycled across unselected cards for a bit of color variety.
 const CARD_TINTS = ["#FFF4E0", "#E6FAF6", "#F3EEFF", "#FFE8EC", "#E8F5E9", "#FFF9DB"];
 
+const LF_BORDER_IDLE = "#c9b99a";
+
+function CheckBadge() {
+  return (
+    <div style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18,
+      borderRadius: "50%", background: "var(--lf-teal)", display: "flex",
+      alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Check size={11} color="#fff" strokeWidth={3} />
+    </div>
+  );
+}
+
 export default function GeneratePage() {
   const { isAuthenticated } = useConvexAuth();
 
@@ -247,7 +259,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
         {/* Credits */}
         <div className="flex items-center justify-between px-5 py-3 rounded-2xl" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Zap size={18} style={{ color: "#a855f7" }} />
+            <Zap size={18} style={{ color: "var(--lf-electric)" }} />
             <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, color: "var(--lf-dark)", fontSize: "0.9rem" }}>
               {isLoading ? "—" : availableCredits} credits available
             </span>
@@ -300,27 +312,26 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                     onClick={() => setStoryType(st.code)}
                     className="flex items-start gap-4 p-4 rounded-2xl text-left transition-all"
                     style={{
-                      background: storyType === st.code ? "var(--lf-dark)" : "#fff",
-                      border: `2px solid ${storyType === st.code ? "var(--lf-dark)" : "rgba(0,0,0,0.08)"}`,
-                      color: storyType === st.code ? "#fff" : "var(--lf-dark)",
+                      position: "relative",
+                      background: "#fff",
+                      border: `2px solid ${storyType === st.code ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
+                      color: "var(--lf-dark)",
                     }}
                   >
                     <span style={{ fontSize: "1.8rem", flexShrink: 0, lineHeight: 1 }}>{st.emoji}</span>
                     <div className="flex flex-col gap-0.5 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem" }}>
-                          {st.name}
-                        </span>
-                        {storyType === st.code && <Check size={15} style={{ color: "var(--lf-teal)" }} />}
-                      </div>
+                      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem" }}>
+                        {st.name}
+                      </span>
                       <span style={{
                         fontFamily: "'Nunito', sans-serif",
                         fontSize: "0.83rem",
-                        opacity: storyType === st.code ? 0.75 : 0.55,
+                        opacity: 0.55,
                       }}>
                         {st.description}
                       </span>
                     </div>
+                    {storyType === st.code && <CheckBadge />}
                   </button>
                 ))}
               </div>
@@ -344,9 +355,10 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       }}
                       className="flex flex-col gap-1 px-5 py-3 rounded-2xl text-left transition-all"
                       style={{
-                        background: selected ? "var(--lf-dark)" : "#fff",
-                        border: `2px solid ${selected ? "var(--lf-dark)" : locked ? "rgba(0,201,167,0.3)" : "rgba(0,0,0,0.08)"}`,
-                        color: selected ? "#fff" : "var(--lf-dark)",
+                        position: "relative",
+                        background: "#fff",
+                        border: `2px solid ${selected ? "var(--lf-teal)" : locked ? "rgba(0,201,167,0.3)" : LF_BORDER_IDLE}`,
+                        color: "var(--lf-dark)",
                         cursor: "pointer",
                         minWidth: 90,
                       }}
@@ -360,6 +372,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: selected ? "var(--lf-teal)" : locked ? "var(--lf-teal)" : "rgba(45,45,45,0.45)" }}>
                         {locked ? "Magic Pass only ✨" : `${l.credits} credits`}
                       </span>
+                      {selected && <CheckBadge />}
                     </button>
                   );
                 })}
@@ -375,9 +388,9 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                     onClick={() => setLanguageCode(lang.code)}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
                     style={{
-                      background: languageCode === lang.code ? "var(--lf-teal)" : "#fff",
-                      border: `1.5px solid ${languageCode === lang.code ? "var(--lf-teal)" : "rgba(0,0,0,0.1)"}`,
-                      color: languageCode === lang.code ? "#fff" : "var(--lf-dark)",
+                      background: "#fff",
+                      border: `2px solid ${languageCode === lang.code ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
+                      color: "var(--lf-dark)",
                       fontFamily: "'Nunito', sans-serif",
                     }}
                   >
@@ -386,6 +399,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                     {lang.nativeName !== lang.name && (
                       <span style={{ opacity: 0.7, fontSize: "0.78rem" }}>({lang.nativeName})</span>
                     )}
+                    {languageCode === lang.code && <Check size={13} style={{ color: "var(--lf-teal)" }} />}
                   </button>
                 ))}
               </div>
@@ -402,10 +416,10 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       onClick={() => setTheme(theme === t.name ? "" : t.name)}
                       className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
                       style={{
-                        background: isSelected ? "var(--lf-dark)" : CARD_TINTS[i % CARD_TINTS.length],
-                        border: `1.5px solid ${isSelected ? "var(--lf-dark)" : "rgba(0,0,0,0.06)"}`,
-                        color: isSelected ? "#fff" : "var(--lf-dark)",
-                        boxShadow: isSelected ? "0 4px 14px rgba(0,0,0,0.18)" : "none",
+                        position: "relative",
+                        background: CARD_TINTS[i % CARD_TINTS.length],
+                        border: `2px solid ${isSelected ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
+                        color: "var(--lf-dark)",
                       }}
                     >
                       <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>
@@ -414,7 +428,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
                         {t.name}
                       </span>
-                      {isSelected && <Check size={14} style={{ color: "var(--lf-teal)" }} />}
+                      {isSelected && <CheckBadge />}
                     </button>
                   );
                 })}
@@ -433,17 +447,17 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                   onClick={() => setLesson("")}
                   className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
                   style={{
-                    background: lesson === "" ? "var(--lf-teal)" : "#fff",
-                    border: `1.5px solid ${lesson === "" ? "var(--lf-teal)" : "rgba(0,0,0,0.08)"}`,
-                    color: lesson === "" ? "#fff" : "var(--lf-dark)",
-                    boxShadow: lesson === "" ? "0 4px 14px rgba(0,201,167,0.25)" : "none",
+                    position: "relative",
+                    background: CARD_TINTS[0],
+                    border: `2px solid ${lesson === "" ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
+                    color: "var(--lf-dark)",
                   }}
                 >
                   <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>🚫</span>
                   <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
                     None
                   </span>
-                  {lesson === "" && <Check size={14} />}
+                  {lesson === "" && <CheckBadge />}
                 </button>
                 {(lessons ?? []).map((l: { name: string }, i: number) => {
                   const isSelected = lesson === l.name;
@@ -453,10 +467,10 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       onClick={() => setLesson(lesson === l.name ? "" : l.name)}
                       className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
                       style={{
-                        background: isSelected ? "var(--lf-teal)" : CARD_TINTS[(i + 1) % CARD_TINTS.length],
-                        border: `1.5px solid ${isSelected ? "var(--lf-teal)" : "rgba(0,0,0,0.06)"}`,
-                        color: isSelected ? "#fff" : "var(--lf-dark)",
-                        boxShadow: isSelected ? "0 4px 14px rgba(0,201,167,0.25)" : "none",
+                        position: "relative",
+                        background: CARD_TINTS[(i + 1) % CARD_TINTS.length],
+                        border: `2px solid ${isSelected ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
+                        color: "var(--lf-dark)",
                       }}
                     >
                       <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>
@@ -465,7 +479,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
                         {l.name}
                       </span>
-                      {isSelected && <Check size={14} />}
+                      {isSelected && <CheckBadge />}
                     </button>
                   );
                 })}
@@ -566,14 +580,14 @@ function OptionButton({ selected, onClick, label }: { selected: boolean; onClick
       onClick={onClick}
       className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold transition-all"
       style={{
-        background: selected ? "var(--lf-teal)" : "#f7f5f0",
-        border: `1.5px solid ${selected ? "var(--lf-teal)" : "rgba(0,0,0,0.08)"}`,
-        color: selected ? "#fff" : "var(--lf-dark)",
+        background: "#fff",
+        border: `2px solid ${selected ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
+        color: "var(--lf-dark)",
         fontFamily: "'Nunito', sans-serif",
         fontSize: "0.9rem",
       }}
     >
-      {selected && <Check size={14} />}
+      {selected && <Check size={14} style={{ color: "var(--lf-teal)" }} />}
       {label}
     </button>
   );

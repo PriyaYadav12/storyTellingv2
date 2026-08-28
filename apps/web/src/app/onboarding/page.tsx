@@ -16,7 +16,7 @@ import { api } from "../../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { trackOnboardingComplete } from "@/lib/analytics";
 import { toast } from "sonner";
-import { Loader2, ChevronRight, ChevronLeft, Sparkles, Camera } from "lucide-react";
+import { Loader2, ChevronRight, ChevronLeft, Sparkles, Camera, Check } from "lucide-react";
 
 const STEPS = 4;
 
@@ -451,7 +451,7 @@ function OnboardingForm() {
                               onClick={() => update("childAge", String(age))}
                               className="flex items-center justify-center py-2.5 rounded-xl transition-all"
                               style={{
-                                border: "1.5px solid",
+                                border: "2px solid",
                                 borderColor: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.1)",
                                 background: sel ? "rgba(0,201,167,0.15)" : "rgba(255,255,255,0.04)",
                                 cursor: "pointer",
@@ -490,12 +490,18 @@ function OnboardingForm() {
                               onClick={() => update("childGender", g.value)}
                               className="flex-1 flex flex-col items-center gap-1.5 py-4 rounded-2xl transition-all"
                               style={{
-                                border: "1.5px solid",
+                                position: "relative",
+                                border: "2px solid",
                                 borderColor: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.1)",
                                 background: sel ? "rgba(0,201,167,0.1)" : "rgba(255,255,255,0.04)",
                                 cursor: "pointer",
                               }}
                             >
+                              {sel && (
+                                <div style={{ position: "absolute", top: 6, right: 6, width: 16, height: 16, borderRadius: "50%", background: "var(--lf-teal)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <Check size={10} color="#fff" strokeWidth={3} />
+                                </div>
+                              )}
                               <span style={{ fontSize: "1.6rem", lineHeight: 1 }}>{g.emoji}</span>
                               <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.88rem", color: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.45)" }}>
                                 {g.label}
@@ -592,7 +598,7 @@ function OnboardingForm() {
                       onClick={() => fileInputRef.current?.click()}
                       className="flex flex-col items-center gap-4 w-full py-14 rounded-2xl transition-all group"
                       style={{
-                        border: "2px dashed rgba(255,255,255,0.13)",
+                        border: "2px dashed rgba(255,255,255,0.25)",
                         background: "rgba(255,255,255,0.02)",
                         cursor: "pointer",
                       }}
@@ -601,7 +607,7 @@ function OnboardingForm() {
                         (e.currentTarget as HTMLElement).style.background = "rgba(0,201,167,0.04)";
                       }}
                       onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.13)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.25)";
                         (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)";
                       }}
                     >
@@ -655,16 +661,23 @@ function OnboardingForm() {
                             cursor: "pointer",
                           }}
                         >
-                          <div
-                            style={{
-                              width: 30,
-                              height: 30,
-                              borderRadius: "50%",
-                              background: c.hex,
-                              boxShadow: sel ? `0 0 14px ${c.hex}99` : "none",
-                              transition: "box-shadow 0.2s",
-                            }}
-                          />
+                          <div style={{ position: "relative", width: 30, height: 30 }}>
+                            <div
+                              style={{
+                                width: 30,
+                                height: 30,
+                                borderRadius: "50%",
+                                background: c.hex,
+                                boxShadow: sel ? `0 0 14px ${c.hex}99` : "none",
+                                transition: "box-shadow 0.2s",
+                              }}
+                            />
+                            {sel && (
+                              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Check size={14} color="#fff" strokeWidth={3.5} />
+                              </div>
+                            )}
+                          </div>
                           <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.7rem", color: sel ? "#fff" : "rgba(255,255,255,0.38)", lineHeight: 1, textAlign: "center" }}>
                             {c.name}
                           </span>
@@ -697,12 +710,18 @@ function OnboardingForm() {
                           onClick={() => update("favoriteAnimal", a.name)}
                           className="flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-all"
                           style={{
+                            position: "relative",
                             border: "2px solid",
                             borderColor: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.07)",
                             background: sel ? "rgba(0,201,167,0.1)" : "rgba(255,255,255,0.03)",
                             cursor: "pointer",
                           }}
                         >
+                          {sel && (
+                            <div style={{ position: "absolute", top: 5, right: 5, width: 16, height: 16, borderRadius: "50%", background: "var(--lf-teal)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Check size={10} color="#fff" strokeWidth={3} />
+                            </div>
+                          )}
                           <span style={{ fontSize: "1.8rem", lineHeight: 1 }}>{a.emoji}</span>
                           <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.7rem", color: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.38)" }}>
                             {a.name}
@@ -742,11 +761,11 @@ function OnboardingForm() {
                       onClick={handleNext}
                       className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold transition-all hover:scale-[1.02]"
                       style={{
-                        background: "linear-gradient(135deg, var(--lf-teal), #00a38d)",
-                        color: "#fff",
+                        background: "linear-gradient(135deg, var(--lf-sunshine), #e6ac00)",
+                        color: "var(--lf-dark)",
                         fontFamily: "'Baloo 2', sans-serif",
                         fontSize: "1.05rem",
-                        boxShadow: "0 4px 20px rgba(0,201,167,0.3)",
+                        boxShadow: "0 4px 20px rgba(255,193,7,0.35)",
                         border: "none",
                         cursor: "pointer",
                       }}

@@ -62,7 +62,7 @@ const STAT_COLORS = [
   { bg: "linear-gradient(135deg,#00c9a7 0%,#00a38d 100%)", icon: "rgba(255,255,255,0.3)", text: "#fff" },
   { bg: "linear-gradient(135deg,#ff6b35 0%,#e84e1b 100%)", icon: "rgba(255,255,255,0.3)", text: "#fff" },
   { bg: "linear-gradient(135deg,#f9c700 0%,#e6ac00 100%)", icon: "rgba(255,255,255,0.3)", text: "#fff" },
-  { bg: "linear-gradient(135deg,#a855f7 0%,#8b2cf5 100%)", icon: "rgba(255,255,255,0.3)", text: "#fff" },
+  { bg: "linear-gradient(135deg,var(--lf-electric) 0%,#8b2cf5 100%)", icon: "rgba(255,255,255,0.3)", text: "#fff" },
 ];
 
 /* ── Floating sparkle decoration ── */
@@ -178,7 +178,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
   const achievementsData = useQuery(api.userProfiles.getAchievements, isAuthenticated ? {} : "skip");
   const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
 
-  const userName = profile?.parentName ?? "Friend";
+  const userName = profile?.parentName?.trim().split(" ")[0] ?? "Friend";
   const childName = profile?.childName ?? "your child";
   const availableCredits = credits?.[0]?.availableCredits ?? null;
 
@@ -264,7 +264,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           {/* Credits pill — only render once loaded */}
           {availableCredits !== null && (
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: "linear-gradient(135deg,rgba(168,85,247,0.12),rgba(168,85,247,0.06))", border: "1.5px solid rgba(168,85,247,0.25)" }}>
-              <Zap size={14} style={{ color: "#a855f7" }} />
+              <Zap size={14} style={{ color: "var(--lf-electric)" }} />
               <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "#7c3aed" }}>
                 {availableCredits} credits
               </span>
@@ -480,7 +480,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
             className="flex flex-col items-start gap-3 p-5 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg"
             style={{ background: "linear-gradient(135deg,rgba(168,85,247,0.1),rgba(168,85,247,0.05))", border: "1.5px solid rgba(168,85,247,0.3)" }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#a855f7" }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--lf-electric)" }}>
               <User size={20} color="#fff" />
             </div>
             <div>
@@ -677,8 +677,8 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
         </Link>
         {!isSubscribed && (
           <Link href="/checkout?plan=monthly" className="flex flex-col items-center gap-0.5">
-            <Zap size={22} style={{ color: "#a855f7" }} />
-            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "#a855f7" }}>Upgrade</span>
+            <Zap size={22} style={{ color: "var(--lf-electric)" }} />
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "var(--lf-electric)" }}>Upgrade</span>
           </Link>
         )}
       </nav>

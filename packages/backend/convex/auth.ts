@@ -115,7 +115,7 @@ function createAuth(
                   <div style="padding:40px 32px">
                     <h2 style="color:#1a1a2e;font-size:22px;font-weight:800;margin:0 0 12px">Almost there! ✨</h2>
                     <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 28px">
-                      Hi ${user.name || "there"},<br/><br/>
+                      Hi ${user.name?.split(" ")[0] || "there"},<br/><br/>
                       Please verify your email address to activate your Lalli Fafa account and start creating magical stories for your child.
                     </p>
                     <a href="${url}" style="display:inline-block;background:#f9c700;color:#1a1a2e;text-decoration:none;font-weight:800;font-size:15px;padding:14px 36px;border-radius:50px">
@@ -127,7 +127,7 @@ function createAuth(
                   </div>
                 </div>
               `,
-              text: `Hi ${user.name || "there"},\n\nPlease verify your Lalli Fafa email by visiting:\n${url}\n\nThis link expires in 24 hours.`,
+              text: `Hi ${user.name?.split(" ")[0] || "there"},\n\nPlease verify your Lalli Fafa email by visiting:\n${url}\n\nThis link expires in 24 hours.`,
             });
           } catch (err) {
             console.error("Failed to send verification email:", err);
@@ -180,7 +180,7 @@ function createAuth(
                   <div style="padding:40px 32px">
                     <h2 style="color:#1a1a2e;font-size:22px;font-weight:800;margin:0 0 12px">Reset your password 🔐</h2>
                     <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 28px">
-                      Hi ${user.name || "there"},<br/><br/>
+                      Hi ${user.name?.split(" ")[0] || "there"},<br/><br/>
                       We received a request to reset your Lalli Fafa password. Click the button below to choose a new one. This link expires in 1 hour.
                     </p>
                     <a href="${url}" style="display:inline-block;background:#f9c700;color:#1a1a2e;text-decoration:none;font-weight:800;font-size:15px;padding:14px 36px;border-radius:50px">
@@ -192,7 +192,7 @@ function createAuth(
                   </div>
                 </div>
               `,
-              text: `Hi ${user.name || "there"},\n\nReset your Lalli Fafa password by visiting:\n${url}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`,
+              text: `Hi ${user.name?.split(" ")[0] || "there"},\n\nReset your Lalli Fafa password by visiting:\n${url}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`,
             });
           } catch (err) {
             console.error("Failed to send password reset email:", err);

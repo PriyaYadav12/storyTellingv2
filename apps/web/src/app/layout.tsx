@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s | Lalli Fafa",
   },
   description:
-    "AI personalised kids stories in English & Hindi — your child is the hero with Lalli & Fafa. Free to start, safe, ad-free, loved by 10,000+ Indian families.",
+    "AI personalised kids stories in English & Hindi — your child is the hero with Lalli & Fafa. Free to start, safe, ad-free.",
   keywords: [
     "personalised stories for kids",
     "ai children stories",
