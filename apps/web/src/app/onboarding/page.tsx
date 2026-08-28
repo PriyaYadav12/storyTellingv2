@@ -451,12 +451,18 @@ function OnboardingForm() {
                               onClick={() => update("childAge", String(age))}
                               className="flex items-center justify-center py-2.5 rounded-xl transition-all"
                               style={{
+                                position: "relative",
                                 border: "2px solid",
                                 borderColor: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.1)",
                                 background: sel ? "rgba(0,201,167,0.15)" : "rgba(255,255,255,0.04)",
                                 cursor: "pointer",
                               }}
                             >
+                              {sel && (
+                                <div style={{ position: "absolute", top: 3, right: 3, width: 14, height: 14, borderRadius: "50%", background: "var(--lf-teal)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <Check size={9} color="#fff" strokeWidth={3} />
+                                </div>
+                              )}
                               <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem", color: sel ? "var(--lf-teal)" : "rgba(255,255,255,0.55)" }}>
                                 {age}
                               </span>
