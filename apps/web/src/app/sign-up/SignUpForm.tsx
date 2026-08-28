@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sparkles, Loader2, Eye, EyeOff } from "lucide-react";
+import { Sparkles, Loader2, Eye, EyeOff, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { trackSignUp } from "@/lib/analytics";
@@ -186,48 +186,107 @@ export function SignUpForm() {
   // ── Verify-email screen (shown after signup) ──────────────────────────────
   if (verifyEmailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--lf-cream)" }}>
-        <div className="w-full text-center" style={{ maxWidth: 460 }}>
-          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📬</div>
-          <h1 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: "clamp(1.7rem,3vw,2.2rem)", fontWeight: 800, color: "var(--lf-dark)", lineHeight: 1.2, marginBottom: "0.75rem" }}>
-            Check your email!
-          </h1>
-          <p style={{ color: "rgba(45,45,45,0.6)", fontSize: "1rem", lineHeight: 1.6, marginBottom: "0.5rem" }}>
-            We sent a verification link to{" "}
-            <strong style={{ color: "var(--lf-dark)" }}>{email}</strong>.{" "}
-            Click it to finish creating your account and set up your child&apos;s profile.
+      <div className="min-h-screen flex" style={{ background: "var(--lf-dark)" }}>
+
+        {/* Left panel */}
+        <div
+          className="hidden lg:flex flex-col justify-between p-12 flex-shrink-0 relative overflow-hidden"
+          style={{ width: 420, background: "linear-gradient(160deg,#131020 0%,#1c1640 100%)" }}
+        >
+          <div className="absolute pointer-events-none" style={{ top: -80, right: -60, width: 300, height: 300, background: "radial-gradient(circle,rgba(0,201,167,0.18) 0%,transparent 70%)" }} />
+          <div className="absolute pointer-events-none" style={{ bottom: 60, left: -60, width: 240, height: 240, background: "radial-gradient(circle,rgba(249,199,0,0.12) 0%,transparent 70%)" }} />
+
+          <Link href="/" className="flex items-center gap-2 relative z-10">
+            <div className="relative" style={{ width: 44, height: 44 }}>
+              <Image src="/lf-logo.png" alt="Lalli Fafa" fill className="object-contain" />
+            </div>
+            <span style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 20, fontWeight: 800, color: "#fff" }}>
+              Lalli <span style={{ color: "var(--lf-teal)" }}>Fafa</span>
+            </span>
+          </Link>
+
+          <div className="flex flex-col items-center gap-6 relative z-10">
+            <div className="relative" style={{ width: 180, height: 180 }}>
+              <Image src="/lf-hero.png" alt="Lalli and Fafa" fill className="object-contain animate-float-slow" />
+            </div>
+            <div className="flex flex-col gap-3 text-center">
+              <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.5rem", color: "#fff", lineHeight: 1.25 }}>
+                One last step!
+              </h2>
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.88rem", lineHeight: 1.7 }}>
+                Tap the link in your email and your child&apos;s first adventure will be ready to create.
+              </p>
+            </div>
+          </div>
+
+          <p style={{ color: "rgba(255,255,255,0.18)", fontSize: "0.8rem", position: "relative", zIndex: 10 }}>
+            &copy; {new Date().getFullYear()} Lalli Fafa
           </p>
-          <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem", marginBottom: "2rem" }}>
-            Link expires in 24 hours · Check spam if you don&apos;t see it
-          </p>
-          <button
-            onClick={handleResendVerification}
-            disabled={resendLoading || resendCooldown > 0}
-            style={{
-              background: "none",
-              border: "1.5px solid rgba(45,45,45,0.2)",
-              color: "rgba(45,45,45,0.55)",
-              fontSize: "0.83rem",
-              cursor: resendCooldown > 0 ? "default" : "pointer",
-              padding: "0.55rem 1.2rem",
-              borderRadius: "0.75rem",
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 600,
-            }}
-          >
-            {resendLoading && <Loader2 size={14} className="animate-spin" style={{ display: "inline", marginRight: 4 }} />}
-            {resendLoading ? "Sending…" : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
-          </button>
-          <p style={{ color: "rgba(45,45,45,0.35)", fontSize: "0.78rem", marginTop: "2rem", lineHeight: 1.5 }}>
-            Wrong email?{" "}
-            <button
-              onClick={() => setVerifyEmailSent(false)}
-              style={{ background: "none", border: "none", color: "var(--lf-teal)", cursor: "pointer", fontWeight: 600, padding: 0, fontSize: "inherit" }}
-            >
-              Go back
-            </button>
-            {" "}and sign up with a different address.
-          </p>
+        </div>
+
+        {/* Right panel */}
+        <div
+          className="flex-1 flex flex-col items-center justify-center px-6 py-12"
+          style={{ background: "#FFF8E7", minHeight: "100vh" }}
+        >
+          {/* Mobile logo */}
+          <Link href="/" className="flex items-center gap-2 mb-10 lg:hidden">
+            <div className="relative" style={{ width: 36, height: 36 }}>
+              <Image src="/lf-logo.png" alt="Lalli Fafa" fill className="object-contain" />
+            </div>
+            <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.15rem", color: "var(--lf-dark)" }}>
+              Lalli <span style={{ color: "var(--lf-teal)" }}>Fafa</span>
+            </span>
+          </Link>
+
+          <div className="w-full flex flex-col items-center gap-6" style={{ maxWidth: 420 }}>
+            {/* Icon */}
+            <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "rgba(0,201,167,0.12)" }}>
+              <MailCheck size={38} style={{ color: "var(--lf-teal)" }} />
+            </div>
+
+            <div className="flex flex-col items-center gap-3 text-center">
+              <h1 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "clamp(1.7rem,3vw,2.1rem)", color: "var(--lf-dark)", lineHeight: 1.2 }}>
+                Check your email!
+              </h1>
+              <p style={{ color: "rgba(45,45,45,0.6)", fontSize: "1rem", lineHeight: 1.65, maxWidth: 360 }}>
+                We sent a verification link to{" "}
+                <strong style={{ color: "var(--lf-dark)" }}>{email}</strong>.
+                Click it to finish creating your account.
+              </p>
+              <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem" }}>
+                Link expires in 24 hours · Check spam if you don&apos;t see it
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 w-full items-center">
+              <button
+                onClick={handleResendVerification}
+                disabled={resendLoading || resendCooldown > 0}
+                className="btn-primary w-full justify-center"
+                style={{
+                  fontSize: "1rem",
+                  padding: "0.9rem 2rem",
+                  opacity: resendCooldown > 0 ? 0.55 : 1,
+                  cursor: resendCooldown > 0 ? "default" : "pointer",
+                }}
+              >
+                {resendLoading && <Loader2 size={18} className="animate-spin" />}
+                {resendLoading ? "Sending…" : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+              </button>
+
+              <p style={{ color: "rgba(45,45,45,0.4)", fontSize: "0.82rem", fontFamily: "'Nunito', sans-serif" }}>
+                Wrong email?{" "}
+                <button
+                  onClick={() => setVerifyEmailSent(false)}
+                  style={{ background: "none", border: "none", color: "var(--lf-teal)", cursor: "pointer", fontWeight: 700, padding: 0, fontSize: "inherit", fontFamily: "inherit" }}
+                >
+                  Go back
+                </button>
+                {" "}and sign up with a different address.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
