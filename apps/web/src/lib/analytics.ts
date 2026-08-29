@@ -19,6 +19,15 @@ export function trackSignUp(method: "email" | "google") {
   trackEvent("sign_up", { method });
 }
 
+/**
+ * Fired on each onboarding step transition (reports the step being
+ * entered), and for specific interactions worth tracking separately
+ * within a step — e.g. clicking/using the Step 2 photo upload control.
+ */
+export function trackOnboardingStep(step: number, action?: string) {
+  trackEvent("onboarding_step", { step, action: action ?? "reached", timestamp: Date.now() });
+}
+
 /** Fired when onboarding is completed — also sends a Google Ads conversion */
 export function trackOnboardingComplete() {
   trackEvent("onboarding_complete");

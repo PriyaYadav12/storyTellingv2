@@ -14,7 +14,7 @@ import {
 } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
-import { trackOnboardingComplete } from "@/lib/analytics";
+import { trackOnboardingComplete, trackOnboardingStep } from "@/lib/analytics";
 import { toast } from "sonner";
 import { Loader2, ChevronRight, ChevronLeft, Sparkles, Camera, Check } from "lucide-react";
 
@@ -200,9 +200,11 @@ function OnboardingForm() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
+      trackOnboardingStep(2, "photo_error");
       toast.error("Photo must be under 5 MB");
       return;
     }
+    trackOnboardingStep(2, "photo_selected");
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   }
@@ -227,6 +229,7 @@ function OnboardingForm() {
       }
       setFieldErrors({});
     }
+    trackOnboardingStep(step + 1);
     setStep((s) => s + 1);
   }
 
@@ -601,7 +604,7 @@ function OnboardingForm() {
                     /* Upload zone */
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => { trackOnboardingStep(2, "photo_click"); fileInputRef.current?.click(); }}
                       className="flex flex-col items-center gap-4 w-full py-14 rounded-2xl transition-all group"
                       style={{
                         border: "2px dashed rgba(255,255,255,0.25)",
@@ -804,7 +807,7 @@ function OnboardingForm() {
                   {(step === 2 || step === 3) && (
                     <button
                       type="button"
-                      onClick={() => setStep((s) => s + 1)}
+                      onClick={() => { trackOnboardingStep(step + 1); setStep((s) => s + 1); }}
                       style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(255,255,255,0.25)", background: "none", border: "none", cursor: "pointer", padding: "4px", textAlign: "center" }}
                     >
                       Skip for now →
