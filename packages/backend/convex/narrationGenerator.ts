@@ -358,9 +358,26 @@ export async function generateMergedNarration(
   const mergedBlob = new Blob([merged], { type: "audio/mpeg" });
   const storageId = await ctx.storage.store(mergedBlob);
 
-  // Calculate duration from byte size.
-  // Format is mp3_44100_64 (64 kbps) → 64000 bits/s = 8000 bytes/s
-  const audioDurationSeconds = Math.round(merged.byteLength / 8000);
+  // Calculate real duration by parsing the merged MP3 rather than assuming a
+  // fixed bitrate. The byte-size/64kbps estimate this replaced was wrong:
+  // measured real output came back at ~128kbps, not the requested
+  // mp3_44100_64, so the old estimate was ~2x too long for every story.
+  // numberOfSamples/sampleRate is used (not format.duration) because that
+  // field reads unreliably on this concatenated multi-segment file — verified
+  // against real generated narration during the Task 4 duration audit.
+  let audioDurationSeconds: number;
+  try {
+    const { parseBuffer } = await import("music-metadata");
+    const meta = await parseBuffer(new Uint8Array(merged), "audio/mpeg");
+    if (meta.format.numberOfSamples && meta.format.sampleRate) {
+      audioDurationSeconds = Math.round(meta.format.numberOfSamples / meta.format.sampleRate);
+    } else {
+      throw new Error("music-metadata returned no sample count");
+    }
+  } catch (err) {
+    console.error("Failed to parse narration duration, falling back to byte estimate:", err);
+    audioDurationSeconds = Math.round(merged.byteLength / 16000); // fallback: assume 128kbps
+  }
 
   await ctx.runMutation(api.stories._setNarrationFilePath, {
     storyId: storyId,
