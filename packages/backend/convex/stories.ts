@@ -1,6 +1,7 @@
 import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { authComponent } from "./auth";
+import { internal } from "./_generated/api";
 
 export const list = query({
 	args: {},
@@ -324,6 +325,40 @@ export const _setNarrationDuration = mutation({
 			audioDurationSeconds: durationSeconds,
 			updatedAt: Date.now(),
 		});
+	},
+});
+
+// Cost tracking (Task C) — one mutation per generation phase, each owning
+// its own field(s) so concurrent phases never clobber each other via
+// ctx.db.patch's shallow merge. Each schedules the final-cost check after
+// writing, in case it's the last phase to finish.
+export const _setTextUsage = mutation({
+	args: { storyId: v.id("stories"), textInputTokens: v.number(), textOutputTokens: v.number() },
+	handler: async (ctx, { storyId, textInputTokens, textOutputTokens }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		await ctx.db.patch(storyId, { textInputTokens, textOutputTokens });
+		await ctx.scheduler.runAfter(0, internal.costTracking.maybeComputeFinalCost, { storyId });
+	},
+});
+
+export const _setImageUsage = mutation({
+	args: { storyId: v.id("stories"), imageGenerationCalls: v.number() },
+	handler: async (ctx, { storyId, imageGenerationCalls }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		await ctx.db.patch(storyId, { imageGenerationCalls });
+		await ctx.scheduler.runAfter(0, internal.costTracking.maybeComputeFinalCost, { storyId });
+	},
+});
+
+export const _setAudioUsage = mutation({
+	args: { storyId: v.id("stories"), audioCharactersUsed: v.number() },
+	handler: async (ctx, { storyId, audioCharactersUsed }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		await ctx.db.patch(storyId, { audioCharactersUsed });
+		await ctx.scheduler.runAfter(0, internal.costTracking.maybeComputeFinalCost, { storyId });
 	},
 });
 

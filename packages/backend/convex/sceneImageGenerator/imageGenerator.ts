@@ -3,7 +3,7 @@
  */
 import { ActionCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
-import { api } from "../_generated/api";
+import { api, internal } from "../_generated/api";
 import {
   ChildInfo,
   SceneMetadata,
@@ -162,17 +162,76 @@ async function mapWithConcurrencyLimit<T, R>(
 }
 
 /**
+ * Generates a style-lock reference image — a neutral character lineup (Lalli, child, Fafa)
+ * used as the visual continuity anchor for EVERY scene in the story. Pinning all scenes to
+ * one reference keeps each scene exactly one hop from the style source, regardless of scene
+ * count, so drift can't compound across sequential scenes.
+ */
+async function generateStyleLockImage(
+  ctx: ActionCtx,
+  child: ChildInfo,
+  lalliRefBase64?: string,
+  fafaRefBase64?: string,
+  childAvatarBase64?: string
+): Promise<string | undefined> {
+  try {
+    const textPrompt = `CHARACTER STYLE REFERENCE for this story. Establish the exact visual style, character proportions, colour palette, and lighting to maintain across all story scenes.
+
+Do NOT depict any story action, setting, or background.
+
+Show three characters side by side on a plain light gradient background (#e8f4fc top, #f5f5f5 bottom):
+LEFT: Lalli — 6-year-old girl, yellow star dress, two pigtails with orange bows, teal bag, warm brown skin, bright eyes
+CENTER: ${child.name} — ${child.age}-year-old ${child.gender === "male" ? "boy" : child.gender === "female" ? "girl" : "child"}, match the child avatar reference exactly
+RIGHT: Fafa — 3-year-old boy, teal overalls over yellow shirt, short messy brown hair, carries a small blue bunny
+
+All characters facing forward, standing naturally, friendly neutral expressions. Pixar/Disney 3D animated style. Warm soft front lighting. Consistent proportions. This is a style reference sheet, not a story scene.`;
+
+    const promptParts = assemblePromptPartsWithLabels({
+      textPrompt,
+      lalliRefBase64,
+      fafaRefBase64,
+      childAvatarBase64,
+    });
+
+    const ai = getGeminiClient();
+    const response = await ai.models.generateContent({
+      model: GEMINI_IMAGE_MODEL,
+      contents: promptParts,
+    });
+
+    for (const part of response?.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData?.data) return part.inlineData.data;
+    }
+    console.warn("[generateStyleLockImage] No image returned");
+    return undefined;
+  } catch (err: any) {
+    console.warn("[generateStyleLockImage] Failed (soft-fail):", err?.message);
+    return undefined;
+  }
+}
+
+/**
  * Generates and stores all scene images with separate character references.
- * Auto-generates a child avatar if none exists.
+ * Auto-generates a child avatar if none exists and persists it to the profile.
+ * Uses a style-lock reference image as the visual anchor for every scene so that
+ * each scene is exactly one hop from the source — prevents drift compounding as
+ * scene count grows.
  */
 export async function generateAllSceneImages(
   ctx: ActionCtx,
   scenes: SceneMetadata[],
   child: ChildInfo,
   storyId: Id<"stories">,
-  childAvatarStorageId?: string
+  childAvatarStorageId?: string,
+  childId?: "1" | "2",
+  profileId?: Id<"user_profiles">
 ): Promise<SceneGenerationResult[]> {
   if (!scenes.length) return [];
+
+  // Cost tracking (Task C): every Gemini image call this story triggers —
+  // avatar auto-gen (first story for a child only), style-lock, and each
+  // scene's first attempt + retry. Written once at the end of this function.
+  let imageGenerationCalls = 0;
 
   const sortedScenes = [...scenes].sort((a, b) => a.sceneNumber - b.sceneNumber);
 
@@ -187,36 +246,65 @@ export async function generateAllSceneImages(
   if (!childAvatarBase64) {
     console.log(`[generateAllSceneImages] No child avatar — auto-generating for ${child.name}`);
     const avatarResult = await generateChildAvatar(ctx, child, childAvatarStorageId);
-    if ((avatarResult as any).avatarBase64) {
-      childAvatarBase64 = (avatarResult as any).avatarBase64;
+    imageGenerationCalls++;
+    if (avatarResult.avatarBase64) {
+      childAvatarBase64 = avatarResult.avatarBase64;
       console.log(`[generateAllSceneImages] Auto-generated child avatar successfully`);
+      // Persist to profile so subsequent stories reuse this avatar instead of re-generating.
+      // Uses internalMutation with explicit profileId — the auth-based mutation would throw
+      // "Not authenticated" here since we're inside an internalAction with no session context.
+      if (avatarResult.avatarStorageId && childId && profileId) {
+        await ctx.runMutation(internal.userProfiles._updateAvatarStorageIdById, {
+          profileId,
+          avatarStorageId: avatarResult.avatarStorageId,
+          childId,
+        });
+        console.log(`[generateAllSceneImages] Saved generated avatar to profile (child ${childId})`);
+      }
     } else {
       console.warn(`[generateAllSceneImages] Child avatar generation failed: ${avatarResult.error}`);
     }
   }
 
-  // Generate scene 1 first — its output becomes the visual anchor for all later scenes.
-  // This ensures consistent character appearance, lighting, and art style across the story.
+  // Generate a style-lock reference image — a neutral character lineup that anchors every
+  // scene's visual continuity. All scenes (including Scene 1) receive this reference so
+  // Scene 1's stochastic style choices don't propagate and compound across the story.
+  console.log(`[generateAllSceneImages] Generating style-lock reference`);
+  const styleLockBase64 = await generateStyleLockImage(
+    ctx, child, charRefs.lalli, charRefs.fafa, childAvatarBase64
+  );
+  imageGenerationCalls++;
+  if (styleLockBase64) {
+    console.log(`[generateAllSceneImages] Style-lock ready`);
+  } else {
+    console.warn(`[generateAllSceneImages] Style-lock failed — scenes will use Scene 1 output as fallback anchor`);
+  }
+
+  // Generate all scenes. Each scene uses the style-lock as its visual anchor so every
+  // scene is exactly one hop from the reference. If style-lock failed, Scene 1 runs
+  // without an anchor and its output becomes the anchor for remaining scenes (prior behaviour).
   const [firstScene, ...remainingScenes] = sortedScenes;
 
-  console.log(`[generateAllSceneImages] Generating scene ${firstScene.sceneNumber} (anchor)`);
+  console.log(`[generateAllSceneImages] Generating scene ${firstScene.sceneNumber}`);
   let firstResult = await processSceneImage(
     ctx, firstScene, child, storyId,
     charRefs.lalli, charRefs.fafa,
-    undefined, childAvatarBase64
+    styleLockBase64, childAvatarBase64
   );
+  imageGenerationCalls++;
   if (!firstResult.success) {
     console.warn(`[generateAllSceneImages] Scene ${firstScene.sceneNumber} failed (${firstResult.error}), retrying...`);
     firstResult = await processSceneImage(
       ctx, firstScene, child, storyId,
       charRefs.lalli, charRefs.fafa,
-      undefined, childAvatarBase64
+      styleLockBase64, childAvatarBase64
     );
+    imageGenerationCalls++;
   }
   console.log(`[generateAllSceneImages] Scene ${firstScene.sceneNumber} done (success: ${firstResult.success})`);
 
-  // Use scene 1 as visual continuity reference for all remaining scenes
-  const anchorBase64 = firstResult.imageBase64;
+  // Anchor for remaining scenes: style-lock if available, else Scene 1's output (fallback).
+  const anchorBase64 = styleLockBase64 ?? firstResult.imageBase64;
 
   const remainingResults = await mapWithConcurrencyLimit(remainingScenes, 3, async (scene) => {
     console.log(`[generateAllSceneImages] Generating scene ${scene.sceneNumber}`);
@@ -226,6 +314,7 @@ export async function generateAllSceneImages(
       charRefs.lalli, charRefs.fafa,
       anchorBase64, childAvatarBase64
     );
+    imageGenerationCalls++;
 
     if (!result.success) {
       console.warn(`[generateAllSceneImages] Scene ${scene.sceneNumber} failed (${result.error}), retrying...`);
@@ -234,6 +323,7 @@ export async function generateAllSceneImages(
         charRefs.lalli, charRefs.fafa,
         anchorBase64, childAvatarBase64
       );
+      imageGenerationCalls++;
     }
 
     console.log(`[generateAllSceneImages] Scene ${scene.sceneNumber} done (success: ${result.success})`);
@@ -243,6 +333,8 @@ export async function generateAllSceneImages(
   const results = [firstResult, ...remainingResults];
   const failed = results.filter((r) => !r.success);
   if (failed.length) console.warn("Failed scenes:", failed);
+
+  await ctx.runMutation(api.stories._setImageUsage, { storyId, imageGenerationCalls });
 
   return results;
 }

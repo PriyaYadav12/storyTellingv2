@@ -12,6 +12,7 @@ import type * as adminStats from "../adminStats.js";
 import type * as audioMetadata from "../audioMetadata.js";
 import type * as auth from "../auth.js";
 import type * as blogs from "../blogs.js";
+import type * as costTracking from "../costTracking.js";
 import type * as credit from "../credit.js";
 import type * as crons from "../crons.js";
 import type * as emailActions from "../emailActions.js";
@@ -83,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   audioMetadata: typeof audioMetadata;
   auth: typeof auth;
   blogs: typeof blogs;
+  costTracking: typeof costTracking;
   credit: typeof credit;
   crons: typeof crons;
   emailActions: typeof emailActions;

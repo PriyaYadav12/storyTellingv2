@@ -327,13 +327,17 @@ export async function generateMergedNarration(
     // Pronunciation fixes apply to all languages (names stay in English in Hindi text)
     const fixedText = applyPronunciationFixes(l.text, childName, childPhoneticName);
     const pauseSuffix = isEnglish ? " ..." : " ।";
-    const ab = await ttsArrayBuffer(voiceId, fixedText + pauseSuffix, language);
-    return { order: l.order, ab };
+    const fullText = fixedText + pauseSuffix;
+    const ab = await ttsArrayBuffer(voiceId, fullText, language);
+    return { order: l.order, ab, chars: fullText.length };
   });
 
   // Filter out failed lines and merge in order
-  const successful = results.filter((r): r is { order: number; ab: ArrayBuffer } => r !== null);
+  const successful = results.filter((r): r is { order: number; ab: ArrayBuffer; chars: number } => r !== null);
   console.log(`[Narration] ${successful.length}/${lines.length} lines succeeded.`);
+  // Cost tracking (Task C): characters actually sent to ElevenLabs for the
+  // lines that succeeded (failed calls don't produce billable audio).
+  const audioCharactersUsed = successful.reduce((sum, r) => sum + r.chars, 0);
 
   // If many segments failed, block storage — a truncated story stored as "ready" can never
   // be fixed by the user and is worse than a clean error they can re-generate.
@@ -387,6 +391,11 @@ export async function generateMergedNarration(
   await ctx.runMutation(api.stories._setNarrationDuration, {
     storyId: storyId,
     durationSeconds: audioDurationSeconds,
+  });
+
+  await ctx.runMutation(api.stories._setAudioUsage, {
+    storyId: storyId,
+    audioCharactersUsed,
   });
 
   console.log("✅ Narration generated and stored:", storageId, `(${audioDurationSeconds}s)`);

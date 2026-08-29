@@ -108,6 +108,17 @@ export default defineSchema({
 		// stings at the right moment during audio playback.
 		sceneStartSeconds: v.optional(v.record(v.string(), v.number())),
 
+		// Cost tracking — each field is written by exactly one generation phase
+		// (text / images / narration), never patched by more than one, since
+		// ctx.db.patch only shallow-merges and a shared nested object would let
+		// one phase's write clobber another's. estimatedCostUSD is computed once
+		// all three are present, using system_config's cost_rates at that time.
+		textInputTokens:     v.optional(v.number()),
+		textOutputTokens:    v.optional(v.number()),
+		imageGenerationCalls: v.optional(v.number()),
+		audioCharactersUsed: v.optional(v.number()),
+		estimatedCostUSD:    v.optional(v.number()),
+
 		createdAt: v.number(),
 		updatedAt: v.number(),
 	})

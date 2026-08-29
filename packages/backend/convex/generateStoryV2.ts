@@ -953,12 +953,28 @@ export const _generateContentV2 = internalAction({
 
     const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
-    const makeRequest = (temperature: number, text: string) =>
-      gemini.models.generateContent({
+    // Cost tracking: accumulated across every Gemini text call this story makes
+    // (initial generation, all retries, repair, validation, voice-metadata
+    // analysis) — every factory below feeds the same running total. Stored on
+    // the story once text generation finishes; see costTracking.ts.
+    let textInputTokens = 0;
+    let textOutputTokens = 0;
+    const trackUsage = (resp: { usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number; thoughtsTokenCount?: number } }) => {
+      const u = resp.usageMetadata;
+      if (!u) return;
+      textInputTokens += u.promptTokenCount ?? 0;
+      textOutputTokens += (u.candidatesTokenCount ?? 0) + (u.thoughtsTokenCount ?? 0);
+    };
+
+    const makeRequest = async (temperature: number, text: string) => {
+      const resp = await gemini.models.generateContent({
         model: "gemini-2.5-pro",
         config: { temperature, systemInstruction: system },
         contents: [{ role: "user", parts: [{ text }] }],
       });
+      trackUsage(resp);
+      return resp;
+    };
 
     // ── 5. Initial generation ─────────────────────────────────────────────
     // Hinglish needs slightly higher temperature — the model's English-generation prior
@@ -1039,12 +1055,15 @@ export const _generateContentV2 = internalAction({
 
     // ── 5b. Validation + targeted repair ─────────────────────────────────
     // Gemini call with no system instruction — purely evaluating the story text.
-    const makeValidationRequest = (text: string) =>
-      gemini.models.generateContent({
+    const makeValidationRequest = async (text: string) => {
+      const resp = await gemini.models.generateContent({
         model:    "gemini-2.5-pro",
         config:   { temperature: 0.1 },
         contents: [{ role: "user", parts: [{ text }] }],
       });
+      trackUsage(resp);
+      return resp;
+    };
 
     // Deterministic pass first (zero cost)
     const deterministicIssues = runDeterministicValidation(
@@ -1139,12 +1158,15 @@ export const _generateContentV2 = internalAction({
     // ── 5c. Voice/emotion metadata extraction ────────────────────────────
     // Runs after scheduling so it is in parallel with the image/narration pipelines.
     // Soft-fails with empty result — never blocks the story from being viewable.
-    const makeAnalysisRequest = (text: string) =>
-      gemini.models.generateContent({
+    const makeAnalysisRequest = async (text: string) => {
+      const resp = await gemini.models.generateContent({
         model:    "gemini-2.5-pro",
         config:   { temperature: 0.1 },
         contents: [{ role: "user", parts: [{ text }] }],
       });
+      trackUsage(resp);
+      return resp;
+    };
 
     const voiceMetadata = await extractVoiceEmotionMetadata(content, makeAnalysisRequest);
 
@@ -1170,6 +1192,14 @@ export const _generateContentV2 = internalAction({
       voiceEmotionMetadata: voiceMetadata.scenes.length > 0 ? voiceMetadata : undefined,
       stingPlacements:      stingPlacements.length > 0       ? stingPlacements : undefined,
     });
+
+    // Cost tracking: text phase is done (all Gemini text calls for this story
+    // have happened by this point). Store the total and check whether images
+    // + narration (separate scheduled actions) have already finished too.
+    await ctx.runMutation((api as any).stories._setTextUsage, {
+      storyId, textInputTokens, textOutputTokens,
+    });
+    await ctx.runMutation(internal.costTracking.maybeComputeFinalCost, { storyId });
   },
 });
 

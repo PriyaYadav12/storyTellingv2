@@ -10,7 +10,7 @@ import { authClient } from "@/lib/auth-client";
 import { BLOG_POSTS } from "@/lib/blog-data";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type TabKey = "stories" | "users" | "blog" | "assets" | "voice" | "stings" | "settings" | "story-types" | "languages" | "system-prompt" | "challenge-config";
+type TabKey = "stories" | "users" | "blog" | "assets" | "voice" | "stings" | "settings" | "story-types" | "languages" | "system-prompt" | "challenge-config" | "cost";
 type SettingsSubTab = "themes" | "lessons";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -2528,6 +2528,187 @@ function fmtDur(s: number) {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 }
 
+function CostTab({ isAdmin }: { isAdmin: boolean }) {
+  const dashboard = useQuery((api as any).costTracking.getCostDashboard, isAdmin ? {} : "skip") as
+    | {
+        totalStoriesWithCostData: number;
+        totalStoriesOverall: number;
+        totalUSD: number;
+        avgUSD: number;
+        trend: { day: string; costUSD: number }[];
+        recent: {
+          storyId: string;
+          title: string;
+          length: string;
+          createdAt: number;
+          textInputTokens?: number;
+          textOutputTokens?: number;
+          imageGenerationCalls?: number;
+          audioCharactersUsed?: number;
+          estimatedCostUSD?: number;
+        }[];
+      }
+    | undefined;
+  const rates = useQuery((api as any).costTracking.getRates, isAdmin ? {} : "skip") as
+    | { textInputPerMillion: number; textOutputPerMillion: number; imagePerCall: number; audioPerChar: number }
+    | undefined;
+  const setRates = useMutation((api as any).costTracking.setRates);
+
+  const [editingRates, setEditingRates] = useState(false);
+  const [rateForm, setRateForm] = useState({ textInputPerMillion: "", textOutputPerMillion: "", imagePerCall: "", audioPerChar: "" });
+  const [savingRates, setSavingRates] = useState(false);
+
+  function openRateEditor() {
+    if (rates) {
+      setRateForm({
+        textInputPerMillion: String(rates.textInputPerMillion),
+        textOutputPerMillion: String(rates.textOutputPerMillion),
+        imagePerCall: String(rates.imagePerCall),
+        audioPerChar: String(rates.audioPerChar),
+      });
+    }
+    setEditingRates(true);
+  }
+
+  async function saveRates() {
+    setSavingRates(true);
+    try {
+      await setRates({
+        textInputPerMillion: parseFloat(rateForm.textInputPerMillion) || 0,
+        textOutputPerMillion: parseFloat(rateForm.textOutputPerMillion) || 0,
+        imagePerCall: parseFloat(rateForm.imagePerCall) || 0,
+        audioPerChar: parseFloat(rateForm.audioPerChar) || 0,
+      });
+      setEditingRates(false);
+    } finally {
+      setSavingRates(false);
+    }
+  }
+
+  const usdFmt = (n: number) => `$${n.toFixed(4)}`;
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Historical-data honesty note */}
+      <div style={{ background: "rgba(249,199,0,0.1)", border: "1px solid rgba(249,199,0,0.35)", borderRadius: "0.75rem", padding: "12px 16px", fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "var(--lf-dark)" }}>
+        Cost tracking only covers stories generated after this shipped — no token/image/character
+        usage was logged before, and none of that historical data still exists, so past stories
+        can&apos;t be retroactively priced. Numbers below reflect real usage as it accumulates going forward.
+      </div>
+
+      {!dashboard ? (
+        <div style={{ fontFamily: "'Nunito', sans-serif", color: "rgba(45,45,45,0.5)" }}>Loading…</div>
+      ) : (
+        <>
+          {/* Aggregate summary */}
+          <div className="flex gap-4 flex-wrap">
+            {[
+              { label: "Total spend (tracked)", value: `$${dashboard.totalUSD.toFixed(2)}` },
+              { label: "Avg cost / story", value: usdFmt(dashboard.avgUSD) },
+              { label: "Stories with cost data", value: `${dashboard.totalStoriesWithCostData} / ${dashboard.totalStoriesOverall}` },
+            ].map((s) => (
+              <div key={s.label} style={{ flex: "1 1 200px", background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: "0.85rem", padding: "16px 20px" }}>
+                <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: "rgba(45,45,45,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{s.label}</div>
+                <div style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.6rem", color: "var(--lf-dark)" }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Rate config */}
+          <div style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: "0.85rem", padding: 20 }}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.05rem" }}>Rate config</h3>
+              {!editingRates && (
+                <button onClick={openRateEditor} style={{ padding: "6px 14px", borderRadius: "0.6rem", border: "1.5px solid rgba(0,0,0,0.12)", background: "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>
+                  Edit rates
+                </button>
+              )}
+            </div>
+            {editingRates ? (
+              <div className="flex flex-col gap-3">
+                {([
+                  ["textInputPerMillion", "Text input ($ / 1M tokens)"],
+                  ["textOutputPerMillion", "Text output ($ / 1M tokens)"],
+                  ["imagePerCall", "Image ($ / call)"],
+                  ["audioPerChar", "Audio ($ / character)"],
+                ] as const).map(([key, label]) => (
+                  <label key={key} className="flex flex-col gap-1" style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.6)" }}>
+                    {label}
+                    <input type="number" step="0.0001" value={rateForm[key]} onChange={(e) => setRateForm((f) => ({ ...f, [key]: e.target.value }))} style={InputStyle()} />
+                  </label>
+                ))}
+                <div className="flex gap-2 mt-1">
+                  <button onClick={saveRates} disabled={savingRates} style={{ padding: "8px 18px", borderRadius: "0.6rem", border: "none", background: "var(--lf-teal)", color: "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, cursor: "pointer" }}>
+                    {savingRates ? "Saving…" : "Save"}
+                  </button>
+                  <button onClick={() => setEditingRates(false)} style={{ padding: "8px 18px", borderRadius: "0.6rem", border: "1.5px solid rgba(0,0,0,0.12)", background: "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, cursor: "pointer" }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : rates ? (
+              <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.88rem", color: "var(--lf-dark)", lineHeight: 1.8 }}>
+                Text: ${rates.textInputPerMillion}/1M in · ${rates.textOutputPerMillion}/1M out &nbsp;|&nbsp;
+                Image: ${rates.imagePerCall}/call &nbsp;|&nbsp;
+                Audio: ${rates.audioPerChar}/char
+              </div>
+            ) : null}
+          </div>
+
+          {/* Trend */}
+          {dashboard.trend.length > 0 && (
+            <div style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: "0.85rem", padding: 20 }}>
+              <h3 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.05rem", marginBottom: 12 }}>Spend by day</h3>
+              <div className="flex flex-col gap-1">
+                {dashboard.trend.map((t) => (
+                  <div key={t.day} className="flex justify-between" style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", padding: "3px 0" }}>
+                    <span style={{ color: "rgba(45,45,45,0.6)" }}>{t.day}</span>
+                    <span style={{ fontWeight: 700 }}>${t.costUSD.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Per-story table */}
+          <div style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: "0.85rem", overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th style={TH_STYLE}>Story</th>
+                    <th style={TH_STYLE}>Length</th>
+                    <th style={TH_STYLE}>Text tokens (in/out)</th>
+                    <th style={TH_STYLE}>Image calls</th>
+                    <th style={TH_STYLE}>Audio chars</th>
+                    <th style={TH_STYLE}>Est. cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboard.recent.length === 0 ? (
+                    <tr><td style={TD_STYLE} colSpan={6}>No cost data yet — will populate as new stories are generated.</td></tr>
+                  ) : (
+                    dashboard.recent.map((s) => (
+                      <tr key={s.storyId}>
+                        <td style={TD_STYLE}>{s.title}</td>
+                        <td style={TD_STYLE}>{s.length}</td>
+                        <td style={TD_STYLE}>{s.textInputTokens ?? "—"} / {s.textOutputTokens ?? "—"}</td>
+                        <td style={TD_STYLE}>{s.imageGenerationCalls ?? "—"}</td>
+                        <td style={TD_STYLE}>{s.audioCharactersUsed ?? "—"}</td>
+                        <td style={{ ...TD_STYLE, fontWeight: 700 }}>{s.estimatedCostUSD != null ? usdFmt(s.estimatedCostUSD) : "—"}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function StingsTab({ isAdmin }: { isAdmin: boolean }) {
   const stings = useQuery((api as any).stings.listWithUrls, isAdmin ? {} : "skip") as any[] | undefined;
   const generateUploadUrl = useMutation((api as any).stings.generateUploadUrl);
@@ -2827,6 +3008,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "languages", label: "Languages" },
   { key: "system-prompt", label: "System Prompt" },
   { key: "challenge-config", label: "Challenge Config" },
+  { key: "cost", label: "Cost" },
 ];
 
 export default function AdminPage() {
@@ -3026,6 +3208,7 @@ export default function AdminPage() {
           {activeTab === "languages" && <TabErrorBoundary><LanguagesTab isAdmin={isAdmin} /></TabErrorBoundary>}
           {activeTab === "system-prompt" && <TabErrorBoundary><SystemPromptTab isAdmin={isAdmin} /></TabErrorBoundary>}
           {activeTab === "challenge-config" && <TabErrorBoundary><ChallengeConfigTab isAdmin={isAdmin} /></TabErrorBoundary>}
+          {activeTab === "cost" && <TabErrorBoundary><CostTab isAdmin={isAdmin} /></TabErrorBoundary>}
         </div>
       </main>
     </div>
