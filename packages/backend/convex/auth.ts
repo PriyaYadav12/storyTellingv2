@@ -136,7 +136,11 @@ function createAuth(
           console.log(`[email-verify] Verification URL for ${user.email}: ${url}`);
         }
       },
-      sendOnSignUp: true,
+      // OTP-at-generate (emailOTP plugin below) is the only verification path
+      // now — this magic-link sender stays wired for API completeness but must
+      // never fire automatically at signup, or every signup gets both this
+      // email AND the OTP email.
+      sendOnSignUp: false,
       // Send the welcome email only after verification is confirmed — not at
       // account creation — to avoid sending to unverified/wrong addresses.
       afterEmailVerification: async (user) => {
