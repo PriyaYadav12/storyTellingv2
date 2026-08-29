@@ -1414,10 +1414,10 @@ function StoryViewer({
                 <div className="flex items-center gap-2.5">
                   <span style={{ fontSize: "1.2rem" }}>🌙</span>
                   <div className="text-left">
-                    <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.82rem", color: "#fff", lineHeight: 1 }}>
+                    <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.82rem", color: t.text, lineHeight: 1 }}>
                       Tonight&apos;s story is just the beginning.
                     </p>
-                    <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.3 }}>
+                    <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", color: t.textSoft, lineHeight: 1.3 }}>
                       Get more stories every month — Magic Pass from ₹199
                     </p>
                   </div>
