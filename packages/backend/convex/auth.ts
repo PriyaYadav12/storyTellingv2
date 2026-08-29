@@ -3,7 +3,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { crossDomain } from "@convex-dev/better-auth/plugins";
 import { components, internal } from "./_generated/api";
 import { DataModel, Id } from "./_generated/dataModel";
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation, action } from "./_generated/server";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { v } from "convex/values";
@@ -70,12 +70,116 @@ function buildWelcomeEmail(name?: string) {
 </div>`;
 }
 
+async function sendWelcomeEmail(email: string | undefined, name: string | undefined | null) {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey || !email) return;
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "Lalli Fafa <raj@lallifafa.com>",
+        to: [email],
+        subject: "Welcome to Lalli Fafa — your child's story journey begins 🌙",
+        html: buildWelcomeEmail(name ?? undefined),
+        text: buildWelcomeText(name ?? undefined),
+      }),
+    });
+  } catch (err) {
+    console.error("Failed to send welcome email:", err);
+  }
+}
+
 function buildWelcomeText(name?: string) {
   const first = name ? name.split(" ")[0] : "there";
   return `Hi ${first}, welcome to Lalli Fafa!\n\nYou've unlocked personalised bedtime stories for your child featuring Lalli and Fafa.\n\nOur stories help children:\n• Build listening skills through rich narration\n• Improve attention and focus with personalised content\n• Spark creativity through imaginative worlds\n• Develop cognitive abilities via story structure and moral lessons\n\nYour account starts with 200 free credits. Create your first story at https://www.lallifafa.com/dashboard\n\n— The Lalli Fafa team`;
 }
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
+
+// ─── Security backport: CVE-2026-67327 (GHSA-qq9h-g4jm-xgf3) ────────────────
+// Pre-account hijacking via magic-link/email-OTP sign-in. Affects better-auth
+// 1.1.3–1.6.21 (installed here: 1.3.34); fixed upstream in 1.6.22. Full
+// upgrade to 1.6.22 was evaluated and deferred — see commit message for why
+// (short version: it requires a coordinated bump of @convex-dev/better-auth
+// too, which regenerates the auth component's Convex schema against live
+// production user/session/account data; that's a real migration, not
+// something to rush through under urgency pressure). This backports the
+// specific fix instead.
+//
+// Root cause (from the advisory): "magic-link verification and email-OTP
+// sign-in both sign in to that account. They mark it verified and issue a
+// session. Before the fix, neither one removed a password set while the
+// account was still unverified." An attacker can pre-register a victim's
+// email with an attacker-chosen password, leave it unverified, and retain
+// working password access after the real owner later verifies via OTP.
+//
+// Fix: called from afterEmailVerification (fires for both the OTP flow and
+// the magic-link flow — this is the only verification path in production
+// now that Task D disabled magic-link auto-send, but this hook covers both
+// on purpose in case magic-link is ever re-enabled). Strips any
+// "credential" (password) account row tied to this user, and revokes
+// sessions that existed before this verification — using a short time
+// buffer to avoid killing the session this exact verification just issued,
+// since the hook doesn't receive the new session's id directly.
+async function revokeUnverifiedAccountAccess(
+  ctx: GenericCtx<DataModel>,
+  userId: string
+): Promise<{ passwordAccountsRemoved: number; staleSessionsRevoked: number }> {
+  const betterAuthApi = (components.betterAuth as any).adapter;
+  let passwordAccountsRemoved = 0;
+  let staleSessionsRevoked = 0;
+
+  try {
+    const accountsRes = await (ctx as any).runQuery(betterAuthApi.findMany, {
+      model: "account",
+      where: [
+        { field: "userId", value: userId, operator: "eq" },
+        { field: "providerId", value: "credential", operator: "eq" },
+      ],
+      paginationOpts: { numItems: 50, cursor: null },
+    });
+    const accounts = (accountsRes as any).page ?? (accountsRes as any).docs ?? accountsRes ?? [];
+    for (const a of accounts as any[]) {
+      const rowId = a.id ?? a._id;
+      await (ctx as any).runMutation(betterAuthApi.deleteOne, {
+        input: { model: "account", where: [{ field: "_id", value: rowId, operator: "eq" }] },
+      });
+      passwordAccountsRemoved++;
+    }
+  } catch (err) {
+    console.error("[security] Failed to strip credential account during verification:", err);
+  }
+
+  try {
+    const sessionsRes = await (ctx as any).runQuery(betterAuthApi.findMany, {
+      model: "session",
+      where: [{ field: "userId", value: userId, operator: "eq" }],
+      paginationOpts: { numItems: 100, cursor: null },
+    });
+    const sessions = (sessionsRes as any).page ?? (sessionsRes as any).docs ?? sessionsRes ?? [];
+    const cutoff = Date.now() - 10_000; // 10s buffer for the session this verification just issued
+    for (const s of sessions as any[]) {
+      if ((s.createdAt ?? 0) >= cutoff) continue; // this verification's own fresh session — keep it
+      const rowId = s.id ?? s._id;
+      await (ctx as any).runMutation(betterAuthApi.deleteOne, {
+        input: { model: "session", where: [{ field: "_id", value: rowId, operator: "eq" }] },
+      });
+      staleSessionsRevoked++;
+    }
+  } catch (err) {
+    console.error("[security] Failed to revoke stale sessions during verification:", err);
+  }
+
+  if (passwordAccountsRemoved > 0 || staleSessionsRevoked > 0) {
+    console.log(
+      `[security] revokeUnverifiedAccountAccess for user ${userId}: ` +
+      `removed ${passwordAccountsRemoved} credential account(s), revoked ${staleSessionsRevoked} stale session(s).`
+    );
+  }
+
+  return { passwordAccountsRemoved, staleSessionsRevoked };
+}
 
 function createAuth(
   ctx: GenericCtx<DataModel>,
@@ -144,6 +248,11 @@ function createAuth(
       // Send the welcome email only after verification is confirmed — not at
       // account creation — to avoid sending to unverified/wrong addresses.
       afterEmailVerification: async (user) => {
+        // Security fix runs unconditionally — must not depend on whether
+        // RESEND_API_KEY is configured or the welcome email succeeds.
+        const verifiedUserId = String((user as any).id ?? (user as any)._id);
+        await revokeUnverifiedAccountAccess(ctx, verifiedUserId);
+
         const resendKey = process.env.RESEND_API_KEY;
         if (!resendKey || !user.email) return;
         try {
@@ -231,23 +340,7 @@ function createAuth(
             // Welcome email is sent via afterEmailVerification (for email+password users)
             // or at this point only for social-login users whose email is already verified.
             if (!(user as any).emailVerified) return;
-            const resendKey = process.env.RESEND_API_KEY;
-            if (!resendKey || !user.email) return;
-            try {
-              await fetch("https://api.resend.com/emails", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  from: "Lalli Fafa <raj@lallifafa.com>",
-                  to: [user.email],
-                  subject: "Welcome to Lalli Fafa — your child's story journey begins 🌙",
-                  html: buildWelcomeEmail(user.name ?? undefined),
-                  text: buildWelcomeText(user.name ?? undefined),
-                }),
-              });
-            } catch (err) {
-              console.error("Failed to send welcome email:", err);
-            }
+            await sendWelcomeEmail(user.email, user.name);
           },
         },
       },
@@ -656,5 +749,40 @@ export const initUserRoleRecord = internalMutation({
       internal.emailActions.sendReengagementIfNeeded,
       { userId, email, name },
     );
+  },
+});
+
+// SECURITY FIX (CVE-2026-67327 / GHSA-qq9h-g4jm-xgf3), take 3 — called from
+// apps/web/src/app/api/auth/[...path]/route.ts (the Next.js proxy in front
+// of every /api/auth/* call) right after a successful OTP verify-email
+// response, not from a better-auth lifecycle hook.
+//
+// Two earlier attempts inside better-auth's own hook system both failed:
+// afterEmailVerification (the framework's core hook) never fires for
+// emailOTP-plugin verification at all — confirmed by a real test (no
+// welcome email, no log line, credential row untouched). Switching to
+// databaseHooks.user.update.before did fire, but caused better-auth's own
+// internal code to throw ("Cannot read properties of undefined (reading
+// 'name')") immediately after returning from the hook, turning every
+// verification into a 500 — reverted immediately after catching this via
+// a real end-to-end test, per the same "verify it's actually closed"
+// principle this task was asked to follow.
+//
+// This version doesn't touch better-auth's hook system at all — it's a
+// plain Convex action, called by our own proxy code that we fully control,
+// after the real upstream verification has already succeeded.
+export const revokeUnverifiedAccountAccessByEmail = action({
+  args: { email: v.string() },
+  handler: async (ctx, { email }) => {
+    const adapter = (components.betterAuth as any).adapter;
+    const userRes = await (ctx as any).runQuery(adapter.findOne, {
+      model: "user",
+      where: [{ field: "email", value: email, operator: "eq" }],
+    });
+    if (!userRes) return { found: false };
+    const userId = String((userRes as any).id ?? (userRes as any)._id);
+    const result = await revokeUnverifiedAccountAccess(ctx as any, userId);
+    await sendWelcomeEmail((userRes as any).email, (userRes as any).name);
+    return { found: true, userId, ...result };
   },
 });

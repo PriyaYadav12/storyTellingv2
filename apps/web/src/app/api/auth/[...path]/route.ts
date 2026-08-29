@@ -10,6 +10,8 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../../../convex/_generated/api";
 
 const CONVEX_SITE_URL = process.env.NEXT_PUBLIC_CONVEX_SITE_URL!;
 
@@ -138,6 +140,26 @@ async function proxyAuth(
     }
     if (newLocation !== location) {
       resHeaders.set("location", newLocation);
+    }
+  }
+
+  // Security fix (CVE-2026-67327 / GHSA-qq9h-g4jm-xgf3): after a successful
+  // OTP email-verification, strip any password credential + stale sessions
+  // set before verification, closing the pre-account-hijacking window. Runs
+  // here — not inside a better-auth lifecycle hook — after two hook-based
+  // attempts proved unsafe (one silently never fired, one crashed every
+  // verification with a 500). See auth.ts's revokeUnverifiedAccountAccessByEmail
+  // for the full history. Narrowly scoped to this one path only; doesn't
+  // touch the response being returned to the client at all.
+  if (path.join("/") === "email-otp/verify-email" && upstream.ok && body) {
+    try {
+      const parsed = JSON.parse(new TextDecoder().decode(body)) as { email?: string };
+      if (parsed.email) {
+        const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+        await convex.action(api.auth.revokeUnverifiedAccountAccessByEmail, { email: parsed.email });
+      }
+    } catch (err) {
+      console.error("[security] Failed to run revokeUnverifiedAccountAccessByEmail:", err);
     }
   }
 
