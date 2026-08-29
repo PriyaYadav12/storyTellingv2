@@ -1820,12 +1820,18 @@ function StoryViewer({
                 </span>
               </div>
 
-              {/* Controls row */}
+              {/* Controls row — warm-neutral idle borders, gold for the primary
+                  play/pause control, teal accents for secondary controls
+                  (same system as the option cards on /generate). */}
               <div className="flex items-center justify-between">
                 {/* Volume */}
                 <div className="flex items-center gap-2">
-                  <button onClick={toggleMute} className="transition-all hover:scale-110" style={{ color: t.controlColor }}>
-                    {muted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                  <button
+                    onClick={toggleMute}
+                    className="flex items-center justify-center w-7 h-7 rounded-full transition-all hover:scale-110 hover:text-[var(--lf-teal)]"
+                    style={{ color: t.controlColor, border: `1px solid ${lightMode ? "rgba(180,148,92,0.4)" : "rgba(224,198,150,0.28)"}` }}
+                  >
+                    {muted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
                   </button>
                   <div className="relative w-16 h-1 rounded-full hidden sm:block" style={{ background: "rgba(255,255,255,0.12)" }}>
                     <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: `${muted ? 0 : volume * 100}%`, background: "rgba(255,255,255,0.45)" }} />
@@ -1835,23 +1841,33 @@ function StoryViewer({
 
                 {/* Playback */}
                 <div className="flex items-center gap-3">
-                  <button onClick={() => skip(-10)} className="transition-all hover:scale-110" style={{ color: t.controlColor }} title="Back 10s"><SkipBack size={16} /></button>
-                  <button onClick={() => setCurrentScene(currentScene - 1, true, titleOffset, sceneTimeline)} disabled={currentScene === 0} className="transition-all hover:scale-110 disabled:opacity-20" style={{ color: t.textSoft }}><ChevronLeft size={20} /></button>
+                  <button
+                    onClick={() => skip(-10)}
+                    className="flex items-center justify-center w-7 h-7 rounded-full transition-all hover:scale-110 hover:text-[var(--lf-teal)]"
+                    style={{ color: t.controlColor, border: `1px solid ${lightMode ? "rgba(180,148,92,0.4)" : "rgba(224,198,150,0.28)"}` }}
+                    title="Back 10s"
+                  ><SkipBack size={14} /></button>
+                  <button onClick={() => setCurrentScene(currentScene - 1, true, titleOffset, sceneTimeline)} disabled={currentScene === 0} className="transition-all hover:scale-110 hover:text-[var(--lf-teal)] disabled:opacity-20" style={{ color: t.textSoft }}><ChevronLeft size={20} /></button>
                   <button
                     onClick={togglePlay}
                     className="flex items-center justify-center rounded-full transition-all hover:scale-110 active:scale-95"
-                    style={{ width: 48, height: 48, background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", boxShadow: "0 3px 18px rgba(0,201,167,0.45)", flexShrink: 0 }}
+                    style={{ width: 48, height: 48, background: "linear-gradient(135deg,#f9c700,#ffab00)", color: "#1a1a2e", boxShadow: "0 3px 18px rgba(249,199,0,0.45)", flexShrink: 0 }}
                   >
-                    {isPlaying ? <Pause size={20} fill="#fff" /> : <Play size={20} fill="#fff" style={{ marginLeft: 2 }} />}
+                    {isPlaying ? <Pause size={20} fill="#1a1a2e" /> : <Play size={20} fill="#1a1a2e" style={{ marginLeft: 2 }} />}
                   </button>
-                  <button onClick={() => setCurrentScene(currentScene + 1, true, titleOffset, sceneTimeline)} disabled={currentScene === numScenes - 1} className="transition-all hover:scale-110 disabled:opacity-20" style={{ color: t.textSoft }}><ChevronRight size={20} /></button>
-                  <button onClick={() => skip(10)} className="transition-all hover:scale-110" style={{ color: t.controlColor }} title="Forward 10s"><SkipForward size={16} /></button>
+                  <button onClick={() => setCurrentScene(currentScene + 1, true, titleOffset, sceneTimeline)} disabled={currentScene === numScenes - 1} className="transition-all hover:scale-110 hover:text-[var(--lf-teal)] disabled:opacity-20" style={{ color: t.textSoft }}><ChevronRight size={20} /></button>
+                  <button
+                    onClick={() => skip(10)}
+                    className="flex items-center justify-center w-7 h-7 rounded-full transition-all hover:scale-110 hover:text-[var(--lf-teal)]"
+                    style={{ color: t.controlColor, border: `1px solid ${lightMode ? "rgba(180,148,92,0.4)" : "rgba(224,198,150,0.28)"}` }}
+                    title="Forward 10s"
+                  ><SkipForward size={14} /></button>
                 </div>
 
                 {/* Right: speed + CC + text panel + fullscreen */}
                 <div className="flex items-center gap-2">
                   {/* Speed control */}
-                  <div className="flex items-center rounded overflow-hidden flex-shrink-0" style={{ border: `1px solid ${t.panelBorder}` }}>
+                  <div className="flex items-center rounded overflow-hidden flex-shrink-0" style={{ border: `1px solid ${lightMode ? "rgba(180,148,92,0.4)" : "rgba(224,198,150,0.28)"}` }}>
                     {[1, 1.25, 1.5].map(rate => (
                       <button
                         key={rate}
@@ -1884,7 +1900,7 @@ function StoryViewer({
                       fontSize: "0.65rem",
                       letterSpacing: "0.04em",
                       color: showSubtitles ? "var(--lf-teal)" : t.textFaint,
-                      border: `1px solid ${showSubtitles ? "rgba(0,201,167,0.4)" : t.panelBorder}`,
+                      border: `1px solid ${showSubtitles ? "rgba(0,201,167,0.4)" : lightMode ? "rgba(180,148,92,0.4)" : "rgba(224,198,150,0.28)"}`,
                       borderRadius: 4,
                       lineHeight: 1,
                       padding: "0.25rem 0.4rem",
@@ -1900,7 +1916,7 @@ function StoryViewer({
                     style={{
                       fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.72rem",
                       color: showTextPanel ? "var(--lf-teal)" : t.textFaint,
-                      border: `1px solid ${showTextPanel ? "rgba(0,201,167,0.35)" : t.panelBorder}`,
+                      border: `1px solid ${showTextPanel ? "rgba(0,201,167,0.35)" : lightMode ? "rgba(180,148,92,0.4)" : "rgba(224,198,150,0.28)"}`,
                     }}
                     title="Toggle full story text"
                   >
@@ -1910,9 +1926,9 @@ function StoryViewer({
                   {/* Fullscreen toggle */}
                   <button
                     onClick={toggleFullscreen}
-                    className="flex items-center justify-center w-7 h-7 rounded transition-all hover:bg-white/10"
+                    className="flex items-center justify-center w-7 h-7 rounded-full transition-all hover:scale-110 hover:text-[var(--lf-teal)]"
                     title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-                    style={{ color: t.controlColor }}
+                    style={{ color: t.controlColor, border: `1px solid ${lightMode ? "rgba(180,148,92,0.4)" : "rgba(224,198,150,0.28)"}` }}
                   >
                     {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
                   </button>
