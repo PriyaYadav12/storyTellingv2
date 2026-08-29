@@ -532,7 +532,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         <StoryViewer
           story={story as StoryShape | null | undefined}
           imageUrls={imageUrls as Array<{ url?: string | null }> | null | undefined}
-          narrationUrl={(narrationUrl as { url?: string | null } | null)?.url ?? null}
+          narrationUrl={(narrationUrl as { url?: string | null } | null)?.url ? `/api/audio/${id}` : null}
         />
       </Authenticated>
     </>
