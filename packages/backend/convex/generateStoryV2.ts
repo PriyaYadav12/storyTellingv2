@@ -451,20 +451,34 @@ function resolveStoryLength(length: "short" | "medium" | "long" | undefined): St
   return length === "short" ? "quick" : "big";
 }
 
+// Word-count targets are keyed off the raw "short"/"medium"/"long" label,
+// NOT the collapsed StoryLength ("quick"/"big") — medium and long share the
+// same "big" structure bucket (beat count) but must NOT share the same word
+// target, or they produce audio of near-identical length despite very
+// different labeled durations (confirmed: both landed at ~5.5min against
+// 6min/10min labels respectively before this fix). Targets below are
+// calibrated from measured real narration audio duration, not word-count
+// estimates — see Task 4 audit.
 function resolveWordCount(
-  storyLength: StoryLength,
+  length: "short" | "medium" | "long" | undefined,
   language: string
 ): { min: number; target: number; max: number; label: string } {
   const isHindi = language.toLowerCase().includes("hindi") ||
                   language.toLowerCase().includes("hinglish");
-  if (storyLength === "quick") {
+  if (length === "short") {
     return isHindi
       ? { min: 300, target: 350, max: 380, label: "320–380" }
       : { min: 330, target: 385, max: 420, label: "350–420" };
   }
+  if (length === "long") {
+    return isHindi
+      ? { min: 950, target: 1030, max: 1100, label: "950–1100" }
+      : { min: 1030, target: 1120, max: 1200, label: "1030–1200" };
+  }
+  // medium (and legacy/unspecified length)
   return isHindi
-    ? { min: 580, target: 660, max: 730, label: "600–730" }
-    : { min: 630, target: 720, max: 800, label: "650–800" };
+    ? { min: 570, target: 630, max: 680, label: "570–680" }
+    : { min: 620, target: 680, max: 740, label: "620–740" };
 }
 
 export function resolveDialogueTargets(ageGroup: AgeGroup) {
@@ -869,7 +883,7 @@ export const _generateContentV2 = internalAction({
     const ageGroup        = resolveAgeGroup(childInfo.age);
     const storyLength     = resolveStoryLength(length);
     const lang            = language || "English";
-    const wordCount       = resolveWordCount(storyLength, lang);
+    const wordCount       = resolveWordCount(length, lang);
     const dialogueTargets = resolveDialogueTargets(ageGroup);
     const mode            = requestedMode ?? resolveModeFromHistory(recentMemory);
     const pillarSource    = challengeSignal ? "challenge_signal" : "lru_rotation";
