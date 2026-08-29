@@ -57,8 +57,11 @@ export const sendWelcomeEmail = internalAction({
           <h2 style="color:#1a1a2e;font-size:24px;font-weight:800;margin:0 0 8px">
             ${greeting}, welcome to Lalli Fafa! 🎉
           </h2>
-          <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 28px">
-            You've just unlocked a world of magical, personalised bedtime stories for your child — starring <strong>Lalli</strong> (the curious big sister) and <strong>Fafa</strong> (her adventurous little brother).
+          <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 4px">
+            You've just unlocked a world of magical, personalised bedtime stories for your child, starring <strong>Lalli</strong> (the curious big sister) and <strong>Fafa</strong> (her adventurous little brother).
+          </p>
+          <p style="color:#999;font-size:13px;font-weight:700;font-style:italic;line-height:1.6;margin:0 0 28px">
+            Personalised storytelling for growing minds.
           </p>
 
           <!-- Benefit grid -->
@@ -67,27 +70,27 @@ export const sendWelcomeEmail = internalAction({
               <td width="48%" style="vertical-align:top;padding:16px;background:#f5fffe;border-radius:14px;border:1px solid rgba(0,201,167,0.15)">
                 <div style="font-size:28px;margin-bottom:8px">👂</div>
                 <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Listening Skills</div>
-                <div style="font-size:12px;color:#666;line-height:1.5">Rich narration and dialogue train children to follow stories with focus and comprehension.</div>
+                <div style="font-size:12px;color:#666;line-height:1.5">Listen. Understand. Remember.</div>
               </td>
               <td width="4%"></td>
               <td width="48%" style="vertical-align:top;padding:16px;background:#fffdf0;border-radius:14px;border:1px solid rgba(249,199,0,0.2)">
                 <div style="font-size:28px;margin-bottom:8px">🎯</div>
                 <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Attention & Focus</div>
-                <div style="font-size:12px;color:#666;line-height:1.5">Personalised stories featuring your child's name and interests keep them engaged longer.</div>
+                <div style="font-size:12px;color:#666;line-height:1.5">Stay engaged. Follow the story.</div>
               </td>
             </tr>
             <tr><td colspan="3" style="height:12px"></td></tr>
             <tr>
-              <td width="48%" style="vertical-align:top;padding:16px;background:#fdf5ff;border-radius:14px;border:1px solid rgba(160,80,200,0.12)">
-                <div style="font-size:28px;margin-bottom:8px">🌈</div>
-                <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Creativity</div>
-                <div style="font-size:12px;color:#666;line-height:1.5">Imaginative worlds and characters spark original thinking and a love for storytelling.</div>
+              <td width="48%" style="vertical-align:top;padding:16px;background:#fff5f6;border-radius:14px;border:1px solid rgba(230,70,100,0.14)">
+                <div style="font-size:28px;margin-bottom:8px">❤️</div>
+                <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Emotional Intelligence</div>
+                <div style="font-size:12px;color:#666;line-height:1.5">Understand feelings. Build empathy.</div>
               </td>
               <td width="4%"></td>
               <td width="48%" style="vertical-align:top;padding:16px;background:#f0faff;border-radius:14px;border:1px solid rgba(0,150,220,0.12)">
                 <div style="font-size:28px;margin-bottom:8px">🧠</div>
                 <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:4px">Cognitive Growth</div>
-                <div style="font-size:12px;color:#666;line-height:1.5">Story structure, cause-and-effect, and moral lessons strengthen memory and reasoning.</div>
+                <div style="font-size:12px;color:#666;line-height:1.5">Remember. Reason. Solve.</div>
               </td>
             </tr>
           </table>
@@ -111,7 +114,7 @@ export const sendWelcomeEmail = internalAction({
         ${FOOTER}
       </div>`;
 
-    const text = `${greeting}, welcome to Lalli Fafa!\n\nYou've unlocked personalised bedtime stories for your child, featuring Lalli and Fafa.\n\nOur stories help children:\n- Build listening skills through rich narration\n- Improve attention and focus with personalised content\n- Spark creativity through imaginative worlds\n- Develop cognitive abilities via story structure and moral lessons\n\nYour account starts with 200 free credits. Create your first story at https://www.lallifafa.com/dashboard\n\n— The Lalli Fafa team`;
+    const text = `${greeting}, welcome to Lalli Fafa!\n\nYou've unlocked personalised bedtime stories for your child, featuring Lalli and Fafa.\n\nPersonalised storytelling for growing minds.\n\n- Listening Skills: Listen. Understand. Remember.\n- Attention & Focus: Stay engaged. Follow the story.\n- Emotional Intelligence: Understand feelings. Build empathy.\n- Cognitive Growth: Remember. Reason. Solve.\n\nYour account starts with 200 free credits. Create your first story at https://www.lallifafa.com/dashboard\n\nThe Lalli Fafa team`;
 
     try {
       await sendEmail(resendKey, {
