@@ -252,7 +252,7 @@ function OnboardingForm() {
         try {
           const uploadUrl = await generateUploadUrl();
           const res = await fetch(uploadUrl, {
-            method: "PUT",
+            method: "POST",
             headers: { "Content-Type": photoFile.type },
             body: photoFile,
           });

@@ -336,7 +336,7 @@ export default function ProfilePage() {
     try {
       const uploadUrl = await generateUploadUrl();
       const res = await fetch(uploadUrl, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": file.type },
         body: file,
       });
