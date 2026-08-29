@@ -267,6 +267,32 @@ function createAuth(
                   type === "forget-password"
                     ? "Reset your password"
                     : "Your verification code",
+                html: `
+                  <div style="font-family:'Nunito',Arial,sans-serif;max-width:520px;margin:0 auto;background:#fffef9;border-radius:16px;overflow:hidden;border:1.5px solid rgba(0,0,0,0.06)">
+                    <div style="background:#1a1a2e;padding:32px;text-align:center">
+                      <h1 style="color:#fff;font-size:24px;margin:0;font-weight:800">Lalli <span style="color:#4ecdc4">Fafa</span></h1>
+                      <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:6px 0 0">Personalised stories for your little one</p>
+                    </div>
+                    <div style="padding:40px 32px;text-align:center">
+                      <h2 style="color:#1a1a2e;font-size:22px;font-weight:800;margin:0 0 12px">${type === "forget-password" ? "Reset your password 🔐" : "Your verification code ✨"}</h2>
+                      <p style="color:#555;font-size:15px;line-height:1.6;margin:0 0 28px">
+                        ${type === "forget-password" ? "Use this code to reset your password." : "Enter this code to verify your email and continue creating your child's story."} It expires in 5 minutes.
+                      </p>
+                      <div style="display:inline-block;background:#fff8e1;border:1.5px dashed #f9c700;border-radius:12px;padding:16px 32px;margin:0 0 28px">
+                        <span style="font-size:32px;font-weight:800;letter-spacing:8px;color:#1a1a2e">${otp}</span>
+                      </div>
+                      <p style="color:#999;font-size:12px;margin:0;line-height:1.6">
+                        If you didn't request this, you can safely ignore this email — no changes will be made to your account.
+                      </p>
+                    </div>
+                    <div style="background:#f5f4ef;padding:20px 32px;text-align:center">
+                      <p style="color:#aaa;font-size:11px;margin:0;line-height:1.6">
+                        Lalli Fafa · <a href="https://www.lallifafa.com" style="color:#aaa">lallifafa.com</a><br/>
+                        Questions? Reply to this email or contact us at raj@lallifafa.com
+                      </p>
+                    </div>
+                  </div>
+                `,
                 text:
                   type === "forget-password"
                     ? `Use this code to reset your password: ${otp}\nThis code expires in 5 minutes.`
