@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
               // Meta Pixel noscript 1×1 + Google Ads measurement + remarketing pixels
               "img-src 'self' data: blob: https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.google.co.in https://www.facebook.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com",
               // GA4 regional endpoints + Google Ads conversion + remarketing + Meta Pixel beacon
-              "connect-src 'self' https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.facebook.com https://connect.facebook.net https://api.razorpay.com wss://*.convex.cloud",
+              "connect-src 'self' https://*.convex.cloud https://*.convex.site https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.facebook.com https://connect.facebook.net https://api.razorpay.com wss://*.convex.cloud",
               "media-src 'self' blob: https://*.convex.cloud https://*.convex.site",
               "frame-src https://api.razorpay.com https://bid.g.doubleclick.net https://challenges.cloudflare.com",
               "object-src 'none'",
