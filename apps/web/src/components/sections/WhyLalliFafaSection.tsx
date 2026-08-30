@@ -16,6 +16,35 @@ const terms = [
   },
 ];
 
+/* ── Research citations — each verified directly against its primary source ── */
+const researchFacts = [
+  {
+    claim: "Children who enjoy reading score significantly higher on reading tests.",
+    source: "National Literacy Trust",
+    href: "https://literacytrust.org.uk/research-services/research-themes/reading/",
+  },
+  {
+    claim: "Children told stories regularly are 61% more likely to be on track for literacy & numeracy.",
+    source: "Ghana ECDI study, PMC",
+    href: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10447571/",
+  },
+  {
+    claim: "Bilingual children get regular practice juggling two language systems — a workout for the young brain.",
+    source: "Cerebrum, Dana Foundation (2012)",
+    href: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3583091/",
+  },
+  {
+    claim: "Well-designed digital media with clear learning goals may support academic skills like reading and mathematics.",
+    source: "AAP Policy Statement, Pediatrics (2026)",
+    href: "https://publications.aap.org/pediatrics/article/157/2/e2025075320/206129/Digital-Ecosystems-Children-and-Adolescents-Policy",
+  },
+  {
+    claim: "Starting in a child's mother tongue supports better understanding and academic success.",
+    source: "UNESCO, Bhasha Matters (2025)",
+    href: "https://www.unesco.org/en/articles/unesco-launch-bhasha-matters-state-education-report-india-2025-mother-tongue-and-multilingual",
+  },
+];
+
 /* ── Comparison table ──────────────────────────────────────────────────── */
 const comparisonRows = [
   { feature: "Stories are personalised to your child", lf: true, generic: false },
@@ -186,6 +215,37 @@ export function WhyLalliFafaSection() {
               </div>
             ))}
           </dl>
+
+          {/* ── Backed by research ── */}
+          <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", marginTop: "0.9rem", paddingTop: "0.9rem" }}>
+            <p
+              style={{
+                fontWeight: 700,
+                fontSize: "0.78rem",
+                color: "rgba(14,10,31,0.45)",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                marginBottom: "0.6rem",
+              }}
+            >
+              Backed by research
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {researchFacts.map(({ claim, source, href }) => (
+                <div key={source} style={{ fontSize: "0.82rem", lineHeight: 1.5 }}>
+                  <p style={{ color: "rgba(14,10,31,0.75)", margin: 0 }}>{claim}</p>
+                  <Link
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "var(--lf-teal)", fontWeight: 700, fontSize: "0.74rem", textDecoration: "underline" }}
+                  >
+                    {source}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* ── Comparison table ── */}
