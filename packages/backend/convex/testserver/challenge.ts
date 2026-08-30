@@ -340,10 +340,17 @@ export const generateChallenge = action({
   handler: async (ctx, { storyId }): Promise<{ challengeId: string }> => {
     const { userId } = await assertChallengeAccessInAction(ctx);
 
-    // If a completed challenge already exists for this story+user, return it.
-    // Prevents children from retaking a challenge on any child-facing path.
-    const completed = await ctx.runQuery(internal.testserver.challenge._getCompletedForStory, { userId, storyId });
-    if (completed) return { challengeId: completed._id };
+    // A story gets at most one Challenge, ever — whether it's already been
+    // completed OR is just sitting ready-but-untaken. Checking only
+    // "completed" here used to leave a real gap: _store always does a plain
+    // insert with no dedup, so a second call while a ready-but-untaken
+    // challenge already existed (two tabs, a client retry, calling this
+    // action again directly) would silently generate and store a second,
+    // different question set for the same story. Checking for ANY existing
+    // row closes that, and also makes concurrent calls converge on the same
+    // row rather than each inserting their own.
+    const existing = await ctx.runQuery(internal.testserver.challenge._getExistingForStory, { userId, storyId });
+    if (existing) return { challengeId: existing._id };
 
     const story = await ctx.runQuery(api.stories.get, { storyId });
     if (!story || !story.content) throw new Error("Story not ready yet");
@@ -665,6 +672,21 @@ export const _store = internalMutation({
     pillarFormatHistory: v.optional(v.array(v.object({ pillar: v.string(), format: v.string() }))),
   },
   handler: async (ctx, args) => {
+    // Authoritative dedup point — generateChallenge's own pre-check has a
+    // TOCTOU gap (two concurrent calls can both pass it before either has
+    // stored), but this re-check-then-insert happens inside a single Convex
+    // mutation, which Convex serializes against the by_story index: if two
+    // concurrent _store calls for the same story+user race here, one of
+    // them sees the other's row on this read (or gets an OCC retry that
+    // then sees it), so a story never ends up with two rows even under
+    // real concurrency.
+    const existing = await ctx.db
+      .query("testserver_challenges")
+      .withIndex("by_story", (q) => q.eq("storyId", args.storyId))
+      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .first();
+    if (existing) return existing._id;
+
     return await ctx.db.insert("testserver_challenges", {
       userId: args.userId,
       storyId: args.storyId,
@@ -869,13 +891,16 @@ export const submitChallenge = mutation({
 });
 
 // Internal helper: returns an existing completed challenge for this story+user, if any.
-export const _getCompletedForStory = internalQuery({
+// Any existing challenge row for this story+user, regardless of status
+// ("ready" or "completed") — a story gets at most one, ever. See the
+// comment at generateChallenge's call site for why this checks both states.
+export const _getExistingForStory = internalQuery({
   args: { userId: v.string(), storyId: v.id("stories") },
   handler: async (ctx, { userId, storyId }) => {
     return await ctx.db
       .query("testserver_challenges")
       .withIndex("by_story", (q) => q.eq("storyId", storyId))
-      .filter((q) => q.and(q.eq(q.field("userId"), userId), q.eq(q.field("status"), "completed")))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .first();
   },
 });
