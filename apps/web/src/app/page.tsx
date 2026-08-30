@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { HeroSection } from "@/components/sections/HeroSection";
+import { PillarsSection } from "@/components/sections/PillarsSection";
 import { HowItWorksSection } from "@/components/sections/HowItWorksSection";
-import { FeaturesSection } from "@/components/sections/FeaturesSection";
 import { CharactersSection } from "@/components/sections/CharactersSection";
 import { PricingSection } from "@/components/sections/PricingSection";
 import { ShopSection } from "@/components/sections/ShopSection";
@@ -353,9 +353,9 @@ export default function HomePage() {
       <SiteHeader />
       <main>
         <HeroSection />
+        <PillarsSection />
         <CharactersSection />
         <HowItWorksSection />
-        <FeaturesSection />
         <WhyLalliFafaSection />
         <PricingSection />
         <ShopSection />

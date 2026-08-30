@@ -97,7 +97,7 @@ export function SiteFooter() {
               </span>
             </Link>
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.7, maxWidth: 280 }}>
-              Stories for Giggle &amp; Grow. AI-powered personalised stories in English &amp; Hindi — where your child is always the hero.
+              Personalised storytelling for growing minds. AI-powered personalised stories in English &amp; Hindi, where your child is always the hero.
             </p>
             <address style={{ fontStyle: "normal", color: "rgba(255,255,255,0.4)", fontSize: 13, lineHeight: 1.6 }}>
               Siliguri, West Bengal, India<br />

@@ -53,8 +53,8 @@ export function CTASection() {
                 lineHeight: 1.7,
               }}
             >
-              Start free. No credit card. Join 10,000+ families already
-              turning bedtime into the best part of the day.
+              Start free. No credit card. Turn bedtime into the best
+              part of the day.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-2">

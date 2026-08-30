@@ -241,7 +241,7 @@ export default function HindiStoriesPage() {
 
             {/* Social proof */}
             <p className="text-center mt-6" style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(255,255,255,0.3)" }}>
-              Loved by 10,000+ families across India · Available in English &amp; Hindi
+              Available in English &amp; Hindi
             </p>
           </div>
         </section>

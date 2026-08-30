@@ -98,7 +98,7 @@ export function WhyLalliFafaSection() {
             {[
               "Every Lalli Fafa story is unique — generated fresh for your child's name and preferences.",
               "Stories are available in English and Hindi, making them ideal for bilingual families across India.",
-              "Children who engage with personalised stories show 2–3× faster vocabulary retention than with generic content (National Literacy Trust, 2023).",
+              "Personalised stories, built around a child's own name and interests, are designed to hold attention and support vocabulary building more than generic, one-size-fits-all content.",
               "Stories embed life values — courage, kindness, honesty — naturally; children absorb lessons without feeling taught.",
               "The platform is completely ad-free and all processing happens on secure, SOC-2-compliant cloud infrastructure.",
             ].map((point, i) => (
@@ -123,49 +123,31 @@ export function WhyLalliFafaSection() {
             Why do personalised stories work?
           </h2>
           <p style={{ color: "rgba(14,10,31,0.65)", fontSize: "0.97rem", lineHeight: 1.75, marginBottom: "1rem" }}>
-            Research from the{" "}
-            <Link
-              href="https://literacytrust.org.uk/research-services/"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--lf-teal)", fontWeight: 600, textDecoration: "underline" }}
-            >
-              National Literacy Trust (2023)
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="https://www.unicef.org/early-childhood-development"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--lf-teal)", fontWeight: 600, textDecoration: "underline" }}
-            >
-              UNICEF Early Childhood Development
-            </Link>{" "}
-            consistently shows that children who hear their own name in stories engage 40% longer and retain vocabulary 2–3× faster than with generic content. Personalised narrative activates the brain's reward centres more strongly than passive watching — every child's brain responds to stories about <em>themselves</em>.
+            Educational psychologists call it the self-reference effect: people, including young children, pay closer attention to and better remember information connected to themselves, like hearing their own name in a story. Personalised narrative is designed to draw on that effect, so every child's brain responds differently to a story about <em>themselves</em>.
           </p>
           <p style={{ color: "rgba(14,10,31,0.65)", fontSize: "0.97rem", lineHeight: 1.75, marginBottom: "1rem" }}>
-            Screen time that lacks narrative structure — passive video watching, for example — has been linked to reduced attention span in children under 5 according to the{" "}
+            The{" "}
             <Link
               href="https://www.aap.org/en/patient-care/media-and-children/"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "var(--lf-teal)", fontWeight: 600, textDecoration: "underline" }}
             >
-              American Academy of Pediatrics (2024 guidelines)
-            </Link>
-            . Lalli Fafa is designed as a direct antidote: structured, narrated, and interactive — screen time that genuinely helps children grow.
+              American Academy of Pediatrics
+            </Link>{" "}
+            recommends parents favour high-quality, engaging content over passive screen time for young children, prioritising quality and context rather than strict time limits alone. Lalli Fafa is built around that principle: structured, narrated, and interactive, not passive video to fill time.
           </p>
           <p style={{ color: "rgba(14,10,31,0.65)", fontSize: "0.97rem", lineHeight: 1.75 }}>
-            Bilingual exposure is another strength. The{" "}
+            Bilingual exposure is another strength. Research published in{" "}
             <Link
               href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3583091/"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "var(--lf-teal)", fontWeight: 600, textDecoration: "underline" }}
             >
-              Journal of Neuroscience (2012)
+              Cerebrum, the Dana Foundation's forum on brain science (2012)
             </Link>{" "}
-            found that bilingual children show stronger executive function — better attention control, task-switching, and working memory — compared to monolinguals. Lalli Fafa's English and Hindi stories give Indian families an easy path to raising confident bilingual readers.
+            found that bilingual children show stronger executive function, including better attention control and task-switching, than monolinguals. Lalli Fafa's English and Hindi stories give Indian families an easy path to raising confident bilingual readers.
           </p>
         </div>
 
@@ -188,14 +170,11 @@ export function WhyLalliFafaSection() {
           </h3>
           <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-2">
             {[
-              { label: "Engagement increase", value: "40% longer with personalised content" },
-              { label: "Vocabulary retention", value: "2–3× faster vs generic stories" },
               { label: "Languages supported", value: "English and Hindi" },
               { label: "Story generation time", value: "Under 2 minutes" },
               { label: "Free starter credits", value: "200 credits (approx. 2 short stories)" },
               { label: "Age range", value: "2–10 years" },
               { label: "Ads served", value: "Zero — completely ad-free" },
-              { label: "Families served", value: "10,000+ across India" },
             ].map(({ label, value }) => (
               <div key={label} className="flex gap-2 py-1" style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
                 <dt style={{ fontWeight: 700, fontSize: "0.88rem", color: "rgba(14,10,31,0.55)", minWidth: 180, flexShrink: 0 }}>

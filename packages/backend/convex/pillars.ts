@@ -8,12 +8,13 @@
 export const PILLARS = ["listening", "attention", "emotional", "cognitive"] as const;
 export type Pillar = (typeof PILLARS)[number];
 
-/** Short display labels shown in the UI (Story Challenge results screen). */
+/** Display labels shown in the UI (Story Challenge results screen) — must
+ * match the brand architecture's pillar names exactly. */
 export const PILLAR_LABELS: Record<Pillar, string> = {
-  listening:  "Listening",
-  attention:  "Attention and focus",
-  emotional:  "Emotional intelligence",
-  cognitive:  "Cognitive growth",
+  listening:  "Listening Skills",
+  attention:  "Attention & Focus",
+  emotional:  "Emotional Intelligence",
+  cognitive:  "Cognitive Growth",
 };
 
 /**

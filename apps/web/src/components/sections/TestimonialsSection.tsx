@@ -77,7 +77,7 @@ export function TestimonialsSection() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider"
             style={{ background: "rgba(249,199,0,0.15)", color: "#b8860b" }}
           >
-            <Star size={13} fill="currentColor" /> 10,000+ happy families
+            <Star size={13} fill="currentColor" /> Happy families
           </span>
           <h2
             style={{

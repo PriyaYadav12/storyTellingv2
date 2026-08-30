@@ -2,13 +2,21 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Sparkles, Play, Star, LayoutDashboard } from "lucide-react";
+import { Sparkles, Play, LayoutDashboard } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 const stats = [
-  { value: "10,000+", label: "Happy families" },
   { value: "English & Hindi", label: "Languages" },
   { value: "100%", label: "Safe & ad-free" },
+];
+
+// The 4 pillars, named directly in the hero copy — the key selling point
+// needs to be visible immediately, without waiting on an image to load.
+const pillars = [
+  { emoji: "👂", label: "Listening Skills" },
+  { emoji: "🎯", label: "Attention & Focus" },
+  { emoji: "❤️", label: "Emotional Intelligence" },
+  { emoji: "🧠", label: "Cognitive Growth" },
 ];
 
 export function HeroSection() {
@@ -50,20 +58,18 @@ export function HeroSection() {
           {/* ── Left: copy ── */}
           <div className="flex flex-col gap-4 py-8 lg:py-10 text-center lg:text-left">
 
-            {/* Badge */}
+            {/* Tagline badge */}
             <div className="flex justify-center lg:justify-start">
-              <div
+              <span
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold"
                 style={{
-                  background: "rgba(255,193,7,0.14)",
-                  color: "#9a6e00",
-                  border: "1px solid rgba(255,193,7,0.35)",
+                  background: "rgba(0,201,167,0.1)",
+                  color: "#00695c",
+                  border: "1px solid rgba(0,201,167,0.3)",
                 }}
               >
-                <Star size={12} fill="currentColor" />
-                Loved by 10,000+ families
-                <Star size={12} fill="currentColor" />
-              </div>
+                ✨ Personalised storytelling for growing minds.
+              </span>
             </div>
 
             {/* Headline */}
@@ -110,6 +116,23 @@ export function HeroSection() {
               beautiful narration in <strong style={{ color: "var(--lf-dark)" }}>English &amp; Hindi</strong>.
               Perfect for bedtime, screen time that matters, and growing little hearts.
             </p>
+
+            {/* 4 Pillars — named directly in the hero, not buried in the page */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-2 pt-1">
+              {pillars.map((p) => (
+                <span
+                  key={p.label}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+                  style={{
+                    background: "#fff",
+                    color: "var(--lf-dark)",
+                    border: "1.5px solid #c9b99a",
+                  }}
+                >
+                  <span>{p.emoji}</span> {p.label}
+                </span>
+              ))}
+            </div>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-1">

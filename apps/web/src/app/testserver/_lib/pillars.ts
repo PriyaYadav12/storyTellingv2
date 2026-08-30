@@ -8,10 +8,10 @@ export type Pillar = "listening" | "attention" | "emotional" | "cognitive";
 export const PILLAR_ORDER: Pillar[] = ["listening", "attention", "emotional", "cognitive"];
 
 export const PILLAR_LABELS: Record<Pillar, string> = {
-  listening: "Listening",
-  attention: "Attention and focus",
-  emotional: "Emotional intelligence",
-  cognitive: "Cognitive growth",
+  listening: "Listening Skills",
+  attention: "Attention & Focus",
+  emotional: "Emotional Intelligence",
+  cognitive: "Cognitive Growth",
 };
 
 // Shortened for tight spaces (dashboard teaser card mini-badges) — the
