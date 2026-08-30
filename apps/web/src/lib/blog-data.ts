@@ -366,7 +366,6 @@ export const BLOG_POSTS: BlogPost[] = [
     emoji: "📖",
     image: "/lf-scene-kite.png",
     imgPosition: "center 20%",
-    featured: true,
     content: `
 <p>There's a moment every parent recognises. You're reading a bedtime story, and suddenly your child's eyes go wide — not because a dragon appeared, but because the dragon's name is <em>their</em> name. That tiny detail changes everything. And it turns out, the science explains exactly why.</p>
 
@@ -1933,6 +1932,519 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         q: "At what age do personalised stories have the biggest impact?",
         a: "The effect is measurable from age three — when children begin to understand story structure and can follow a narrative with themselves as the character — and peaks between ages four and seven. This window is when children are actively building their self-concept, and stories play a direct role in that construction. The personalisation effect is still present in older children but is strongest during the preschool and early school years.",
+      },
+    ],
+  },
+  {
+    slug: "how-storytelling-helps-child-development",
+    title: "How Storytelling Helps Children Develop: Listening, Focus, Emotions & Thinking, Explained",
+    excerpt:
+      "Every story a child hears asks their brain to do four things at once: listen, focus, feel, and think. Here's how storytelling actually works as a development tool, pillar by pillar, and how personalisation makes each one stronger.",
+    tag: "Child Development",
+    tagColor: "#00C9A7",
+    date: "25 Aug 2026",
+    readTime: "7 min read",
+    emoji: "🧭",
+    image: "/lf-scene-four-pillars.jpg",
+    imgPosition: "center 20%",
+    featured: true,
+    content: `
+<p><strong>Storytelling helps children develop in four connected ways: it builds listening skills through following spoken narrative, strengthens attention and focus by giving the brain a reason to stay engaged, develops emotional intelligence by letting children experience feelings through a character, and grows cognitive skills like memory, sequencing, and cause-and-effect reasoning. These four pillars, listening, attention, emotional intelligence, and cognitive growth, aren't separate benefits of storytelling. They happen together, in every story, every time.</strong></p>
+
+<p>Parents are often told that reading to children is "good for them" without much explanation of what that actually means. It's a vague enough claim that it's easy to nod along to and hard to act on. So here is the more specific version: what is a child's brain actually doing when they listen to a story, and what does that have to do with how they grow?</p>
+
+<h2>Why storytelling isn't just entertainment</h2>
+
+<p>A story is not passive content in the way a video often is. To follow a story, even a simple one, a child has to hold a sequence of events in mind, track who is doing what and why, notice how characters feel, and predict what might happen next. That's a genuine cognitive workout, wrapped in something that feels like fun rather than effort.</p>
+
+<p>This is the core idea behind Lalli Fafa's four pillars: listening skills, attention and focus, emotional intelligence, and cognitive growth. They aren't marketing categories. They're the four things a child's brain is actually doing, simultaneously, every time they listen to a well-told story.</p>
+
+<h2>👂 Listening skills: following a story is a practised skill</h2>
+
+<p>Listening comprehension, the ability to follow spoken language, hold it in working memory, and make sense of it, is a skill that develops through repetition, not instruction. You can't teach a three-year-old to listen better by explaining listening. You build the skill by giving them rich spoken language to practise on, over and over, in a form they want to keep coming back to.</p>
+
+<p>This is where narrated stories do something a picture book alone can't: they isolate listening as the primary channel. Without pictures to lean on, a child has to construct meaning from sound and language alone, which is a more demanding, and more skill-building, form of comprehension practice.</p>
+
+<p>We go deeper on the practical side of this, including how to read aloud in a way that actually holds a young child's attention, in <a href="/blog/how-to-read-aloud-to-your-child-by-age">how to read aloud to your child by age and stage</a>.</p>
+
+<h2>🎯 Attention & focus: relevance is what keeps a young brain engaged</h2>
+
+<p>Attention in young children is not a fixed capacity that some children have more of than others. It's highly responsive to relevance. A child who seems unable to sit still for a generic cartoon can often sit rapt through a story that speaks directly to something they care about: their name, their interests, a fear they're working through.</p>
+
+<p>This is one of the reasons personalisation matters more than it might first appear. A story doesn't have to be louder or faster to hold a child's attention. It has to be more relevant. When a child hears their own name, their own favourite animal, or a challenge that feels like their own, the brain's relevance filter opens wider, and attention follows.</p>
+
+<p>We've written a full research-based look at this, including how screen time and attention span actually relate to each other, in <a href="/blog/screen-time-attention-span-children-research">screen time and attention span: what the research actually says</a>.</p>
+
+<h2>❤️ Emotional intelligence: stories let children feel things safely</h2>
+
+<p>Emotional intelligence, recognising feelings, understanding what causes them, empathising with others, and managing your own reactions, is not something children learn from being told about it. It's built through repeated, low-stakes practice at encountering feelings and making sense of them.</p>
+
+<p>A story gives a child exactly that kind of practice. When a character feels scared, embarrassed, proud, or left out, and the story shows what that feels like and what the character does about it, the child gets to rehearse the emotional experience without having to live through the real version first. Over many stories, this rehearsal adds up to something real: a working vocabulary for feelings, and a mental library of how those feelings tend to resolve.</p>
+
+<p>We've written specifically about how bedtime stories build this skill in <a href="/blog/bedtime-stories-emotional-intelligence">how bedtime stories build emotional intelligence</a>, and about the practical, in-the-moment side of talking with your child about feelings in <a href="/blog/how-to-talk-to-your-child-about-feelings">how to talk to your child about feelings</a>.</p>
+
+<h2>🧠 Cognitive growth: stories are reasoning practice in disguise</h2>
+
+<p>Every story, even a simple one, is built from cause and effect: something happens, a character responds, and that response leads somewhere. Following that chain requires memory (what happened earlier), sequencing (what order things occurred in), and prediction (what's likely to happen next). These are not story-specific skills. They're the same reasoning skills children use in maths, in planning, and in everyday problem solving.</p>
+
+<p>This connection between storytelling and academic outcomes isn't just intuitive, it shows up in research. A study of over 6,700 children in Ghana found that children who were regularly told stories were significantly more likely to be on track for literacy and numeracy development than children who weren't (adjusted odds ratio 1.61, 95% CI 1.26 to 2.04). Worth noting: the same study found no significant link between storytelling and other outcomes like social-emotional development, which is a useful reminder that stories aren't a cure-all for everything. What they reliably build is the specific reasoning and language scaffolding that literacy and numeracy depend on.</p>
+
+<p>We go deeper on this, stage by stage, in <a href="/blog/cognitive-development-milestones-ages-2-to-5">cognitive development milestones ages 2 to 5</a>.</p>
+
+<h2>Why personalisation strengthens all four pillars at once</h2>
+
+<p>Here's the connecting thread across all four pillars: a story that features your child, by name, with their actual interests and personality, doesn't just add novelty. It raises the stakes on every one of the four mechanisms above. A child listens more closely to a story about themselves. They pay more attention because it's relevant to them specifically. They feel more, because the character's experience is framed as their own. And they reason more actively, because they're not just watching a plot unfold, they're inside it.</p>
+
+<p>We've written in more depth about why this matters in <a href="/blog/why-your-child-being-hero-of-story-matters">why your child being the hero of a story matters more than you think</a>, and about how personalised stories compare to regular storybooks in <a href="/blog/personalised-stories-vs-storybooks">personalised stories vs. regular storybooks</a>.</p>
+
+<h2>What this means for story time, practically</h2>
+
+<p>You don't need to overhaul your child's bedtime routine to put this into practice. The core idea is simple: choose stories that ask something of your child's brain, not just their eyes and ears. A story with real narrative structure, a character with real feelings, and something for your child to follow and predict is doing all four kinds of developmental work at once, whether it's a picture book you read aloud, an audio story, or a personalized story where your child is the one having the adventure.</p>
+
+<p>This is the thinking behind how we built <a href="/generate">Lalli Fafa</a>: every story is narrated (for listening), built around your child specifically (for attention and emotional investment), structured around a real lesson and a character's genuine feelings (for emotional intelligence), and built on a clear narrative arc your child can follow and predict (for cognitive growth). Not because storytelling needs to be complicated, but because a good story was already doing all four things. We just tried to make sure nothing gets in its way.</p>
+    `,
+    faqs: [
+      {
+        q: "How does storytelling help child development?",
+        a: "Storytelling supports child development across four connected areas: listening skills, built through following spoken narrative; attention and focus, built through sustained engagement with a relevant story; emotional intelligence, built through experiencing feelings alongside a character; and cognitive growth, built through following sequences, cause and effect, and prediction. These four things happen together in almost any well-told story, not as separate, isolated benefits.",
+      },
+      {
+        q: "What skills does storytelling teach children?",
+        a: "Storytelling builds listening comprehension, sustained attention, emotional vocabulary and empathy, memory, sequencing, and reasoning about cause and effect. It also supports vocabulary development and, for personalised stories specifically, a stronger and more positive self-concept.",
+      },
+      {
+        q: "Is storytelling actually linked to academic outcomes like literacy and numeracy?",
+        a: "There is real evidence for this specific link. A study of over 6,700 children in Ghana found that regular storytelling was associated with significantly higher odds of being on track for literacy and numeracy development (adjusted odds ratio 1.61). The same study found no significant association between storytelling and other outcomes such as social-emotional development, so the effect appears specific to literacy and numeracy rather than a general boost to everything.",
+      },
+      {
+        q: "Does it matter if a story is personalised or generic?",
+        a: "Personalisation doesn't replace the four pillars, it strengthens all of them at once. A child listens more closely, pays more attention, feels more, and reasons more actively about a story built around themselves specifically, compared to a generic story with an unfamiliar protagonist. Personal relevance is one of the strongest levers for attention and emotional engagement in young children.",
+      },
+      {
+        q: "What age should storytelling start?",
+        a: "There's no age that's too early. Children respond to the rhythm and warmth of a parent's voice from birth, well before they understand individual words. What a story does for a child changes as they grow, from rhythm and comfort in infancy, to vocabulary building as toddlers, to moral reasoning and empathy from around age three onward. We cover this stage by stage in our guide to reading aloud by age.",
+      },
+      {
+        q: "Do audio stories build these same skills, or only picture books and read-alouds?",
+        a: "Audio stories are particularly effective for the listening pillar specifically. Since there are no pictures to lean on, a child has to construct meaning from language alone, which is a more demanding form of listening practice. The other three pillars, attention, emotional intelligence, and cognitive growth, depend more on the story's content and structure than on its format.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-read-aloud-to-your-child-by-age",
+    title: "How to Read Aloud to Your Child by Age and Stage (A Practical Guide)",
+    excerpt:
+      "Reading aloud isn't one skill, it's a different skill at every age. Here's exactly how to do it well at each stage, from squirmy toddlers to kids who want to know what happens next before you've finished the sentence.",
+    tag: "Child Development",
+    tagColor: "#00C9A7",
+    date: "26 Aug 2026",
+    readTime: "6 min read",
+    emoji: "📖",
+    image: "/lf-scene-reading-aloud.jpg",
+    imgPosition: "center 15%",
+    content: `
+<p><strong>The single most effective technique for reading aloud at any age is dialogic reading: pausing to ask questions, letting your child predict what happens next, and following their interest instead of rushing to the last page. What that looks like changes a lot by age. A wriggly one-year-old needs rhythm and repetition, not questions, while a six-year-old can carry a real conversation about a character's choices. Here's what actually works at each stage.</strong></p>
+
+<p>If you're wondering when to start reading to your child at all, the short answer is birth, and we cover that timeline in full in <a href="/blog/what-age-should-children-start-listening-to-stories">at what age should children start listening to stories</a>. This guide picks up from there: not when to start, but how to read aloud well once you have, at every age from infancy through early school years.</p>
+
+<h2>Birth to 12 months: it's about rhythm, not comprehension</h2>
+
+<p>At this age, your baby isn't following plot or vocabulary. They're responding to the rhythm of your voice, the rise and fall of sentences, and the comfort of being held while you read. That means the technique here is almost entirely about delivery, not content.</p>
+
+<ul>
+  <li>Read slowly and with more warmth than you would to an adult. The exaggeration helps.</li>
+  <li>Don't worry about finishing the book or reading every word. Point at pictures, name objects, let your baby touch the pages.</li>
+  <li>Repeat the same few books often. Familiarity is doing real work here, even if it looks like nothing is happening.</li>
+</ul>
+
+<h2>1 to 3 years: this is where dialogic reading starts to matter</h2>
+
+<p>Somewhere around 15 to 18 months, most toddlers start actively participating rather than just listening: pointing at pictures, saying single words, pulling the book back to a page they liked. This is exactly the moment to lean into what researchers call dialogic reading: instead of just reading the words on the page, you pause and ask, "what's that?", "where's the dog?", or "what do you think happens now?"</p>
+
+<p>A few things that make this work well at this age:</p>
+
+<ul>
+  <li><strong>Ask, don't just tell.</strong> Instead of narrating "this is a dog," ask "what's this?" and let them answer, even if the answer is wrong or just a sound. The act of retrieving the word matters more than getting it right.</li>
+  <li><strong>Let them choose the same book again.</strong> Repetition at this age isn't boredom, it's rehearsal. Each repeat builds vocabulary and comprehension a little further.</li>
+  <li><strong>Keep sessions short.</strong> Five to ten minutes is plenty. The goal is a positive, low-pressure association with books, not a long sitting.</li>
+</ul>
+
+<h2>3 to 5 years: predicting, voicing, and letting the story breathe</h2>
+
+<p>By age three, most children are starting to understand story structure well enough to predict what happens next, and this is where reading aloud gets genuinely fun for both of you. A few techniques that work particularly well:</p>
+
+<ul>
+  <li><strong>Pause before the reveal.</strong> "And when she opened the door, she saw..." then stop and let your child guess. This turns passive listening into active prediction, which is a stronger comprehension exercise than reading straight through.</li>
+  <li><strong>Use distinct character voices.</strong> It sounds like a small thing, but distinct voices help children track who is speaking and, over time, build an intuitive sense of character and perspective.</li>
+  <li><strong>Let them interrupt.</strong> Questions mid-story ("why is he sad?") are not a distraction from the reading, they are the reading. Answer briefly and keep going.</li>
+  <li><strong>Slow down for bedtime specifically.</strong> If the story is happening at night, a slower, quieter pace helps wind a child down rather than energising them right before sleep.</li>
+</ul>
+
+<h2>5 to 8 years: longer stories, real discussion, growing independence</h2>
+
+<p>School-age children can hold a longer narrative in mind, track multiple characters, and start to engage with a story's underlying idea, not just its events. Reading aloud at this age can shift toward:</p>
+
+<ul>
+  <li><strong>Chapter books read a bit at a time,</strong> with a quick recap of "where we left off" at the start of each session. That recap itself is a valuable comprehension exercise.</li>
+  <li><strong>Real questions after the story,</strong> not "what did you learn," which invites a rehearsed answer, but "what would you have done?" or "why do you think she made that choice?"</li>
+  <li><strong>Some independent reading alongside read-aloud time,</strong> rather than instead of it. Being read to still has value well past the age a child can read alone. It's a different kind of experience, more about shared attention than decoding text.</li>
+</ul>
+
+<h2>Two techniques that work at every age</h2>
+
+<p><strong>Follow their interest over your plan.</strong> If your child wants to linger on a page, ask a tangential question, or hear the same three pages again, that's not a detour from the reading, it usually is the most valuable part of it.</p>
+
+<p><strong>Ask one open question after, not five.</strong> A single "what part did you like best?" or "how do you think she felt?" does more than a barrage of comprehension questions. It signals genuine curiosity rather than a quiz, and children respond very differently to the two.</p>
+
+<h2>When you can't read aloud yourself</h2>
+
+<p>Some nights, you're exhausted, travelling, or simply don't have the voice left for a full read-aloud session. This is where narrated audio stories genuinely help, not as a replacement for your voice, but as a way to keep the ritual going on the nights your voice isn't available. A story narrated well still gives your child rhythm, vocabulary, character voices, and a narrative to follow, even without you reading it live.</p>
+
+<p>It's part of why we built <a href="/generate">Lalli Fafa</a> around real narration rather than flat text-to-speech, and why every story is personalized around your child specifically, so even on the nights you're not the one reading, the story is still unmistakably theirs.</p>
+    `,
+    faqs: [
+      {
+        q: "What is dialogic reading and why does it matter?",
+        a: "Dialogic reading is a technique where, instead of just reading the words on a page, you pause to ask questions, let your child predict what happens next, and follow their interest rather than rushing to finish. It turns reading aloud from a passive listening exercise into an active conversation, which builds vocabulary and comprehension more effectively than straight-through reading.",
+      },
+      {
+        q: "How long should I read aloud to my toddler?",
+        a: "Five to ten minutes is plenty for children under three. The goal at this age is a short, positive, low-pressure association with books and stories, not a long sitting. Sessions can lengthen naturally as your child's attention span grows.",
+      },
+      {
+        q: "Should I let my child interrupt while I'm reading?",
+        a: "Yes. Questions and comments mid-story are not a distraction from reading, they are a sign your child is actively processing the story. Answer briefly and continue. This kind of interruption is part of how comprehension develops, not something to discourage.",
+      },
+      {
+        q: "Is it worth using different voices for different characters?",
+        a: "Yes, it helps more than it might seem. Distinct character voices help children track who is speaking and, over repeated stories, build an intuitive sense of perspective and character, which supports both listening comprehension and emotional understanding.",
+      },
+      {
+        q: "What should I ask my child after reading a story?",
+        a: "One open question tends to work better than several specific ones. Something like 'what part did you like best?' or 'how do you think she felt?' invites your child to process the story in their own words, rather than answering a quiz. Avoid 'what did you learn,' which tends to produce a rehearsed rather than genuine answer.",
+      },
+      {
+        q: "Is an audio or narrated story as good as reading aloud myself?",
+        a: "A parent's own voice carries a comfort that's hard to replace, but a well-narrated story still provides rhythm, vocabulary, distinct character voices, and a narrative structure for your child to follow. Audio stories work well as a way to keep the story-time ritual going on nights when reading aloud yourself isn't possible, not as a full-time replacement.",
+      },
+    ],
+  },
+  {
+    slug: "screen-time-attention-span-children-research",
+    title: "Screen Time and Attention Span: What the Research Actually Says (and How Storytime Can Help)",
+    excerpt:
+      "Screen time doesn't affect every child's attention the same way, and the research is more specific than the headlines suggest. Here's what's actually been found about screens and attention span, and where storytime fits in.",
+    tag: "Research",
+    tagColor: "#2979ff",
+    date: "27 Aug 2026",
+    readTime: "7 min read",
+    emoji: "📱",
+    image: "/lf-scene-screen-vs-book.jpg",
+    imgPosition: "center 15%",
+    content: `
+<p><strong>Screen time's effect on attention span depends heavily on the type of content and the context, not just the number of hours. The American Academy of Pediatrics's own 2026 policy statement puts it directly: well-designed digital media with clear learning goals, used in moderation, may support academic skills such as reading and mathematics, while excessive or passive use has been associated with weaker attention control. The research doesn't support a single "screens are bad" verdict, it supports being specific about what's on the screen and what it's replacing.</strong></p>
+
+<p>If you want the broader picture on screens versus story time, including sleep and vocabulary, we've covered that in <a href="/blog/screen-time-vs-story-time-research">screen time vs story time: what the research actually says</a>. This piece stays narrowly focused on one specific outcome: attention span, and what actually seems to help or hurt it.</p>
+
+<h2>What "attention span" research is actually measuring</h2>
+
+<p>When researchers study attention in young children, they're usually looking at a few distinct things: how long a child can sustain focus on a single task, how easily they're pulled away by a new stimulus, and how well they can switch attention deliberately rather than reactively. These are related but not identical skills, and different kinds of screen content seem to affect them differently.</p>
+
+<p>Fast-paced, frequently-cutting content, the kind common in short-form video and many cartoons, gives a child's attention system very little to actually practise. The scene changes before sustained focus is required. Slower-paced, narrative content, whether on a screen or not, asks something different: it requires a child to hold attention across a stretch of time to follow what's happening, which is closer to the kind of attention children need for reading, conversation, and classroom learning.</p>
+
+<h2>What the AAP's 2026 policy statement actually says</h2>
+
+<p>The American Academy of Pediatrics published an updated policy statement on children's digital media use in early 2026, and it's worth reading past the headlines. Rather than a blanket time limit, <a href="https://publications.aap.org/pediatrics/article/157/2/e2025075320/206129/Digital-Ecosystems-Children-and-Adolescents-Policy" target="_blank" rel="noopener noreferrer">the policy statement</a> emphasises the design and context of media: well-designed digital media with clear learning goals, used in moderation, may support academic skills such as reading and mathematics, while excessive use has been associated with lower academic achievement, weaker attention control, and sleep disruption, particularly when devices are used in bedrooms or late in the evening.</p>
+
+<p>The practical takeaway isn't "screens are fine" or "screens are dangerous." It's that the same hour can have very different effects depending on what's being watched, whether a caregiver is engaged with it, and what it's displacing.</p>
+
+<h2>A newer data point: storytelling and language development</h2>
+
+<p>A 2025 study published in Frontiers in Pediatrics looked at 296 children in China, comparing those with diagnosed language development delay to a typically developing control group. Among several factors examined, one stood out: only 13.27% of parents in the language-delay group reported regularly telling their child stories, compared to 31.13% in the control group, a statistically significant difference (p = 0.001). The same children in the delay group also had notably higher screen exposure.</p>
+
+<p>This is an association, not proof that low storytelling causes language delay or that screen time alone explains it. The study looked at several environmental factors together. But it's a genuinely useful data point: in this sample, home storytelling and screen exposure moved in opposite directions alongside language development delay, which lines up with the broader idea that story time and heavy passive screen time tend to compete for the same slot in a child's day.</p>
+
+<h2>So what actually helps attention span?</h2>
+
+<p>Pulling together what the research does support, a few practical patterns hold up:</p>
+
+<ul>
+  <li><strong>Slower-paced, narrative content trains sustained attention better than fast-cutting content.</strong> This applies whether it's a screen, an audio story, or a picture book, the pacing matters more than the medium.</li>
+  <li><strong>Co-engagement changes the picture.</strong> A parent watching or listening alongside a child, and talking about what's happening, produces different outcomes than a child left alone with a device.</li>
+  <li><strong>What screen time displaces matters as much as the screen time itself.</strong> An hour of screen time that replaces conversation, play, and story time is a different situation from an hour that's additional to a day that already includes those things.</li>
+  <li><strong>Story time is a genuine, low-effort way to build the kind of sustained attention screens often don't ask for.</strong> Following a narrative from beginning to end, especially one told aloud without pictures to lean on, requires a child to hold focus in a way that fast, visual content doesn't.</li>
+</ul>
+
+<h2>Where personalised storytime fits</h2>
+
+<p>One practical lever that's easy to overlook: relevance keeps attention where generic content often loses it. A child who drifts off during a generic cartoon can often stay engaged through an entire story built around their own name and interests, not because the format is different, but because their brain has more reason to keep listening.</p>
+
+<p>This is part of the thinking behind <a href="/generate">Lalli Fafa</a>: personalized, narrated stories that ask for the same kind of sustained, narrative attention that reading aloud does, on the nights screen time is already part of the routine and story time needs to hold its own.</p>
+    `,
+    faqs: [
+      {
+        q: "Does screen time reduce attention span in children?",
+        a: "The research doesn't support a blanket answer. The American Academy of Pediatrics's 2026 policy statement notes that well-designed digital media with clear learning goals, used in moderation, may support academic skills such as reading and mathematics, while excessive or passive use has been associated with weaker attention control. The type of content, whether an adult is engaged with it, and what it's displacing all matter more than total screen hours alone.",
+      },
+      {
+        q: "What kind of content is worst for attention span?",
+        a: "Fast-paced, frequently-cutting content, common in short-form video and some cartoons, gives a child's attention system little to practise on, since the scene changes before sustained focus is required. Slower-paced narrative content asks for a different, more sustained kind of attention, closer to what reading and classroom learning require.",
+      },
+      {
+        q: "Is there a link between storytelling and language development?",
+        a: "A 2025 study in Frontiers in Pediatrics, examining 296 children in China, found that children with diagnosed language development delay had significantly lower rates of regular home storytelling than typically developing children (13.27% versus 31.13%, p = 0.001), alongside higher screen exposure. This shows an association in that specific sample, not proof of a direct cause, but it fits a broader pattern where storytelling and heavy passive screen time seem to compete for the same part of a child's day.",
+      },
+      {
+        q: "Can storytime actually help build attention span?",
+        a: "Following a story from beginning to end, especially one told aloud without pictures to lean on, requires sustained focus, memory for what's already happened, and prediction of what's next. That's meaningfully different from fast-cutting visual content, and it's a form of attention practice that transfers to reading and classroom learning.",
+      },
+      {
+        q: "Should I cut out screen time entirely to protect my child's attention span?",
+        a: "The research doesn't point to that conclusion. What matters more is the type of content, whether a caregiver is engaged with it, and whether it's displacing things like conversation, play, and story time. A reasonable amount of well-chosen, sometimes co-viewed screen time alongside regular story time is a different picture from screens replacing everything else in a child's day.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-talk-to-your-child-about-feelings",
+    title: "How to Talk to Your Child About Feelings: Practical Scripts for the Moments That Matter",
+    excerpt:
+      "Knowing why stories build empathy is one thing. Knowing what to actually say when your child is mid-meltdown is another. Here are real scripts for the moments parents ask about most.",
+    tag: "Values & Learning",
+    tagColor: "#e84040",
+    date: "28 Aug 2026",
+    readTime: "7 min read",
+    emoji: "🗣️",
+    image: "/lf-scene-feelings-bench.jpg",
+    imgPosition: "center 20%",
+    content: `
+<p><strong>The most useful thing you can say to a child in the middle of a big feeling is usually short: name the feeling, show you understand why it's there, and only then talk about what to do. "You're really frustrated that the tower fell down" does more in the moment than "calm down" or "it's not a big deal." Below are real scripts for the specific situations parents ask about most, plus how to use a story your child already knows as a shortcut to calming down.</strong></p>
+
+<p>If you're looking for the research on why stories build empathy in the first place, we cover that in <a href="/blog/bedtime-stories-emotional-intelligence">how bedtime stories build emotional intelligence</a>. If you want story ideas specifically about kindness and sharing, see <a href="/blog/teaching-kindness-through-storytelling">teaching kindness through storytelling</a>. This piece is different: it's what to actually say, out loud, in the moment a feeling is happening.</p>
+
+<h2>Why "calm down" doesn't work</h2>
+
+<p>"Calm down" asks a child to do the one thing they're currently unable to do. A child in the middle of a big feeling isn't accessing the part of their brain that can reason its way to calm on command. What actually helps first is being understood, not corrected. Naming the feeling accurately, before offering any solution, is what allows a child's nervous system to start settling.</p>
+
+<h2>Script: the meltdown over something small</h2>
+
+<p><strong>The situation:</strong> the tower fell, the wrong colour cup was given, the show ended.</p>
+
+<p><strong>What to say:</strong> "You worked really hard on that and it's frustrating when it falls down." Then wait. Don't rush to fix it or minimise it ("it's just blocks"). Let the naming land first.</p>
+
+<p><strong>The story callback:</strong> "Remember when Fafa's sandcastle got knocked over by the wave? He was so mad. And then he got to build it again, even better." You're not distracting your child from the feeling, you're giving them a reference point that says: this feeling is normal, and it passes.</p>
+
+<h2>Script: sibling conflict</h2>
+
+<p><strong>The situation:</strong> a toy dispute, a "that's not fair," a shove.</p>
+
+<p><strong>What to say to each child separately, briefly:</strong> "You wanted a turn and you didn't get one, that's annoying." Then, once both are calmer: "What do you think we could do so you both get a turn?" Asking rather than deciding for them builds the actual empathy muscle: imagining the other person's side.</p>
+
+<p><strong>The story callback:</strong> if your child has heard a story where two characters had to share or take turns, naming it helps: "This is a bit like when Lalli and Fafa both wanted to go first. What did they end up doing?"</p>
+
+<h2>Script: separation anxiety or first-day nerves</h2>
+
+<p><strong>The situation:</strong> drop-off at school or daycare, a new place, a new person.</p>
+
+<p><strong>What to say:</strong> "It's okay to feel nervous about something new. Lots of people do." Avoid "there's nothing to be scared of," which, however well-meant, tells a child their feeling is wrong rather than valid.</p>
+
+<p><strong>The story callback:</strong> stories where a character faces something new and unfamiliar, and it turns out okay, give children a rehearsed version of exactly this experience. Referencing one by name in the moment ("remember how nervous Fafa was on his first day at the jungle school, and how it turned out?") gives your child's brain a completed example to draw on, rather than facing the unknown with nothing to compare it to.</p>
+
+<h2>Script: when your child lashes out physically</h2>
+
+<p><strong>The situation:</strong> hitting, biting, throwing something in anger.</p>
+
+<p><strong>What to say first, calmly:</strong> "I won't let you hit. I can see you're really angry." Both parts matter: the boundary and the acknowledgment. Skipping the acknowledgment and going straight to correction often escalates things, because the underlying feeling was never addressed.</p>
+
+<p><strong>After, once calm:</strong> "What could your hands do instead, next time you feel that angry?" This is a genuine skill-building question, not a lecture, and it works far better once the feeling has actually passed, not while it's still happening.</p>
+
+<h2>Why the "name it first" order matters</h2>
+
+<p>Across all of these scripts, the pattern is the same: name the feeling and show understanding before offering a fix, a lesson, or a boundary. This isn't about being permissive, boundaries still matter and still get stated. It's about sequencing: a child who feels understood is far more available to hear the boundary or the lesson than a child who feels dismissed.</p>
+
+<p>Stories help build this vocabulary in advance, which is exactly why a story callback works so well in the moment. If your child has already heard a character feel frustrated, nervous, or left out, and seen that feeling named and worked through, you're not introducing a new idea mid-meltdown. You're pointing at something they already recognise.</p>
+
+<h2>Building the vocabulary before you need it</h2>
+
+<p>The scripts above work best when the emotional vocabulary is already familiar, which is where regular storytime does quiet, ongoing work. Personalised stories in particular give your child a character (themselves) who has already felt frustrated, nervous, or left out, and found a way through it, which is exactly the reference point these scripts lean on.</p>
+
+<p>This is part of why every <a href="/generate">Lalli Fafa</a> story is built around a real feeling and a real choice, not just an adventure with no emotional stakes, so that when a real feeling shows up at home, your child already has a story that speaks to it.</p>
+    `,
+    faqs: [
+      {
+        q: "What should I say when my child is having a meltdown?",
+        a: "Start by naming the feeling and showing you understand it, before offering any fix or correction. Something like 'you worked really hard on that and it's frustrating when it falls down' does more than 'calm down' or 'it's not a big deal,' because it addresses what's actually happening for your child rather than asking them to skip past it.",
+      },
+      {
+        q: "How do I teach my child to understand other people's feelings?",
+        a: "Ask rather than tell. Instead of explaining how someone else feels, ask your child what they think the other person might be feeling, especially during real conflicts like sibling disputes. This practice of imagining another person's perspective is the actual mechanism behind empathy, and it's a skill that gets stronger with repetition, not explanation.",
+      },
+      {
+        q: "Why shouldn't I tell my child there's nothing to be scared of?",
+        a: "Telling a child their fear isn't valid, even gently, tends to make them feel unheard rather than reassured. Naming the feeling as normal, 'it's okay to feel nervous about something new, lots of people do,' validates the experience first, which makes a child more receptive to comfort and reassurance afterward.",
+      },
+      {
+        q: "How can stories help in the moment during a tantrum?",
+        a: "A story your child already knows can work as a quick reference point. Naming a character's similar experience, 'remember when Fafa's sandcastle got knocked over,' gives your child's brain something familiar to attach the feeling to, and a reminder that the feeling passes. This works because the emotional vocabulary and the reassurance were already built during calm story time, not invented in the moment.",
+      },
+      {
+        q: "What do I do when my child hits or lashes out?",
+        a: "State the boundary and acknowledge the feeling together and calmly: 'I won't let you hit, I can see you're really angry.' Save the skill-building conversation, like asking what their hands could do instead next time, for after they've calmed down. Trying to teach in the middle of the feeling rarely works, because a dysregulated child isn't in a state to process a lesson yet.",
+      },
+    ],
+  },
+  {
+    slug: "cognitive-development-milestones-ages-2-to-5",
+    title: "Cognitive Development Milestones Ages 2 to 5: What to Expect and How Stories Support Each Stage",
+    excerpt:
+      "From first pretend play to first predictions about what happens next, here's what cognitive development actually looks like between ages 2 and 5, and where storytelling fits into each stage.",
+    tag: "Child Development",
+    tagColor: "#00C9A7",
+    date: "29 Aug 2026",
+    readTime: "7 min read",
+    emoji: "🧩",
+    image: "/lf-scene-cognitive-blocks.jpg",
+    imgPosition: "center 15%",
+    content: `
+<p><strong>Between ages 2 and 5, children move from simple pretend play to genuine reasoning: understanding cause and effect, holding two ideas in mind at once, predicting outcomes, and starting to see the world from someone else's point of view. This period, which developmental psychologists broadly describe as the preoperational stage, is also when storytelling starts doing real cognitive work, not just entertaining a child, but giving their reasoning skills something to practise on daily.</strong></p>
+
+<p>Every child develops at their own pace, and the ranges below are broad guides, not a checklist to worry over. What's more useful than exact ages is understanding the general sequence: what tends to come before what, and what stories can offer at each point.</p>
+
+<h2>Age 2: symbols, pretend play, and first sequences</h2>
+
+<p>Two-year-olds are developing what psychologists call symbolic thinking, the ability to let one thing represent another. A block becomes a phone. A stuffed animal becomes a patient. This is a genuinely significant cognitive leap: it means a child can hold an idea in their mind that isn't physically in front of them.</p>
+
+<p>You'll typically also see the beginnings of sequence understanding: a two-year-old can often follow a simple two-step story ("first this happened, then that happened") even if they can't yet retell it themselves. Repetition matters enormously at this age, hearing the same short story multiple times helps a child build a stronger internal model of its structure.</p>
+
+<p><strong>Where stories help:</strong> simple, short, highly repetitive stories with clear cause and effect ("Fafa touched the puddle, and his socks got wet") give two-year-olds exactly the kind of sequence practice their cognitive development is ready for.</p>
+
+<h2>Age 3: cause and effect, and the start of "why"</h2>
+
+<p>Three is often when the "why" questions begin in earnest, and it's not a coincidence. Three-year-olds are actively building their understanding of cause and effect, and asking "why" is how they test and refine that understanding out loud. This is also the age at which most children begin to understand basic story structure: a beginning, a problem, and an ending, even if they can't name those parts.</p>
+
+<p><strong>Where stories help:</strong> stories that make cause and effect explicit ("because Lalli forgot her umbrella, she got soaked, so next time she checked the sky first") give children a repeated, low-stakes way to practise the exact reasoning pattern they're building everywhere else in their world.</p>
+
+<h2>Age 4: prediction, memory, and early problem-solving</h2>
+
+<p>By four, many children can predict what's likely to happen next in a familiar type of story, a skill that requires holding the story's pattern in memory and applying it forward. This is also the age at which working memory (holding several pieces of information in mind at once) becomes noticeably stronger, which shows up as an increased ability to follow slightly longer, more complex narratives.</p>
+
+<p>Problem-solving also becomes more visible at this age, not just physical problem-solving (how to reach something, how to fit pieces together) but narrative problem-solving: understanding that a character has a goal and is trying to find a way to reach it.</p>
+
+<p><strong>Where stories help:</strong> pausing before a story's resolution and asking "what do you think happens next?" turns a four-year-old's growing prediction ability into active practice, rather than passive listening.</p>
+
+<h2>Age 5: multiple characters, subtext, and moral reasoning</h2>
+
+<p>Five-year-olds can typically track multiple characters in a story and begin to understand that a character's stated words and their actual feelings aren't always the same thing, an early form of understanding subtext that continues developing for years. This is also the age at which children start engaging meaningfully with a story's underlying idea, not just what happened, but whether a choice was right or fair.</p>
+
+<p><strong>Where stories help:</strong> longer stories with more than one character, and moments where a character's choice has a real consequence, give five-year-olds the kind of complexity their reasoning is now ready to handle.</p>
+
+<h2>The literacy and numeracy connection</h2>
+
+<p>The reasoning skills stories build, sequencing, cause and effect, memory, and prediction, aren't separate from academic skills like reading and maths. They're the scaffolding those skills are built on. A study of over 6,700 children in Ghana found this connection directly: children who were regularly told stories had significantly higher odds of being on track for literacy and numeracy development (adjusted odds ratio 1.61, 95% CI 1.26 to 2.04) than children who weren't. Worth noting precisely: the same study found no significant link between storytelling and other outcomes like social-emotional or physical development, so this appears to be a specific, not general, effect, and it's a meaningful one for exactly the reasoning skills covered above.</p>
+
+<h2>What this looks like day to day</h2>
+
+<p>You don't need flashcards or structured cognitive exercises to support this development. A story, told with a bit of intention, does the job:</p>
+
+<ul>
+  <li><strong>Ages 2 to 3:</strong> repeat short stories often, and name the cause and effect out loud ("because... so...").</li>
+  <li><strong>Age 4:</strong> pause before the ending and ask what your child thinks happens next.</li>
+  <li><strong>Age 5:</strong> ask about a character's choice, not just the plot: "why do you think she did that?"</li>
+</ul>
+
+<p>This is part of why <a href="/generate">Lalli Fafa</a> stories are built with a real narrative arc for your child specifically to follow, predict, and reason through, rather than a loose sequence of events, because the reasoning practice is most of the point, not just the entertainment.</p>
+    `,
+    faqs: [
+      {
+        q: "What cognitive milestones should a 2-year-old reach?",
+        a: "Around age 2, most children develop symbolic thinking, the ability to let one object represent another in pretend play, and begin following simple two-step sequences in a story or activity, even before they can retell it themselves. These are broad guides, not a strict checklist, since every child develops at their own pace.",
+      },
+      {
+        q: "When do children start understanding cause and effect?",
+        a: "This typically develops strongly around age 3, which is also around when many children start asking frequent 'why' questions, a sign they're actively testing their growing understanding of cause and effect out loud.",
+      },
+      {
+        q: "At what age can children predict what happens next in a story?",
+        a: "Many children can meaningfully predict what's likely to happen next in a familiar type of story by around age 4, a skill that depends on holding the story's pattern in memory and applying it forward. This is a good age to start pausing before a story's ending and asking what your child thinks will happen.",
+      },
+      {
+        q: "Does storytelling actually support cognitive development, or is that just a claim?",
+        a: "There is real evidence for this. A study of over 6,700 children in Ghana found that regular storytelling was associated with significantly higher odds of being on track for literacy and numeracy development specifically (adjusted odds ratio 1.61). The same study found no significant link to other outcomes like social-emotional development, suggesting the effect is specific to the reasoning and language skills literacy and numeracy depend on.",
+      },
+      {
+        q: "What kind of stories are best for building cognitive skills at each age?",
+        a: "Short, highly repetitive stories with clear cause and effect work well around age 2 to 3. From age 4, stories with a clear prediction point, pausing before the ending and asking what happens next, add real practice value. By age 5, stories with more than one character and a choice with a genuine consequence match a child's growing ability to reason about motives and fairness.",
+      },
+    ],
+  },
+  {
+    slug: "raising-bilingual-kids-in-india-nep-2020",
+    title: "Raising Bilingual Kids in India: Why Stories in Hindi and English Matter for Development",
+    excerpt:
+      "India's own National Education Policy makes the case for mother-tongue learning. Here's what that means in practice for bilingual families raising children on both Hindi and English.",
+    tag: "Language & Culture",
+    tagColor: "#a855f7",
+    date: "30 Aug 2026",
+    readTime: "6 min read",
+    emoji: "🇮🇳",
+    image: "/lf-scene-bilingual-grandma.jpg",
+    imgPosition: "center 15%",
+    content: `
+<p><strong>India's own National Education Policy 2020 recommends that children be taught in their mother tongue or home language until at least Grade 5, and preferably Grade 8, a position UNESCO's 2025 "Bhasha Matters" report reaffirms directly, stating that education should begin in the learner's first language to support better understanding, cognitive development, and academic success. For bilingual Indian families raising children on both Hindi and English, this isn't just a cultural preference, it's aligned with the country's own education policy and with what the cognitive research on bilingualism shows.</strong></p>
+
+<p>This piece focuses specifically on families raising children in India, where the practical question usually isn't whether to expose a child to Hindi, it's how to make sure Hindi gets equal weight alongside English, given how much of daily life, schooling, and media already defaults to English. If you're raising a bilingual child outside India, we've written a separate, practically-focused guide for that situation in <a href="/blog/how-to-teach-hindi-to-kids-abroad">how to teach Hindi to kids growing up abroad</a>. And if you want the deeper cognitive science on bilingualism generally, see <a href="/blog/bilingual-stories-children-language-development-research">do bilingual stories help with children's language development</a>.</p>
+
+<h2>What India's own education policy actually says</h2>
+
+<p>NEP 2020 is explicit on this point: it recommends multilingual education, with initial learning in a child's home language, mother tongue, or a language familiar to the child, continuing until at least Grade 5 and preferably Grade 8. This isn't a fringe pedagogical opinion, it's the country's own stated policy position on how children learn best.</p>
+
+<p>UNESCO's 2025 report on India, Bhasha Matters, examined how well that policy is actually reaching classrooms, and found a real gap: an estimated 44% of children in India face some kind of language mismatch at school, meaning the language of instruction isn't the language they're most comfortable in at home. The report's core finding is direct: education should begin in the learner's first language or mother tongue, to ensure better understanding, cognitive development, and academic success. Case studies cited in the report, drawn from tribal and rural contexts, found measurable improvements in reading comprehension, classroom participation, and conceptual understanding when schools embraced children's home languages.</p>
+
+<p>For a family raising a child in a Hindi-English household, the practical read is straightforward: strengthening Hindi isn't at odds with strong English, and India's own policy research says the opposite is closer to true. Mother-tongue strength tends to support, not compete with, learning additional languages well.</p>
+
+<h2>What the cognitive research adds</h2>
+
+<p>Separately from the policy research, there's a well-established body of work on bilingualism and cognitive development. Research published in <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3583091/" target="_blank" rel="noopener noreferrer">Cerebrum, the Dana Foundation's forum on brain science</a>, found that bilingual children show stronger executive function, including better attention control and task-switching, than monolingual children, likely because managing two active language systems is itself a form of ongoing cognitive exercise.</p>
+
+<p>We go deeper on this specific research, including phonological awareness and vocabulary breadth, in <a href="/blog/bilingual-stories-children-language-development-research">do bilingual stories help with children's language development</a>, so we won't repeat it in full here. The short version: bilingualism is not a trade-off against cognitive development, it's associated with a specific cognitive advantage of its own.</p>
+
+<h2>Why stories specifically, not just conversation</h2>
+
+<p>Everyday conversation in any language tends to use a fairly narrow, repetitive vocabulary, the words needed to get through a day. Stories use a richer, more varied vocabulary, and for a bilingual child, hearing stories in both languages means encountering the literary register of each language, not just its conversational register.</p>
+
+<p>This matters in a very specific way for many Indian households: children are often fluent in conversational Hindi, comfortable with everyday speech at home, but less exposed to Hindi in its richer, more expressive forms, the kind a story, a folk tale, or a well-narrated adventure uses. A Hindi story doesn't just add Hindi exposure, it adds a different, deeper kind of Hindi exposure than conversation alone provides.</p>
+
+<h2>Making it practical at home</h2>
+
+<p>A few things that make the biggest difference, drawing on both the policy research above and the practical experience of bilingual families:</p>
+
+<ul>
+  <li><strong>Native-quality narration matters more than translation.</strong> A story written and told in Hindi carries different rhythm and emotional weight than an English story translated and read aloud. Children notice the difference, even if they can't articulate it.</li>
+  <li><strong>Consistency beats occasional immersion.</strong> Ten minutes of Hindi story time most nights builds more than an occasional longer session.</li>
+  <li><strong>Let both languages carry real stories, not just labels.</strong> Naming objects in Hindi is useful, but a full story, with characters, feelings, and a real narrative arc, is what builds the literary register conversation alone doesn't reach.</li>
+</ul>
+
+<p>This is exactly why Hindi narration was part of <a href="/generate">Lalli Fafa</a> from the start, not translated subtitles over English audio, but genuinely native-quality Hindi storytelling, personalised around your child, so Hindi gets to be the language of adventure and imagination at home, not just the language of instructions. You can explore our Hindi story options directly on our <a href="/hindi-stories">Hindi stories page</a>.</p>
+    `,
+    faqs: [
+      {
+        q: "Does India's National Education Policy support teaching children in Hindi?",
+        a: "Yes. NEP 2020 recommends that children be taught in their mother tongue, home language, or a language familiar to them for initial learning, continuing until at least Grade 5 and preferably Grade 8. UNESCO's 2025 Bhasha Matters report reaffirms this directly and found that a significant gap still exists between this policy and actual classroom practice in India.",
+      },
+      {
+        q: "Is it better for bilingual children to have stories in both languages, or should one language be prioritised?",
+        a: "Research supports both languages being genuinely present, not one at the expense of the other. Strength in a child's mother tongue tends to support rather than compete with learning additional languages well. Bilingual children raised with strong exposure to both languages, especially through rich, narrative content like stories, show benefits including stronger executive function and broader combined vocabulary.",
+      },
+      {
+        q: "Does bilingualism affect a child's cognitive development?",
+        a: "Research published in Cerebrum, the Dana Foundation's forum on brain science, found that bilingual children show stronger executive function, including better attention control and task-switching, than monolingual children. Managing two active language systems appears to function as an ongoing form of cognitive exercise.",
+      },
+      {
+        q: "Why do stories matter more than everyday conversation for learning Hindi?",
+        a: "Everyday conversation tends to use a narrow, repetitive vocabulary. Stories use a richer, more varied vocabulary and expose children to a language's literary register, its rhythms, expressions, and emotional vocabulary, not just its practical, conversational form. This matters especially for children who are conversationally fluent in Hindi at home but have limited exposure to its richer, more expressive forms.",
+      },
+      {
+        q: "What's the difference between raising a bilingual child in India versus abroad?",
+        a: "Families in India are usually managing an imbalance where English already dominates schooling and media, so the practical challenge is making sure Hindi gets equal weight, not introducing it from scratch. Families abroad are often working against much less daily Hindi exposure altogether. We cover the abroad-specific situation, including practical daily strategies, in a separate guide.",
       },
     ],
   },

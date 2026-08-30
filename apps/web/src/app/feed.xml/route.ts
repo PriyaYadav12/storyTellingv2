@@ -3,7 +3,10 @@ import { BLOG_POSTS } from "@/lib/blog-data";
 const BASE = "https://www.lallifafa.com";
 
 export async function GET() {
-  const items = BLOG_POSTS.map((post) => {
+  const sortedPosts = [...BLOG_POSTS].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  const items = sortedPosts.map((post) => {
     const url = `${BASE}/blog/${post.slug}`;
     const pubDate = new Date(post.date).toUTCString();
     return `

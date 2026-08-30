@@ -38,7 +38,9 @@ const itemListSchema = {
 
 export default function BlogPage() {
   const featured = getFeaturedPost();
-  const rest = BLOG_POSTS.filter((p) => !p.featured);
+  const rest = BLOG_POSTS.filter((p) => !p.featured).sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   return (
     <>
