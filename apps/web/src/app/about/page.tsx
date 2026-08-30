@@ -10,12 +10,12 @@ const BASE = "https://www.lallifafa.com";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Lalli Fafa is an AI-powered personalised storytelling platform for children, made in India, bringing your child into magical, bilingual (English & Hindi) bedtime stories as the hero.",
+    "Lalli Fafa is a personalised storytelling platform for children, made in India, bringing your child into magical, bilingual (English & Hindi) bedtime stories as the hero.",
   alternates: { canonical: `${BASE}/about` },
   openGraph: {
     title: "About Lalli Fafa",
     description:
-      "We believe every child deserves to be the hero of their own story. Here's why we built Lalli Fafa, and what we stand for.",
+      "We believe every child deserves to be the hero of their own story. Here's why we built Lalli Fafa, what we stand for, and the research behind our approach.",
     url: `${BASE}/about`,
     images: [
       {
@@ -104,9 +104,9 @@ export default function AboutPage() {
       <SiteHeader />
       <main style={{ background: "var(--lf-cream)", paddingTop: 72 }}>
         {/* Hero */}
-        <section className="mx-auto px-5 pt-14 pb-10" style={{ maxWidth: 1000 }}>
-          <div className="flex flex-col md:flex-row items-center gap-10">
-            <div className="flex-1 flex flex-col gap-5">
+        <section className="mx-auto px-5 pt-8 pb-6" style={{ maxWidth: 1000 }}>
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1 flex flex-col gap-4">
               <h1
                 style={{
                   fontFamily: "'Baloo 2', sans-serif",
@@ -118,8 +118,8 @@ export default function AboutPage() {
               >
                 Hi, we&apos;re Lalli &amp; Fafa.
               </h1>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1rem", color: "rgba(45,45,45,0.5)", lineHeight: 1.7, maxWidth: 480, fontStyle: "italic" }}>
-                Lalli Fafa is a personalised children&apos;s storytelling platform for Indian families: generating fully illustrated, narrated bedtime stories in English and Hindi, with your child as the hero alongside Lalli (age 6) and Fafa (age 3), her younger brother.
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.02rem", color: "var(--lf-dark)", lineHeight: 1.75, maxWidth: 480 }}>
+                <strong>Lalli Fafa is a personalised children&apos;s storytelling platform for Indian families: generating fully illustrated, narrated bedtime stories in English and Hindi, with your child as the hero alongside Lalli (age 6) and Fafa (age 3), her younger brother.</strong>
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.8, maxWidth: 480 }}>
                 We started with one simple belief: every child deserves to hear stories where <strong>they</strong> are the one who&apos;s brave, kind, curious, and clever, told in a voice they trust, in the languages they grow up speaking.
@@ -148,8 +148,8 @@ export default function AboutPage() {
 
         {/* Mission */}
         <section style={{ background: "var(--lf-mint)" }}>
-          <div className="mx-auto px-5 py-14" style={{ maxWidth: 1000 }}>
-            <div className="flex flex-col md:flex-row items-center gap-10">
+          <div className="mx-auto px-5 py-8" style={{ maxWidth: 1000 }}>
+            <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1">
                 <h2
                   style={{
@@ -184,7 +184,7 @@ export default function AboutPage() {
         </section>
 
         {/* Values grid */}
-        <section className="mx-auto px-5 py-14" style={{ maxWidth: 1000 }}>
+        <section className="mx-auto px-5 py-8" style={{ maxWidth: 1000 }}>
           <h2
             style={{
               fontFamily: "'Baloo 2', sans-serif",
@@ -192,7 +192,7 @@ export default function AboutPage() {
               fontSize: "clamp(1.6rem,3.5vw,2.2rem)",
               color: "var(--lf-dark)",
               lineHeight: 1.2,
-              marginBottom: "2rem",
+              marginBottom: "1.25rem",
               textAlign: "center",
             }}
           >
@@ -226,8 +226,8 @@ export default function AboutPage() {
 
         {/* Q&A — Meet Lalli & Fafa */}
         <section style={{ background: "var(--lf-mint)" }}>
-          <div className="mx-auto px-5 py-14" style={{ maxWidth: 800 }}>
-            <div className="flex flex-col items-center gap-2 mb-10 text-center">
+          <div className="mx-auto px-5 py-8" style={{ maxWidth: 800 }}>
+            <div className="flex flex-col items-center gap-2 mb-6 text-center">
               <h2
                 style={{
                   fontFamily: "'Baloo 2', sans-serif",
@@ -244,11 +244,11 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-3">
               {faqItems.map(({ q, a }) => (
                 <div
                   key={q}
-                  className="flex flex-col gap-2 p-6 rounded-2xl"
+                  className="flex flex-col gap-2 p-5 rounded-2xl"
                   style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)" }}
                 >
                   <h3
@@ -310,26 +310,52 @@ export default function AboutPage() {
                 url: BASE,
               },
               url: `${BASE}/about`,
+              sameAs: ["https://www.linkedin.com/in/raj-kothari-3262b918/"],
+            }),
+          }}
+        />
+        {/* Organization entity for GEO / E-E-A-T */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Lalli Fafa",
+              url: BASE,
+              logo: `${BASE}/lf-logo.png`,
+              description:
+                "Personalised, bilingual (English & Hindi) storytelling platform for children, made in India.",
+              founder: {
+                "@type": "Person",
+                name: "Raj Kothari",
+              },
+              sameAs: [
+                "https://youtube.com/@lallifafa",
+                "https://instagram.com/lallifafa",
+                "https://facebook.com/lallifafa",
+                "https://linkedin.com/company/lallifafa",
+              ],
             }),
           }}
         />
 
         {/* Founder */}
-        <section className="mx-auto px-5 py-14" style={{ maxWidth: 800 }}>
+        <section className="mx-auto px-5 py-8" style={{ maxWidth: 800 }}>
           <h2
             style={{
               fontFamily: "'Baloo 2', sans-serif",
               fontWeight: 800,
               fontSize: "clamp(1.4rem,3vw,1.9rem)",
               color: "var(--lf-dark)",
-              marginBottom: "1.5rem",
+              marginBottom: "1rem",
               textAlign: "center",
             }}
           >
             Built by a parent, for parents
           </h2>
           <div
-            className="flex flex-col md:flex-row items-start gap-8 p-7 rounded-3xl"
+            className="flex flex-col md:flex-row items-start gap-6 p-6 rounded-3xl"
             style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)" }}
           >
             <div className="flex-shrink-0 flex flex-col items-center gap-3">
@@ -370,8 +396,15 @@ export default function AboutPage() {
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.75rem" }}>
                 I&apos;m an Indian parent, and like most Indian parents, I grew up in a home where stories were everywhere: told by grandparents at night, woven into festivals, passed down without ever being written down. When my daughter Vanya was born, I wanted to give her that same feeling: a story just for her, in the languages she&apos;d grow up speaking.
               </p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85 }}>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.9rem" }}>
                 What I found instead were platforms that were generic, English-only, or filled with ads and autoplay. So I built Lalli Fafa: a place where Vanya (and every child like her) could step into a story where <em>she</em> was the brave one, the clever one, the one Lalli and Fafa turned to when things got tricky. I hope it becomes part of your bedtime ritual the way I always hoped it would be for ours.
+              </p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(45,45,45,0.55)", lineHeight: 1.7, paddingTop: "0.75rem", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                Our approach to storytelling and child development is reviewed against published research, including findings from the{" "}
+                <Link href="/blog/how-storytelling-helps-child-development" style={{ color: "var(--lf-teal)", textDecoration: "underline" }}>
+                  National Literacy Trust, UNESCO, and the American Academy of Pediatrics
+                </Link>
+                . Last reviewed: <time dateTime="2026-08-30">August 2026</time>.
               </p>
             </div>
           </div>
@@ -379,7 +412,7 @@ export default function AboutPage() {
 
         {/* Contact CTA */}
         <section style={{ background: "var(--lf-peach)" }}>
-          <div className="mx-auto px-5 py-14 text-center" style={{ maxWidth: 700 }}>
+          <div className="mx-auto px-5 py-8 text-center" style={{ maxWidth: 700 }}>
             <h2
               style={{
                 fontFamily: "'Baloo 2', sans-serif",
