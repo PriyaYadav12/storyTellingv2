@@ -28,7 +28,7 @@ export const CARD_TINTS = ["#FFF4E0", "#E6FAF6", "#F3EEFF", "#FFE8EC", "#E8F5E9"
 export const FALLBACK_STORY_TYPES = [
   { code: "adventure", name: "Big Adventure", emoji: "🗺️", description: "A quest full of discovery, teamwork, and a twist that changes everything." },
   { code: "silly", name: "Silly & Funny", emoji: "🌀", description: "Chaotic fun where Fafa's impossible ideas somehow save the day." },
-  { code: "cozy", name: "Cozy Bedtime", emoji: "🌙", description: "A gentle, slow story full of warmth — perfect for winding down." },
+  { code: "cozy", name: "Cozy Bedtime", emoji: "🌙", description: "A gentle, slow story full of warmth, perfect for winding down." },
 ];
 
 export const FALLBACK_LANGUAGES = [

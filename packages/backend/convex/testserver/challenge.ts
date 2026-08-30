@@ -432,7 +432,7 @@ export const generateChallenge = action({
       try {
         parsed = await ask(validation.retryHint ? `CORRECTION REQUIRED: ${validation.retryHint}` : undefined);
       } catch {
-        throw new Error("Story Challenge generation failed after retry — flagged for manual review");
+        throw new Error("Story Challenge generation failed after retry. Flagged for manual review.");
       }
       if (parsed?.questions && Array.isArray(parsed.questions)) {
         validation = validateQuestions(parsed.questions, dist, allowedFormats, qcIndices);
@@ -441,7 +441,7 @@ export const generateChallenge = action({
       }
       if (!validation.ok) {
         throw new Error(
-          `Story Challenge generation failed validation twice — flagged for manual review. Last issue: ${validation.retryHint ?? "unknown"}`
+          `Story Challenge generation failed validation twice. Flagged for manual review. Last issue: ${validation.retryHint ?? "unknown"}`
         );
       }
     }

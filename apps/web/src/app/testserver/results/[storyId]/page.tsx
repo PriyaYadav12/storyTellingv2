@@ -60,7 +60,7 @@ const MOOD_THEME: Record<Mood, {
     badge: "#6a3fd6",
     moodEmoji: "🥺",
     headline: (name) => `You tried so hard, ${name}! 💛`,
-    lalliLine: () => "Every story makes us smarter — let's try again together 🌙",
+    lalliLine: () => "Every story makes us smarter, let's try again together 🌙",
     fafaLine: (name) => `I believe in you, ${name}! We'll practice more next time 🤗`,
   },
 };
@@ -175,14 +175,14 @@ export default function ResultsScreen() {
         <div style={{ background: "linear-gradient(135deg,#FFF9DB,#FFF3E0)", borderRadius: 18, padding: 14, marginBottom: 10, border: "1px solid rgba(249,199,0,0.3)" }}>
           <p style={{ margin: 0, fontFamily: "'Nunito', sans-serif", fontSize: 11, fontWeight: 800, color: "#a16a00", textTransform: "uppercase", letterSpacing: "0.04em" }}>🌟 Superpower</p>
           <p style={{ margin: "4px 0 0", fontFamily: "'Baloo 2', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--lf-dark)" }}>
-            {PILLAR_EMOJI[superpower]} {PILLAR_LABELS[superpower]} — {childName} {SUPERPOWER_COPY[superpower]}
+            {PILLAR_EMOJI[superpower]} {PILLAR_LABELS[superpower]}: {childName} {SUPERPOWER_COPY[superpower]}
           </p>
         </div>
 
         <div style={{ background: "linear-gradient(135deg,#F3EEFF,#F5FFFE)", borderRadius: 18, padding: 14, marginBottom: 12, border: "1px solid rgba(124,77,255,0.2)" }}>
           <p style={{ margin: 0, fontFamily: "'Nunito', sans-serif", fontSize: 11, fontWeight: 800, color: "#6a3fd6", textTransform: "uppercase", letterSpacing: "0.04em" }}>🌱 Growing in</p>
           <p style={{ margin: "4px 0 0", fontFamily: "'Baloo 2', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--lf-dark)" }}>
-            {PILLAR_EMOJI[growingIn]} {PILLAR_LABELS[growingIn]} — {GROWING_IN_COPY[growingIn]}
+            {PILLAR_EMOJI[growingIn]} {PILLAR_LABELS[growingIn]}: {GROWING_IN_COPY[growingIn]}
           </p>
         </div>
 
@@ -391,7 +391,7 @@ function QuestionReviewCard({
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "rgba(14,10,31,0.5)" }}>Your answer:</span>
               <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12.5, fontWeight: 700, color: isCorrect ? "#00695c" : "#c62828", background: isCorrect ? "rgba(0,201,167,0.1)" : "rgba(255,87,34,0.08)", padding: "2px 10px", borderRadius: 8 }}>
-                {answered ?? "—"}
+                {answered ?? "No answer"}
               </span>
             </div>
             {!isCorrect && (

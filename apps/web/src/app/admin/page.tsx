@@ -25,7 +25,7 @@ function slugify(str: string) {
 }
 
 function formatDate(ts: number | undefined | null) {
-  if (!ts) return "—";
+  if (!ts) return "-";
   return new Date(ts).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -77,7 +77,7 @@ function StatusBadge({ status }: { status?: string }) {
     draft: { bg: "rgba(0,0,0,0.06)", color: "rgba(45,45,45,0.6)", label: "Draft" },
     published: { bg: "rgba(0,184,166,0.12)", color: "#0d7a6e", label: "Published" },
   };
-  const s = map[status ?? ""] ?? { bg: "rgba(0,0,0,0.06)", color: "rgba(45,45,45,0.5)", label: status ?? "—" };
+  const s = map[status ?? ""] ?? { bg: "rgba(0,0,0,0.06)", color: "rgba(45,45,45,0.5)", label: status ?? "-" };
   return (
     <span
       style={{
@@ -302,17 +302,17 @@ function StoryModal({ story, users, onClose, onDeleted }: { story: any; users: a
         <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
           {/* User + params */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
-            <InfoCard label="Parent" value={user?.name ?? "—"} />
+            <InfoCard label="Parent" value={user?.name ?? "-"} />
             <InfoCard label="Email" value={user?.email ?? story.userId} />
-            <InfoCard label="Child" value={user?.profile ? `${user.profile.childName}, age ${user.profile.childAge}` : "—"} />
-            <InfoCard label="Theme" value={story.params?.theme ?? "—"} />
-            <InfoCard label="Lesson" value={story.params?.lesson ?? "—"} />
-            <InfoCard label="Story type" value={story.params?.storyType ?? "—"} />
-            <InfoCard label="Length" value={story.params?.length ?? "—"} />
+            <InfoCard label="Child" value={user?.profile ? `${user.profile.childName}, age ${user.profile.childAge}` : "-"} />
+            <InfoCard label="Theme" value={story.params?.theme ?? "-"} />
+            <InfoCard label="Lesson" value={story.params?.lesson ?? "-"} />
+            <InfoCard label="Story type" value={story.params?.storyType ?? "-"} />
+            <InfoCard label="Length" value={story.params?.length ?? "-"} />
             <InfoCard label="Language" value={(story.params?.language ?? "EN").toUpperCase()} />
             <InfoCard label="Audio narration" value={story.narrationFilePath ? "✓ Yes" : "✗ No"} />
             <InfoCard label="Scenes" value={String(story.sceneMetadata?.length ?? 0)} />
-            <InfoCard label="Word count" value={story.content ? `~${story.content.split(/\s+/).filter(Boolean).length} words` : "—"} />
+            <InfoCard label="Word count" value={story.content ? `~${story.content.split(/\s+/).filter(Boolean).length} words` : "-"} />
             <InfoCard label="Story ID" value={story._id?.slice(-12)} />
           </div>
 
@@ -546,7 +546,7 @@ function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undef
                         <td style={TD_STYLE}>
                           {user ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                              <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{user.name ?? "—"}</span>
+                              <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{user.name ?? "-"}</span>
                               <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)", wordBreak: "break-all" }}>{user.email}</span>
                             </div>
                           ) : (
@@ -562,18 +562,18 @@ function StoriesTab({ isAdmin, users }: { isAdmin: boolean; users: any[] | undef
                               <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)" }}>Age {user.profile.childAge} · {user.profile.childGender}</span>
                             </div>
                           ) : (
-                            <span style={{ color: "rgba(45,45,45,0.3)", fontSize: "0.82rem" }}>—</span>
+                            <span style={{ color: "rgba(45,45,45,0.3)", fontSize: "0.82rem" }}>-</span>
                           )}
                         </td>
                         <td style={TD_STYLE}>
                           <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                            <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{s.params?.theme ?? "—"}</span>
+                            <span style={{ fontSize: "0.83rem", fontWeight: 600 }}>{s.params?.theme ?? "-"}</span>
                             {s.params?.lesson && <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)" }}>{s.params.lesson}</span>}
                           </div>
                         </td>
                         <td style={TD_STYLE}>
                           <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                            <span style={{ fontSize: "0.83rem" }}>{storyTypeLabel[s.params?.storyType] ?? s.params?.storyType ?? "—"}</span>
+                            <span style={{ fontSize: "0.83rem" }}>{storyTypeLabel[s.params?.storyType] ?? s.params?.storyType ?? "-"}</span>
                             {s.params?.length && <span style={{ fontSize: "0.73rem", color: "rgba(45,45,45,0.5)" }}>{lengthLabel[s.params.length] ?? s.params.length}</span>}
                           </div>
                         </td>
@@ -685,7 +685,7 @@ function DrawerRow({ label, value, children }: { label: string; value?: string |
       <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", color: "rgba(45,45,45,0.5)", flexShrink: 0 }}>{label}</span>
       {children ?? (
         <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.88rem", color: value != null ? "var(--lf-dark)" : "rgba(45,45,45,0.3)", fontWeight: 500, textAlign: "right" }}>
-          {value ?? "—"}
+          {value ?? "-"}
         </span>
       )}
     </div>
@@ -788,13 +788,13 @@ function UserDrawer({ user, onClose }: { user: any; onClose: () => void }) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 14 }}>
               {[
                 { label: "Available", val: availableCredits, accent: true },
-                { label: "Total Given", val: user.credits?.total ?? "—" },
-                { label: "Used", val: user.credits?.used ?? "—" },
+                { label: "Total Given", val: user.credits?.total ?? "-" },
+                { label: "Used", val: user.credits?.used ?? "-" },
               ].map(({ label, val, accent }) => (
                 <div key={label} style={{ background: accent ? "rgba(0,184,166,0.08)" : "rgba(0,0,0,0.04)", borderRadius: "0.7rem", padding: "12px 14px" }}>
                   <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", fontWeight: 700, color: "rgba(45,45,45,0.5)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>{label}</p>
                   <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.6rem", color: accent ? "var(--lf-teal)" : "var(--lf-dark)", margin: 0, lineHeight: 1 }}>
-                    {val ?? "—"}
+                    {val ?? "-"}
                   </p>
                 </div>
               ))}
@@ -959,7 +959,7 @@ function UsersTabInner({ isAdmin }: { isAdmin: boolean }) {
                     >
                       <td style={TD_STYLE}>
                         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                          <span style={{ fontWeight: 700 }}>{u.name ?? "—"}</span>
+                          <span style={{ fontWeight: 700 }}>{u.name ?? "-"}</span>
                           <span style={{ fontSize: "0.78rem", color: "rgba(45,45,45,0.5)" }}>{u.email}</span>
                         </div>
                       </td>
@@ -972,7 +972,7 @@ function UsersTabInner({ isAdmin }: { isAdmin: boolean }) {
                               {u.profile.child2Name && ` + ${u.profile.child2Name}`}
                             </span>
                           </div>
-                        ) : <span style={{ color: "rgba(45,45,45,0.3)" }}>—</span>}
+                        ) : <span style={{ color: "rgba(45,45,45,0.3)" }}>-</span>}
                       </td>
                       <td style={{ ...TD_STYLE, fontSize: "0.83rem" }}>
                         {u.profile?.city || u.profile?.country ? (
@@ -980,7 +980,7 @@ function UsersTabInner({ isAdmin }: { isAdmin: boolean }) {
                             {u.profile.city && <span>{u.profile.city}</span>}
                             {u.profile.country && <span style={{ color: "rgba(45,45,45,0.5)" }}>{u.profile.country}</span>}
                           </div>
-                        ) : <span style={{ color: "rgba(45,45,45,0.3)" }}>—</span>}
+                        ) : <span style={{ color: "rgba(45,45,45,0.3)" }}>-</span>}
                       </td>
                       <td style={{ ...TD_STYLE, whiteSpace: "nowrap", fontSize: "0.83rem" }}>
                         {formatDate(u.createdAt)}
@@ -992,7 +992,7 @@ function UsersTabInner({ isAdmin }: { isAdmin: boolean }) {
                             <span style={{ fontSize: "0.74rem", color: "rgba(45,45,45,0.4)" }}> / {u.credits.total}</span>
                           </div>
                         ) : (
-                          <span style={{ color: "rgba(45,45,45,0.3)", fontSize: "0.82rem" }}>—</span>
+                          <span style={{ color: "rgba(45,45,45,0.3)", fontSize: "0.82rem" }}>-</span>
                         )}
                       </td>
                       <td style={TD_STYLE}>
@@ -1281,7 +1281,7 @@ function BlogTab({ isAdmin }: { isAdmin: boolean }) {
               Static Posts ({BLOG_POSTS.length})
             </h3>
             <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.45)", margin: "2px 0 0" }}>
-              Hardcoded in codebase — edit via <code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 5px", borderRadius: "0.3rem" }}>src/lib/blog-data.ts</code>
+              Hardcoded in codebase: edit via <code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 5px", borderRadius: "0.3rem" }}>src/lib/blog-data.ts</code>
             </p>
           </div>
         </div>
@@ -1299,7 +1299,7 @@ function BlogTab({ isAdmin }: { isAdmin: boolean }) {
               CMS Posts {blogs !== undefined ? `(${blogs.length})` : ""}
             </h3>
             <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.45)", margin: "2px 0 0" }}>
-              Managed via Convex database — create, edit, publish here
+              Managed via Convex database: create, edit, publish here
             </p>
           </div>
           <button onClick={openNew} style={{ padding: "9px 20px", borderRadius: "0.7rem", background: "var(--lf-teal)", border: "none", color: "#fff", fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>
@@ -1325,7 +1325,7 @@ function BlogTab({ isAdmin }: { isAdmin: boolean }) {
                 {blogs.length === 0 ? (
                   <tr>
                     <td colSpan={5} style={{ ...TD_STYLE, textAlign: "center", color: "rgba(45,45,45,0.4)", padding: 32 }}>
-                      No CMS posts yet — create one above
+                      No CMS posts yet: create one above
                     </td>
                   </tr>
                 ) : (
@@ -1490,7 +1490,7 @@ function VoiceTab({ isAdmin }: { isAdmin: boolean }) {
                         />
                       ) : (
                         <span style={{ fontFamily: "monospace", fontSize: "0.85rem", color: "rgba(45,45,45,0.7)" }}>
-                          {m.voiceId ?? "—"}
+                          {m.voiceId ?? "-"}
                         </span>
                       )}
                     </td>
@@ -2257,7 +2257,7 @@ function ChallengeConfigTab({ isAdmin }: { isAdmin: boolean }) {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div>
           <h3 style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.1rem", color: "var(--lf-dark)", margin: "0 0 4px" }}>
-            Story Challenge — Question Engine Config
+            Story Challenge: Question Engine Config
           </h3>
           <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(45,45,45,0.5)", margin: 0 }}>
             Generation prompt (QuestionGenPromptV1) and scoring config (ChallengeConfigV1) stored in system_config.
@@ -2320,7 +2320,7 @@ function ChallengeConfigTab({ isAdmin }: { isAdmin: boolean }) {
                 background: promptDirty ? "#fffef5" : "#fff",
                 border: promptDirty ? "1.5px solid rgba(249,199,0,0.5)" : "1.5px solid rgba(0,0,0,0.12)",
               }}
-              placeholder="QuestionGenPromptV1 — click Seed Defaults to pre-fill from spec §8.1…"
+              placeholder="QuestionGenPromptV1: click Seed Defaults to pre-fill from spec §8.1…"
             />
             <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: "rgba(45,45,45,0.4)" }}>
               {promptValue.length.toLocaleString()} chars
@@ -2367,7 +2367,7 @@ function ChallengeConfigTab({ isAdmin }: { isAdmin: boolean }) {
                 background: configDirty ? "#fffef5" : "#fff",
                 border: configDirty ? "1.5px solid rgba(249,199,0,0.5)" : "1.5px solid rgba(0,0,0,0.12)",
               }}
-              placeholder="ChallengeConfigV1 JSON — click Seed Defaults to pre-fill…"
+              placeholder="ChallengeConfigV1 JSON: click Seed Defaults to pre-fill…"
             />
             <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.75rem", color: "rgba(45,45,45,0.4)" }}>
               {configValue.length.toLocaleString()} chars
@@ -2591,7 +2591,7 @@ function CostTab({ isAdmin }: { isAdmin: boolean }) {
     <div className="flex flex-col gap-6">
       {/* Historical-data honesty note */}
       <div style={{ background: "rgba(249,199,0,0.1)", border: "1px solid rgba(249,199,0,0.35)", borderRadius: "0.75rem", padding: "12px 16px", fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "var(--lf-dark)" }}>
-        Cost tracking only covers stories generated after this shipped — no token/image/character
+        Cost tracking only covers stories generated after this shipped. No token/image/character
         usage was logged before, and none of that historical data still exists, so past stories
         can&apos;t be retroactively priced. Numbers below reflect real usage as it accumulates going forward.
       </div>
@@ -2686,16 +2686,16 @@ function CostTab({ isAdmin }: { isAdmin: boolean }) {
                 </thead>
                 <tbody>
                   {dashboard.recent.length === 0 ? (
-                    <tr><td style={TD_STYLE} colSpan={6}>No cost data yet — will populate as new stories are generated.</td></tr>
+                    <tr><td style={TD_STYLE} colSpan={6}>No cost data yet: will populate as new stories are generated.</td></tr>
                   ) : (
                     dashboard.recent.map((s) => (
                       <tr key={s.storyId}>
                         <td style={TD_STYLE}>{s.title}</td>
                         <td style={TD_STYLE}>{s.length}</td>
-                        <td style={TD_STYLE}>{s.textInputTokens ?? "—"} / {s.textOutputTokens ?? "—"}</td>
-                        <td style={TD_STYLE}>{s.imageGenerationCalls ?? "—"}</td>
-                        <td style={TD_STYLE}>{s.audioCharactersUsed ?? "—"}</td>
-                        <td style={{ ...TD_STYLE, fontWeight: 700 }}>{s.estimatedCostUSD != null ? usdFmt(s.estimatedCostUSD) : "—"}</td>
+                        <td style={TD_STYLE}>{s.textInputTokens ?? "-"} / {s.textOutputTokens ?? "-"}</td>
+                        <td style={TD_STYLE}>{s.imageGenerationCalls ?? "-"}</td>
+                        <td style={TD_STYLE}>{s.audioCharactersUsed ?? "-"}</td>
+                        <td style={{ ...TD_STYLE, fontWeight: 700 }}>{s.estimatedCostUSD != null ? usdFmt(s.estimatedCostUSD) : "-"}</td>
                       </tr>
                     ))
                   )}
@@ -2878,7 +2878,7 @@ function StingsTab({ isAdmin }: { isAdmin: boolean }) {
       ) : stings.length === 0 ? (
         <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", borderRadius: "1rem", padding: "48px 24px", textAlign: "center" }}>
           <span style={{ fontSize: "2rem" }}>🎵</span>
-          <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, color: "rgba(45,45,45,0.5)", margin: "8px 0 0" }}>No stings yet — add one above</p>
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, color: "rgba(45,45,45,0.5)", margin: "8px 0 0" }}>No stings yet: add one above</p>
         </div>
       ) : (
         <div style={{ overflowX: "auto" }}>

@@ -103,7 +103,7 @@ async function generateThumbnail(
     const i = new Image();
     i.crossOrigin = "anonymous";
     i.onload = () => res(i);
-    i.onerror = () => rej(new Error("Scene image failed to load — check browser console for CORS errors"));
+    i.onerror = () => rej(new Error("Scene image failed to load: check browser console for CORS errors"));
     i.src = sceneImageUrl;
   });
 
@@ -179,7 +179,7 @@ async function generateThumbnail(
   // Wrap toBlob in a Promise so errors surface instead of silently failing
   await new Promise<void>((resolve, reject) => {
     canvas.toBlob(blob => {
-      if (!blob) { reject(new Error("Canvas toBlob returned null — canvas may be tainted")); return; }
+      if (!blob) { reject(new Error("Canvas toBlob returned null: canvas may be tainted")); return; }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -854,7 +854,7 @@ export function SocialMediaTab({ isAdmin }: { isAdmin: boolean }) {
         meta?.thumbnailHook || "AN AMAZING ADVENTURE! ✨"
       );
     } catch (err: any) {
-      alert("Thumbnail generation failed: " + (err?.message || err?.toString() || "Image could not be loaded — check browser console"));
+      alert("Thumbnail generation failed: " + (err?.message || err?.toString() || "Image could not be loaded, check browser console"));
     }
   }
 
@@ -883,7 +883,7 @@ export function SocialMediaTab({ isAdmin }: { isAdmin: boolean }) {
           onChange={e => { setSelectedStoryId(e.target.value); }}
           style={{ padding: "10px 14px", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: "0.7rem", fontFamily: "'Nunito',sans-serif", fontSize: "0.95rem", color: "var(--lf-dark)", background: "#fff", outline: "none", cursor: "pointer" }}
         >
-          <option value="">— choose a story —</option>
+          <option value="">Choose a story</option>
           {readyStories.map(s => (
             <option key={s._id} value={s._id}>
               {s.title || "(untitled)"} · {s.params?.childName || "?"} · {s.params?.language || "English"}
@@ -989,10 +989,10 @@ export function SocialMediaTab({ isAdmin }: { isAdmin: boolean }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: "0.9rem", color: "var(--lf-dark)", margin: "0 0 2px" }}>
-                  End Card Image <span style={{ fontWeight: 400, color: "rgba(45,45,45,0.45)", fontSize: "0.82rem" }}>(optional — 1280×720)</span>
+                  End Card Image <span style={{ fontWeight: 400, color: "rgba(45,45,45,0.45)", fontSize: "0.82rem" }}>(optional, 1280×720)</span>
                 </p>
                 <p style={{ fontFamily: "'Nunito',sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.45)", margin: 0 }}>
-                  {endCardStorageId ? "✅ Uploaded — shown at end of every video" : "No end card — auto-generated branded card will be used"}
+                  {endCardStorageId ? "✅ Uploaded: shown at end of every video" : "No end card: auto-generated branded card will be used"}
                 </p>
               </div>
               <button
@@ -1009,10 +1009,10 @@ export function SocialMediaTab({ isAdmin }: { isAdmin: boolean }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: "0.9rem", color: "var(--lf-dark)", margin: "0 0 2px" }}>
-                  Background Music <span style={{ fontWeight: 400, color: "rgba(45,45,45,0.45)", fontSize: "0.82rem" }}>(optional — MP3/AAC, loops automatically)</span>
+                  Background Music <span style={{ fontWeight: 400, color: "rgba(45,45,45,0.45)", fontSize: "0.82rem" }}>(optional, MP3/AAC, loops automatically)</span>
                 </p>
                 <p style={{ fontFamily: "'Nunito',sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.45)", margin: 0 }}>
-                  {bgMusicUrlFromQuery || bgMusicLocalUrl ? "✅ Background music set — mixed at 22% volume under narration" : "No background music — video will have narration audio only"}
+                  {bgMusicUrlFromQuery || bgMusicLocalUrl ? "✅ Background music set: mixed at 22% volume under narration" : "No background music: video will have narration audio only"}
                 </p>
               </div>
               <button
@@ -1046,7 +1046,7 @@ export function SocialMediaTab({ isAdmin }: { isAdmin: boolean }) {
                   <div style={{ height: "100%", borderRadius: 999, background: "var(--lf-teal)", width: `${videoProgress}%`, transition: "width 0.3s ease" }} />
                 </div>
                 <p style={{ fontFamily: "'Nunito',sans-serif", fontSize: "0.8rem", color: "rgba(45,45,45,0.4)", margin: 0 }}>
-                  ⏱️ Recording in real-time — keep this tab open. A 2.5-min story takes ~2.5 min to record.
+                  ⏱️ Recording in real-time. Keep this tab open. A 2.5-min story takes ~2.5 min to record.
                 </p>
               </div>
             )}
@@ -1103,7 +1103,7 @@ export function SocialMediaTab({ isAdmin }: { isAdmin: boolean }) {
             <span style={{ fontSize: "1.4rem" }}>🚀</span>
             <div>
               <p style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: "0.9rem", color: "var(--lf-teal)", margin: 0 }}>
-                YouTube Auto-Publish — Coming in Phase 2
+                YouTube Auto-Publish: Coming in Phase 2
               </p>
               <p style={{ fontFamily: "'Nunito',sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.5)", margin: "2px 0 0" }}>
                 One-click upload directly to your YouTube channel using OAuth. Approve content → published automatically.

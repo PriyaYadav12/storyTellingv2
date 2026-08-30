@@ -181,6 +181,7 @@ Part 1 — Title
 
 Part 2 — Story body
   Narration: plain text, simple past tense.
+  Punctuation: never use an em dash (—) anywhere in the title or story body. Use a comma, period, or "and" instead.
   Dialogue: always on its own separate line, one character per line only.
     Allowed speaker labels: Lalli: | Fafa: | {ChildName}:
     A narration line must never contain dialogue.

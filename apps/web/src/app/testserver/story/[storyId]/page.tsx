@@ -203,7 +203,7 @@ export default function WatchStoryScreen() {
                   onClick={() => answerQuickCheck(null)}
                   style={{ marginTop: 8, background: "none", border: "none", color: "rgba(14,10,31,0.4)", fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
                 >
-                  Skip — I&apos;ll ask again after the story
+                  Skip, I&apos;ll ask again after the story
                 </button>
               </>
             ) : (

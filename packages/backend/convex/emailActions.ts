@@ -108,7 +108,7 @@ export const sendWelcomeEmail = internalAction({
           </div>
 
           <p style="color:#888;font-size:13px;line-height:1.6;margin:0">
-            Your account starts with <strong>200 free credits</strong> — enough for 2 stories to start. Short stories cost 80 credits, longer ones up to 150. Happy storytelling! 🌙
+            Your account starts with <strong>200 free credits</strong>, enough for 2 stories to start. Short stories cost 80 credits, longer ones up to 150. Happy storytelling! 🌙
           </p>
         </div>
         ${FOOTER}
@@ -119,7 +119,7 @@ export const sendWelcomeEmail = internalAction({
     try {
       await sendEmail(resendKey, {
         to: [email],
-        subject: "Welcome to Lalli Fafa — your child's story journey begins 🌙",
+        subject: "Welcome to Lalli Fafa: your child's story journey begins 🌙",
         html,
         text,
       });
@@ -148,7 +148,7 @@ export const sendCreditAddedEmail = internalAction({
             ✨ You've got more stories!
           </h2>
           <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px">
-            Great news — <strong>${credits} credits</strong> have just been added to your Lalli Fafa account.${note ? `<br/><br/><em style="color:#777">Note from the team: ${note}</em>` : ""}
+            Great news, <strong>${credits} credits</strong> have just been added to your Lalli Fafa account.${note ? `<br/><br/><em style="color:#777">Note from the team: ${note}</em>` : ""}
           </p>
 
           <!-- Balance card -->
@@ -226,11 +226,11 @@ export const sendReengagementIfNeeded = internalAction({
         ${HEADER}
         <div style="padding:40px 32px">
           <h2 style="color:#1a1a2e;font-size:24px;font-weight:800;margin:0 0 8px">
-            Hi ${first} — your first story is waiting! ✨
+            Hi ${first}, your first story is waiting! ✨
           </h2>
           <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px">
             You created your Lalli Fafa account an hour ago but haven't set up your child's profile yet.
-            It only takes 2 minutes — and your <strong>200 free credits</strong> are ready and waiting.
+            It only takes 2 minutes, and your <strong>200 free credits</strong> are ready and waiting.
           </p>
 
           <!-- Story preview card -->
@@ -248,7 +248,7 @@ export const sendReengagementIfNeeded = internalAction({
                   <div style="width:28px;height:28px;border-radius:50%;background:#f9c700;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#1a1a2e;flex-shrink:0">1</div>
                   <div>
                     <div style="font-weight:800;color:#1a1a2e;font-size:14px;margin-bottom:2px">Tell us about your child</div>
-                    <div style="color:#666;font-size:13px">Name, age, favourite colour — they become the hero</div>
+                    <div style="color:#666;font-size:13px">Name, age, favourite colour: they become the hero</div>
                   </div>
                 </div>
               </td>
@@ -259,7 +259,7 @@ export const sendReengagementIfNeeded = internalAction({
                   <div style="width:28px;height:28px;border-radius:50%;background:#4ecdc4;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#1a1a2e;flex-shrink:0">2</div>
                   <div>
                     <div style="font-weight:800;color:#1a1a2e;font-size:14px;margin-bottom:2px">Pick a theme</div>
-                    <div style="color:#666;font-size:13px">Adventure, bedtime, silly, moral lessons — your choice</div>
+                    <div style="color:#666;font-size:13px">Adventure, bedtime, silly, moral lessons: your choice</div>
                   </div>
                 </div>
               </td>
@@ -281,7 +281,7 @@ export const sendReengagementIfNeeded = internalAction({
           <div style="text-align:center;margin-bottom:24px">
             <a href="https://www.lallifafa.com/onboarding"
                style="display:inline-block;background:linear-gradient(135deg,#f9c700,#ffab00);color:#1a1a2e;text-decoration:none;font-weight:800;font-size:15px;padding:16px 40px;border-radius:50px;box-shadow:0 4px 20px rgba(249,199,0,0.35)">
-              ✨ Finish setup — takes 2 minutes →
+              ✨ Finish setup: takes 2 minutes →
             </a>
           </div>
 
@@ -293,7 +293,7 @@ export const sendReengagementIfNeeded = internalAction({
         ${FOOTER}
       </div>`;
 
-    const text = `Hi ${first}!\n\nYou created your Lalli Fafa account an hour ago but haven't set up your child's profile yet.\n\nIt only takes 2 minutes — and your 200 free credits are ready and waiting.\n\nFinish setup at: https://www.lallifafa.com/onboarding\n\nNo credit card needed. Your credits never expire.\n\n— The Lalli Fafa team`;
+    const text = `Hi ${first}!\n\nYou created your Lalli Fafa account an hour ago but haven't set up your child's profile yet.\n\nIt only takes 2 minutes, and your 200 free credits are ready and waiting.\n\nFinish setup at: https://www.lallifafa.com/onboarding\n\nNo credit card needed. Your credits never expire.\n\nThe Lalli Fafa team`;
 
     try {
       await sendEmail(resendKey, {

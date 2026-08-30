@@ -112,7 +112,7 @@ export const sendReportEmail = action({
         (t) => `<tr>
           <td style="padding:6px 0;color:#555;font-size:13px">${t.label}</td>
           <td style="padding:6px 0;text-align:right;font-weight:800;color:#1a1a2e">
-            ${t.thisWeek === null ? "—" : `${t.thisWeek}/10`}
+            ${t.thisWeek === null ? "No data" : `${t.thisWeek}/10`}
             ${t.lastWeek !== null && t.thisWeek !== null ? `<span style="color:#999;font-weight:400;font-size:12px"> (was ${t.lastWeek})</span>` : ""}
           </td>
         </tr>`
@@ -136,7 +136,7 @@ export const sendReportEmail = action({
           </p>
         </div>
       </div>`;
-    const text = `${report.childName}'s week with Lalli and Fafa — ${report.rangeLabel}\n\n` +
+    const text = `${report.childName}'s week with Lalli and Fafa: ${report.rangeLabel}\n\n` +
       report.trend.map((t) => `${t.label}: ${t.thisWeek === null ? "no data" : `${t.thisWeek}/10`}`).join("\n") +
       `\n\nTry this together: ${report.tip}`;
 

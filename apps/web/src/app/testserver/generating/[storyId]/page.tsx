@@ -36,7 +36,7 @@ export default function GeneratingScreen() {
   const failed = story?.status === "error";
   const statusLine =
     failed ? "That one didn't come out right."
-      : elapsed > 90 ? "This one's taking a little longer — hang tight!"
+      : elapsed > 90 ? "This one's taking a little longer, hang tight!"
       : "Lalli and Fafa are picking today's adventure…";
 
   return (
@@ -48,7 +48,7 @@ export default function GeneratingScreen() {
 
       {story && (
         <div style={{ position: "relative", background: "#fff", borderRadius: 999, padding: "8px 18px", border: "1px solid rgba(14,10,31,0.08)", fontFamily: "'Nunito', sans-serif", fontSize: 12.5, color: "var(--lf-dark)", fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-          For {story.params.childName ?? "your child"} · {story.params.lesson ?? "—"} · {story.params.length ?? "medium"}
+          For {story.params.childName ?? "your child"} · {story.params.lesson ?? "a surprise"} · {story.params.length ?? "medium"}
         </div>
       )}
 

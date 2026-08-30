@@ -10,7 +10,7 @@ const BASE = "https://www.lallifafa.com";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Lalli Fafa is an AI-powered personalised storytelling platform for children, made in India — bringing your child into magical, bilingual (English & Hindi) bedtime stories as the hero.",
+    "Lalli Fafa is an AI-powered personalised storytelling platform for children, made in India, bringing your child into magical, bilingual (English & Hindi) bedtime stories as the hero.",
   alternates: { canonical: `${BASE}/about` },
   openGraph: {
     title: "About Lalli Fafa",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
         url: `${BASE}/opengraph-image`,
         width: 1200,
         height: 630,
-        alt: "About Lalli Fafa — our mission and values",
+        alt: "About Lalli Fafa: our mission and values",
       },
     ],
   },
@@ -31,35 +31,35 @@ export const metadata: Metadata = {
 const faqItems = [
   {
     q: "Who is Lalli?",
-    a: "Lalli is a six-year-old girl with a big heart and an even bigger sense of adventure. She is Fafa's elder sister — the one who leads the way, keeps things (mostly) in order, and finds magic in the tiniest corners of everyday life. You will recognise her by her dark brown hair in two playful ponytails, her cheerful dresses with star and flower prints, and the little blue sling bag she carries everywhere — packed with crayons, shiny pebbles, and whatever she has decided is a magical find that day.",
+    a: "Lalli is a six-year-old girl with a big heart and an even bigger sense of adventure. She is Fafa's elder sister, the one who leads the way, keeps things (mostly) in order, and finds magic in the tiniest corners of everyday life. You will recognise her by her dark brown hair in two playful ponytails, her cheerful dresses with star and flower prints, and the little blue sling bag she carries everywhere, packed with crayons, shiny pebbles, and whatever she has decided is a magical find that day.",
   },
   {
     q: "Who is Fafa?",
-    a: "Fafa is three years old, Lalli's little brother, and the cause of at least half the adventures they go on — usually by accident. He is curious, bouncy, and wonderfully clumsy. He once tried to wash his shoes in the teapot. He asks questions like why do stars twinkle and whether clouds can tickle. He finds something magical in almost everything he looks at, and his big round eyes and chubby-cheeked grin are impossible to say no to.",
+    a: "Fafa is three years old, Lalli's little brother, and the cause of at least half the adventures they go on, usually by accident. He is curious, bouncy, and wonderfully clumsy. He once tried to wash his shoes in the teapot. He asks questions like why do stars twinkle and whether clouds can tickle. He finds something magical in almost everything he looks at, and his big round eyes and chubby-cheeked grin are impossible to say no to.",
   },
   {
     q: "Are Lalli and Fafa siblings?",
-    a: "Yes! Lalli is the elder sister at six, and Fafa is her three-year-old little brother. Their sibling bond is the emotional heart of every story — Lalli is protective and a little bossy, Fafa is chaotic and endlessly loveable, and together they balance each other out perfectly. They argue sometimes (mostly about whether to follow the path or chase the butterfly), but they always find their way back to each other.",
+    a: "Yes! Lalli is the elder sister at six, and Fafa is her three-year-old little brother. Their sibling bond is the emotional heart of every story: Lalli is protective and a little bossy, Fafa is chaotic and endlessly loveable, and together they balance each other out perfectly. They argue sometimes (mostly about whether to follow the path or chase the butterfly), but they always find their way back to each other.",
   },
   {
     q: "How old are Lalli and Fafa?",
-    a: "Lalli is around six years old — old enough to lead the way and explain things to Fafa, young enough to still believe a shiny pebble might be magical. Fafa is three — at that perfect age where everything is a discovery and nothing is too strange to investigate. The three-year gap between them is what creates the warmth and the comedy of their adventures.",
+    a: "Lalli is around six years old, old enough to lead the way and explain things to Fafa, young enough to still believe a shiny pebble might be magical. Fafa is three, at that perfect age where everything is a discovery and nothing is too strange to investigate. The three-year gap between them is what creates the warmth and the comedy of their adventures.",
   },
   {
     q: "What is Lalli like as a big sister?",
-    a: "Lalli is the kind of big sister who holds your hand in the scary part, rolls her eyes when you trip over your own feet, and then quietly makes sure you are okay. She is responsible, brave, and a natural leader — but she can be a little bossy when she thinks she knows best (which is most of the time). She teaches Fafa things in her very serious teacher voice, collects leaves and buttons as magical tools, and explains the world through the most vivid metaphors. She is never mean — just wonderfully, warmly certain that she is right.",
+    a: "Lalli is the kind of big sister who holds your hand in the scary part, rolls her eyes when you trip over your own feet, and then quietly makes sure you are okay. She is responsible, brave, and a natural leader, but she can be a little bossy when she thinks she knows best (which is most of the time). She teaches Fafa things in her very serious teacher voice, collects leaves and buttons as magical tools, and explains the world through the most vivid metaphors. She is never mean, just wonderfully, warmly certain that she is right.",
   },
   {
     q: "What is Fafa like as a little brother?",
-    a: "Fafa is the kind of little brother who accidentally starts the adventure, then has no idea that is what just happened. He pulls the mysterious rope, opens the door nobody else noticed, and chases the butterfly straight into the enchanted forest. His mistakes are never mean — they are funny, innocent, and full of heart. He cries when he is lost and cheers up the moment Lalli gives him a hug. Younger children especially love Fafa because they see themselves in him — small, curious, and convinced that everything just might be a little bit magical.",
+    a: "Fafa is the kind of little brother who accidentally starts the adventure, then has no idea that is what just happened. He pulls the mysterious rope, opens the door nobody else noticed, and chases the butterfly straight into the enchanted forest. His mistakes are never mean. They are funny, innocent, and full of heart. He cries when he is lost and cheers up the moment Lalli gives him a hug. Younger children especially love Fafa because they see themselves in him: small, curious, and convinced that everything just might be a little bit magical.",
   },
   {
     q: "What kind of adventures do Lalli and Fafa go on?",
-    a: "Fafa usually starts them — by finding a glowing pebble, following a talking bird, or accidentally sitting on a magic button. Lalli figures out what to do next. Their adventures take them to enchanted forests, rainy-day forts, busy festival nights, quiet grandparent kitchens, and worlds full of giggling stars. Every story carries a gentle lesson — about kindness, curiosity, courage, or honesty — woven naturally into the adventure, never announced as a lesson.",
+    a: "Fafa usually starts them: by finding a glowing pebble, following a talking bird, or accidentally sitting on a magic button. Lalli figures out what to do next. Their adventures take them to enchanted forests, rainy-day forts, busy festival nights, quiet grandparent kitchens, and worlds full of giggling stars. Every story carries a gentle lesson (about kindness, curiosity, courage, or honesty) woven naturally into the adventure, never announced as a lesson.",
   },
   {
     q: "Why does the child appear in every Lalli and Fafa story?",
-    a: "Because Lalli and Fafa's world is built to be joined. Every story begins the moment a real child steps into it alongside them. The child is not a side character watching from the edges — they are in the middle of the adventure, the one Lalli and Fafa turn to when things get tricky. Lalli always makes sure to highlight what makes each child uniquely wonderful. That is just how she is.",
+    a: "Because Lalli and Fafa's world is built to be joined. Every story begins the moment a real child steps into it alongside them. The child is not a side character watching from the edges. They are in the middle of the adventure, the one Lalli and Fafa turn to when things get tricky. Lalli always makes sure to highlight what makes each child uniquely wonderful. That is just how she is.",
   },
 ];
 
@@ -70,7 +70,7 @@ const values = [
     bg: "rgba(255,87,34,0.08)",
     title: "Every child is the hero",
     body:
-      "Not a generic character with their name slapped on — a story genuinely built around who your child is, what they love, and what they're learning.",
+      "Not a generic character with their name slapped on: a story genuinely built around who your child is, what they love, and what they're learning.",
   },
   {
     icon: Languages,
@@ -78,7 +78,7 @@ const values = [
     bg: "rgba(124,77,255,0.08)",
     title: "Bilingual from day one",
     body:
-      "English and Hindi aren't an afterthought. Both are first-class — narrated with care, not just translated subtitles.",
+      "English and Hindi aren't an afterthought. Both are first-class: narrated with care, not just translated subtitles.",
   },
   {
     icon: ShieldCheck,
@@ -94,7 +94,7 @@ const values = [
     bg: "rgba(255,193,7,0.12)",
     title: "Made for Indian families",
     body:
-      "Themes, values, festivals, and characters that feel familiar — alongside the universal magic every child responds to.",
+      "Themes, values, festivals, and characters that feel familiar, alongside the universal magic every child responds to.",
   },
 ];
 
@@ -119,13 +119,13 @@ export default function AboutPage() {
                 Hi, we&apos;re Lalli &amp; Fafa.
               </h1>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1rem", color: "rgba(45,45,45,0.5)", lineHeight: 1.7, maxWidth: 480, fontStyle: "italic" }}>
-                Lalli Fafa is a personalised children&apos;s storytelling platform for Indian families — generating fully illustrated, narrated bedtime stories in English and Hindi, with your child as the hero alongside Lalli (age 6) and Fafa (age 3), her younger brother.
+                Lalli Fafa is a personalised children&apos;s storytelling platform for Indian families: generating fully illustrated, narrated bedtime stories in English and Hindi, with your child as the hero alongside Lalli (age 6) and Fafa (age 3), her younger brother.
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.8, maxWidth: 480 }}>
-                We started with one simple belief: every child deserves to hear stories where <strong>they</strong> are the one who&apos;s brave, kind, curious, and clever — told in a voice they trust, in the languages they grow up speaking.
+                We started with one simple belief: every child deserves to hear stories where <strong>they</strong> are the one who&apos;s brave, kind, curious, and clever, told in a voice they trust, in the languages they grow up speaking.
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.8, maxWidth: 480 }}>
-                So we built a platform that takes a few details about your child and turns them into a fully illustrated, narrated adventure — in English or Hindi — featuring two characters who are quickly becoming family favourites: us.
+                So we built a platform that takes a few details about your child and turns them into a fully illustrated, narrated adventure, in English or Hindi, featuring two characters who are quickly becoming family favourites: us.
               </p>
               <div className="flex gap-3 mt-2">
                 <Link href="/generate" className="btn-primary">
@@ -164,10 +164,10 @@ export default function AboutPage() {
                   Our mission
                 </h2>
                 <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.85 }}>
-                  Bedtime is one of the few moments in a child&apos;s day that&apos;s entirely about them — and we think it should feel that way. Our mission is to make personalised, high-quality storytelling accessible to every family, in the languages spoken at home, without ads, gimmicks, or screen-time guilt.
+                  Bedtime is one of the few moments in a child&apos;s day that&apos;s entirely about them, and we think it should feel that way. Our mission is to make personalised, high-quality storytelling accessible to every family, in the languages spoken at home, without ads, gimmicks, or screen-time guilt.
                 </p>
                 <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1.05rem", color: "rgba(45,45,45,0.75)", lineHeight: 1.85, marginTop: "0.9rem" }}>
-                  Every story your child generates is unique to them — built from their name, age, favourite things, and the lesson you want to gently weave in, then illustrated and narrated end-to-end by AI we&apos;ve spent a long time tuning to feel warm rather than mechanical.
+                  Every story your child generates is unique to them: built from their name, age, favourite things, and the lesson you want to gently weave in, then illustrated and narrated end-to-end by AI we&apos;ve spent a long time tuning to feel warm rather than mechanical.
                 </p>
               </div>
               <div className="flex-shrink-0" style={{ width: 260 }}>
@@ -368,10 +368,10 @@ export default function AboutPage() {
                 Founder
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.75rem" }}>
-                I&apos;m an Indian parent, and like most Indian parents, I grew up in a home where stories were everywhere — told by grandparents at night, woven into festivals, passed down without ever being written down. When my daughter Vanya was born, I wanted to give her that same feeling: a story just for her, in the languages she&apos;d grow up speaking.
+                I&apos;m an Indian parent, and like most Indian parents, I grew up in a home where stories were everywhere: told by grandparents at night, woven into festivals, passed down without ever being written down. When my daughter Vanya was born, I wanted to give her that same feeling: a story just for her, in the languages she&apos;d grow up speaking.
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85 }}>
-                What I found instead were platforms that were generic, English-only, or filled with ads and autoplay. So I built Lalli Fafa — a place where Vanya (and every child like her) could step into a story where <em>she</em> was the brave one, the clever one, the one Lalli and Fafa turned to when things got tricky. I hope it becomes part of your bedtime ritual the way I always hoped it would be for ours.
+                What I found instead were platforms that were generic, English-only, or filled with ads and autoplay. So I built Lalli Fafa: a place where Vanya (and every child like her) could step into a story where <em>she</em> was the brave one, the clever one, the one Lalli and Fafa turned to when things got tricky. I hope it becomes part of your bedtime ritual the way I always hoped it would be for ours.
               </p>
             </div>
           </div>

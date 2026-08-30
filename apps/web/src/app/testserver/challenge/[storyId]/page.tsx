@@ -297,7 +297,7 @@ function SequenceArea({
   return (
     <div>
       <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "rgba(14,10,31,0.45)", margin: "0 0 10px" }}>
-        Tap the cards in order — first to last:
+        Tap the cards in order, first to last:
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {items.map((item) => {
@@ -760,13 +760,13 @@ export default function StoryChallengeScreen() {
       {/* Feedback strip */}
       {wrongAttempts === 1 && !ack && (
         <p style={{ textAlign: "center", fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 15, color: "#b85c00", margin: "12px 0 0" }}>
-          Hmm, not quite — give it another go! 🌟
+          Hmm, not quite, give it another go! 🌟
         </p>
       )}
       {showReveal && (
         <div style={{ background: "var(--lf-peach)", borderRadius: 14, padding: "10px 14px", margin: "12px 0 0", textAlign: "center" }}>
           <p style={{ margin: 0, fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 13, color: "var(--lf-dark)" }}>
-            💡 {q.revealFraming ?? "That's a tricky one — keep exploring with Lalli and Fafa! 🌙"}
+            💡 {q.revealFraming ?? "That's a tricky one, keep exploring with Lalli and Fafa! 🌙"}
           </p>
         </div>
       )}
