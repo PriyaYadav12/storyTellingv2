@@ -125,33 +125,41 @@ function parseStoryToSpeakerLines(title: string, content: string, childName: str
   const lines = [...titleLines, ...storyOnly.split("\n").map(l => l.trim()).filter(Boolean)];
   const childLabel = (childName || "").trim().toLowerCase();
 
-  const out: Array<{ order: number; speaker: string; text: string }> = [];
+  // pauseAfter marks a genuine paragraph/scene boundary worth a breath: the
+  // last sentence of a narrator paragraph. Dialogue lines and mid-paragraph
+  // sentences never get it — a forced pause after every single sentence and
+  // every quick back-and-forth dialogue line is what made narration feel
+  // like it stalled every few seconds (see story p7t50h8ddqm8 audit: 59
+  // segments, every one padded with a breath, regardless of whether a pause
+  // made sense there).
+  const out: Array<{ order: number; speaker: string; text: string; pauseAfter: boolean }> = [];
   let orderIdx = 0;
   for (const line of lines) {
     const lower = line.toLowerCase();
 
     if (lower.startsWith("lalli:")) {
-      out.push({ order: orderIdx++, speaker: "Lalli", text: line.replace(/^lalli:/i, "").trim() });
+      out.push({ order: orderIdx++, speaker: "Lalli", text: line.replace(/^lalli:/i, "").trim(), pauseAfter: false });
     } else if (lower.startsWith("fafa:")) {
-      out.push({ order: orderIdx++, speaker: "Fafa", text: line.replace(/^fafa:/i, "").trim() });
+      out.push({ order: orderIdx++, speaker: "Fafa", text: line.replace(/^fafa:/i, "").trim(), pauseAfter: false });
     } else if (childLabel && lower.startsWith(childLabel + ":")) {
-      out.push({ order: orderIdx++, speaker: childName, text: line.slice(childName.length + 1).trim() });
+      out.push({ order: orderIdx++, speaker: childName, text: line.slice(childName.length + 1).trim(), pauseAfter: false });
     } else if (lower.startsWith("child:") || lower.startsWith("girl child:") || lower.startsWith("boy child:")) {
-      out.push({ order: orderIdx++, speaker: "Child", text: line.replace(/^(child|girl child|boy child):/i, "").trim() });
+      out.push({ order: orderIdx++, speaker: "Child", text: line.replace(/^(child|girl child|boy child):/i, "").trim(), pauseAfter: false });
     } else if (lower.startsWith("narrator:")) {
       // Strip the "Narrator:" label before TTS — otherwise ElevenLabs reads it aloud.
       const stripped = line.replace(/^narrator:\s*/i, "").trim();
       const sentences = splitToSentences(stripped);
-      for (const sentence of sentences) {
-        out.push({ order: orderIdx++, speaker: "Narrator", text: sentence });
-      }
+      sentences.forEach((sentence, i) => {
+        out.push({ order: orderIdx++, speaker: "Narrator", text: sentence, pauseAfter: i === sentences.length - 1 });
+      });
     } else {
       // Narrator: split long paragraphs into individual sentences.
       // Each sentence gets its own TTS call so the voice resets between them.
+      // Only the paragraph's last sentence is a pause boundary.
       const sentences = splitToSentences(line);
-      for (const sentence of sentences) {
-        out.push({ order: orderIdx++, speaker: "Narrator", text: sentence });
-      }
+      sentences.forEach((sentence, i) => {
+        out.push({ order: orderIdx++, speaker: "Narrator", text: sentence, pauseAfter: i === sentences.length - 1 });
+      });
     }
   }
   return out;
@@ -199,7 +207,12 @@ function applyPronunciationFixes(text: string, childName?: string, childPhonetic
   return result;
 }
 
-async function ttsArrayBuffer(voiceId: string, text: string, language: string): Promise<ArrayBuffer> {
+async function ttsArrayBuffer(
+  voiceId: string,
+  text: string,
+  language: string,
+  context?: { previousText?: string; nextText?: string }
+): Promise<ArrayBuffer> {
   const apiKey = process.env.ELEVEN_LABS_API_KEY;
   if (!apiKey) throw new Error("ELEVEN_LABS_API_KEY env var is not set in Convex dashboard");
 
@@ -215,8 +228,26 @@ async function ttsArrayBuffer(voiceId: string, text: string, language: string): 
       similarity_boost: 0.80,
       style: 0.10,
       use_speaker_boost: true,
-      speed: 0.82,
+      // 0.85, not the default 1.0 — deliberately slower for children's
+      // storytelling pacing (tuning history: 0.9 → 0.85 → 0.82). Reverted
+      // the last 0.85 → 0.82 step here: that step's own commit documented
+      // it as a minor pronunciation-clarity tweak expected to add only
+      // ~10-15s per story, not a tempo problem on its own — but stacked on
+      // top of a forced pause after every one of 59 segments (see
+      // parseStoryToSpeakerLines), the extra 3% slowdown compounded the
+      // "everything drags" feeling. Keeping the original deliberate 0.85
+      // slow-down, dropping only the undocumented-impact second step.
+      speed: 0.85,
     },
+    // Request-stitching context: without this, every one of ~30-60 TTS
+    // calls per story is synthesized as a fully isolated utterance, each
+    // with its own independent lead-in/lead-out silence baked in by the
+    // model — on top of whatever pause text is actually present. Passing
+    // the adjacent segments' text smooths prosody/pacing across the cut,
+    // most valuable when previous/next is the same voice (consecutive
+    // narrator sentences), harmless otherwise.
+    ...(context?.previousText ? { previous_text: context.previousText } : {}),
+    ...(context?.nextText ? { next_text: context.nextText } : {}),
   };
   // Do NOT set language_code for eleven_multilingual_v2 — the model auto-detects language.
   // Setting it (e.g. "hi" for Hindi) forces phonetic rules onto all text including English
@@ -315,21 +346,30 @@ export async function generateMergedNarration(
   const lines = parseStoryToSpeakerLines(title, content, childName);
   console.log(`[Narration] ${lines.length} lines to TTS. Language: ${language}. First 3:`, lines.slice(0, 3).map(l => `${l.speaker}: ${l.text.slice(0, 40)}`));
 
+  // Precompute final per-segment text up front (pronunciation fixes + pause
+  // suffix only at genuine paragraph boundaries) so adjacent segments' final
+  // text is available as previous_text/next_text context for every call,
+  // regardless of concurrency-limited completion order.
+  const isEnglish = !isMultilingualLanguage(language);
+  const pauseSuffix = isEnglish ? " ..." : " ।";
+  const prepared = lines.map((l) => {
+    const fixedText = applyPronunciationFixes(l.text, childName, childPhoneticName);
+    return { ...l, fullText: l.pauseAfter ? fixedText + pauseSuffix : fixedText };
+  });
+
   // ElevenLabs Starter plan allows 3 concurrent streams. Upgrading beyond 3 requires
   // a plan change first — do not increase this number without confirming the active plan tier.
-  const isEnglish = !isMultilingualLanguage(language);
-  const results = await mapWithConcurrencyLimit(lines, 3, async (l, _idx) => {
+  const results = await mapWithConcurrencyLimit(prepared, 3, async (l, idx) => {
     const voiceId = pickVoiceForSpeaker(voiceMap, l.speaker, childName, childGender, language);
     if (!voiceId) {
       console.error(`[TTS] No voice ID for speaker: ${l.speaker}`);
       return null;
     }
-    // Pronunciation fixes apply to all languages (names stay in English in Hindi text)
-    const fixedText = applyPronunciationFixes(l.text, childName, childPhoneticName);
-    const pauseSuffix = isEnglish ? " ..." : " ।";
-    const fullText = fixedText + pauseSuffix;
-    const ab = await ttsArrayBuffer(voiceId, fullText, language);
-    return { order: l.order, ab, chars: fullText.length };
+    const ab = await ttsArrayBuffer(voiceId, l.fullText, language, {
+      previousText: prepared[idx - 1]?.fullText,
+      nextText: prepared[idx + 1]?.fullText,
+    });
+    return { order: l.order, ab, chars: l.fullText.length };
   });
 
   // Filter out failed lines and merge in order
