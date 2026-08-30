@@ -390,14 +390,35 @@ export default function AboutPage() {
               <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.1rem", color: "var(--lf-dark)", marginBottom: "0.15rem" }}>
                 Raj Kothari
               </p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", fontWeight: 700, color: "var(--lf-teal)", marginBottom: "0.9rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", fontWeight: 700, color: "var(--lf-teal)", marginBottom: "0.4rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 Founder
+              </p>
+              <p
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                  color: "#b8860b",
+                  background: "rgba(249,199,0,0.12)",
+                  border: "1px solid rgba(249,199,0,0.3)",
+                  borderRadius: 999,
+                  padding: "0.25rem 0.7rem",
+                  marginBottom: "0.9rem",
+                }}
+              >
+                🏆 Icon of North Bengal — Dainik Jagran
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.75rem" }}>
                 I&apos;m an Indian parent, and like most Indian parents, I grew up in a home where stories were everywhere: told by grandparents at night, woven into festivals, passed down without ever being written down. When my daughter Vanya was born, I wanted to give her that same feeling: a story just for her, in the languages she&apos;d grow up speaking.
               </p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.9rem" }}>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.75rem" }}>
                 What I found instead were platforms that were generic, English-only, or filled with ads and autoplay. So I built Lalli Fafa: a place where Vanya (and every child like her) could step into a story where <em>she</em> was the brave one, the clever one, the one Lalli and Fafa turned to when things got tricky. I hope it becomes part of your bedtime ritual the way I always hoped it would be for ours.
+              </p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.97rem", color: "rgba(45,45,45,0.72)", lineHeight: 1.85, marginBottom: "0.9rem" }}>
+                I was recognised as an &quot;Icon of North Bengal&quot; by Dainik Jagran for my contribution to entrepreneurship in the region.
               </p>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.85rem", color: "rgba(45,45,45,0.55)", lineHeight: 1.7, paddingTop: "0.75rem", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                 Our approach to storytelling and child development is reviewed against published research, including findings from the{" "}
