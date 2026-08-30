@@ -143,7 +143,7 @@ function GrowthContent() {
                 By pillar
               </p>
               {PILLAR_ORDER.map((p) => {
-                const bucket = latest.perPillar.find((b) => b.pillar === p);
+                const bucket = latest.perPillar.find((b: { pillar: string; correct: number; total: number }) => b.pillar === p);
                 const correct = bucket?.correct ?? 0;
                 const total = bucket?.total ?? 0;
                 return (

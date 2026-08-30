@@ -1376,9 +1376,9 @@ function StoryViewer({
                 action rule), when this account is in the staged rollout.
                 Continue/New Story stay available, secondary treatment, below. */}
             <div className="w-full flex flex-col gap-3">
-              {challengeEnabled && story?._id && (
+              {challengeEnabled && (
                 <Link
-                  href={`/testserver/challenge/${story._id}`}
+                  href={`/testserver/challenge/${storyId}`}
                   className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] active:scale-95"
                   style={{ background: "linear-gradient(135deg,var(--lf-sunshine),#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 4px 20px rgba(249,199,0,0.4)" }}
                 >
