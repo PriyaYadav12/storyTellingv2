@@ -220,7 +220,7 @@ const jsonLd = {
       name: "Lalli Fafa",
       alternateName: "LalliFafa",
       url: BASE,
-      description: "AI-powered personalised children's stories in English and Hindi, where every child becomes the hero alongside Lalli and Fafa.",
+      description: "Personalised children's stories in English and Hindi, where every child becomes the hero alongside Lalli and Fafa.",
       telephone: "+919434636830",
       email: "hello@lallifafa.com",
       foundingDate: "2024",

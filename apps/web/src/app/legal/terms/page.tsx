@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { ObfuscatedEmail } from "@/components/shared/ObfuscatedEmail";
 
 export const metadata: Metadata = {
   title: "Terms of Service — Lalli Fafa",
@@ -108,7 +109,7 @@ export default function TermsPage() {
                 <li>Generated stories will meet specific educational or developmental standards</li>
                 <li>AI-generated content will always be perfectly accurate or appropriate</li>
               </ul>
-              <p>We review our AI prompts and safety filters regularly, but AI outputs can be unpredictable. If you encounter any inappropriate content, please contact us immediately at <a href="mailto:hello@lallifafa.com" style={{ color: "var(--lf-teal)" }}>hello@lallifafa.com</a>.</p>
+              <p>We review our AI prompts and safety filters regularly, but AI outputs can be unpredictable. If you encounter any inappropriate content, please contact us immediately at <ObfuscatedEmail style={{ color: "var(--lf-teal)" }} />.</p>
             </Section>
 
             <Section title="9. Limitation of Liability">
@@ -129,7 +130,7 @@ export default function TermsPage() {
               <p>If you have any questions about these Terms, please contact us at:</p>
               <p>
                 <strong>Lalli Fafa</strong><br />
-                Email: <a href="mailto:hello@lallifafa.com" style={{ color: "var(--lf-teal)" }}>hello@lallifafa.com</a>
+                Email: <ObfuscatedEmail style={{ color: "var(--lf-teal)" }} />
               </p>
             </Section>
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { ObfuscatedEmail } from "@/components/shared/ObfuscatedEmail";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Lalli Fafa",
@@ -44,7 +45,7 @@ export default function PrivacyPage() {
 
             <Section title="1. Who We Are">
               <p>Lalli Fafa (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) operates the storytelling platform at <strong>www.lallifafa.com</strong>. We are committed to protecting the privacy of parents, guardians, and families who use our Service.</p>
-              <p>If you have any questions about this policy, please contact us at <a href="mailto:hello@lallifafa.com" style={{ color: "var(--lf-teal)" }}>hello@lallifafa.com</a>.</p>
+              <p>If you have any questions about this policy, please contact us at <ObfuscatedEmail style={{ color: "var(--lf-teal)" }} />.</p>
             </Section>
 
             <Section title="2. Information We Collect">
@@ -123,7 +124,7 @@ export default function PrivacyPage() {
                 <li><strong>Withdraw consent</strong> for optional communications at any time</li>
                 <li><strong>Data portability</strong> — request a copy of your data in a machine-readable format</li>
               </ul>
-              <p>To exercise any of these rights, email us at <a href="mailto:hello@lallifafa.com" style={{ color: "var(--lf-teal)" }}>hello@lallifafa.com</a>. We will respond within 30 days.</p>
+              <p>To exercise any of these rights, email us at <ObfuscatedEmail style={{ color: "var(--lf-teal)" }} />. We will respond within 30 days.</p>
             </Section>
 
             <Section title="9. Data Retention">
@@ -139,7 +140,7 @@ export default function PrivacyPage() {
               <p>If you have questions, concerns, or complaints about this Privacy Policy or how we handle your data:</p>
               <p>
                 <strong>Lalli Fafa</strong><br />
-                Email: <a href="mailto:hello@lallifafa.com" style={{ color: "var(--lf-teal)" }}>hello@lallifafa.com</a>
+                Email: <ObfuscatedEmail style={{ color: "var(--lf-teal)" }} />
               </p>
             </Section>
 

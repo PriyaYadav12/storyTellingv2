@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, ArrowLeft, Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { ObfuscatedEmail } from "@/components/shared/ObfuscatedEmail";
 
 const faqGroups = [
   {
@@ -204,14 +205,10 @@ export default function LearnPage() {
               <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.95rem" }}>
                 We're a small team and we read every message. Reach out and we'll get back to you.
               </p>
-              <a
-                href="mailto:hello@lallifafa.com"
-                className="btn-primary"
-                style={{ fontSize: "0.95rem" }}
-              >
+              <ObfuscatedEmail className="btn-primary" style={{ fontSize: "0.95rem" }}>
                 <Sparkles size={15} />
                 Email us
-              </a>
+              </ObfuscatedEmail>
             </div>
           </div>
         </section>

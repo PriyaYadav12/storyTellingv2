@@ -1,5 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ObfuscatedEmail } from "@/components/shared/ObfuscatedEmail";
+
+const CONTACT_SENTINEL = "__contact_email__";
 
 function IconYoutube() {
   return (
@@ -49,7 +52,7 @@ const footerLinks = {
     { label: "Learn / FAQ", href: "/learn" },
     { label: "About Us", href: "/about" },
     { label: "Characters", href: "/#characters" },
-    { label: "Contact", href: "mailto:hello@lallifafa.com" },
+    { label: "Contact", href: CONTACT_SENTINEL },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/legal/privacy" },
@@ -97,16 +100,14 @@ export function SiteFooter() {
               </span>
             </Link>
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.7, maxWidth: 280 }}>
-              Personalised storytelling for growing minds. AI-powered personalised stories in English &amp; Hindi, where your child is always the hero.
+              Personalised storytelling for growing minds. Personalised stories in English &amp; Hindi, where your child is always the hero.
             </p>
             <address style={{ fontStyle: "normal", color: "rgba(255,255,255,0.4)", fontSize: 13, lineHeight: 1.6 }}>
               Siliguri, West Bengal, India<br />
               <a href="tel:+919434636830" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
                 +91 94346 36830
               </a><br />
-              <a href="mailto:hello&#64;lallifafa&#46;com" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
-                hello&#64;lallifafa&#46;com
-              </a>
+              <ObfuscatedEmail style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }} />
             </address>
             {/* Socials */}
             <div className="flex items-center gap-3 mt-2">
@@ -150,19 +151,33 @@ export function SiteFooter() {
               <ul className="flex flex-col gap-2.5">
                 {links.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      style={{
-                        color: "rgba(255,255,255,0.7)",
-                        fontSize: 14,
-                        fontWeight: 500,
-                        textDecoration: "none",
-                        transition: "color 0.15s",
-                      }}
-                      className="hover:text-white"
-                    >
-                      {link.label}
-                    </Link>
+                    {link.href === CONTACT_SENTINEL ? (
+                      <ObfuscatedEmail
+                        linkText={link.label}
+                        style={{
+                          color: "rgba(255,255,255,0.7)",
+                          fontSize: 14,
+                          fontWeight: 500,
+                          textDecoration: "none",
+                          transition: "color 0.15s",
+                        }}
+                        className="hover:text-white"
+                      />
+                    ) : (
+                      <Link
+                        href={link.href}
+                        style={{
+                          color: "rgba(255,255,255,0.7)",
+                          fontSize: 14,
+                          fontWeight: 500,
+                          textDecoration: "none",
+                          transition: "color 0.15s",
+                        }}
+                        className="hover:text-white"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { ObfuscatedEmail } from "@/components/shared/ObfuscatedEmail";
 
 const BASE = "https://www.lallifafa.com";
 
@@ -80,7 +81,7 @@ export default function RefundsPage() {
             </Section>
 
             <Section title="5. How to Request a Refund">
-              <p>Email <a href="mailto:hello@lallifafa.com" style={{ color: "var(--lf-teal)" }}>hello@lallifafa.com</a> with:</p>
+              <p>Email <ObfuscatedEmail style={{ color: "var(--lf-teal)" }} /> with:</p>
               <ul>
                 <li>The email address associated with your account</li>
                 <li>The payment date and amount (or a screenshot of the Razorpay receipt/email)</li>
@@ -97,7 +98,7 @@ export default function RefundsPage() {
               <p>If anything about a charge looks wrong, reach out before disputing it with your bank — we&apos;re usually able to sort billing issues out quickly and directly.</p>
               <p>
                 <strong>Lalli Fafa</strong><br />
-                Email: <a href="mailto:hello@lallifafa.com" style={{ color: "var(--lf-teal)" }}>hello@lallifafa.com</a>
+                Email: <ObfuscatedEmail style={{ color: "var(--lf-teal)" }} />
               </p>
             </Section>
 

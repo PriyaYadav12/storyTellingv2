@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Heart, Sparkles, ShieldCheck, Languages, ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { ObfuscatedEmail } from "@/components/shared/ObfuscatedEmail";
 
 const BASE = "https://www.lallifafa.com";
 
@@ -449,13 +450,11 @@ export default function AboutPage() {
             <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "1rem", color: "rgba(45,45,45,0.7)", lineHeight: 1.8, marginBottom: "1.5rem" }}>
               Questions, feedback, or just want to tell us your child&apos;s favourite story moment? We&apos;d genuinely love to hear it.
             </p>
-            <a
-              href="mailto:hello@lallifafa.com"
+            <ObfuscatedEmail
+              linkText="Email us →"
               className="inline-flex items-center gap-2"
               style={{ color: "var(--lf-teal)", fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "1.05rem", textDecoration: "none" }}
-            >
-              Email us →
-            </a>
+            />
           </div>
         </section>
       </main>

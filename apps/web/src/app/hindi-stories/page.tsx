@@ -10,7 +10,7 @@ const BASE = "https://www.lallifafa.com";
 export const metadata: Metadata = {
   title: "Hindi Stories for Kids — Personalised Bedtime Stories in Hindi",
   description:
-    "AI-powered personalised Hindi bedtime stories for children aged 2–10. Your child is the hero alongside Lalli & Fafa — fully narrated in natural Hindi with illustrated scenes. Free to try.",
+    "Personalised Hindi bedtime stories for children aged 2–10. Your child is the hero alongside Lalli & Fafa — fully narrated in natural Hindi with illustrated scenes. Free to try.",
   alternates: { canonical: `${BASE}/hindi-stories` },
   keywords: [
     "hindi stories for kids",
@@ -120,7 +120,7 @@ const jsonLd = {
       "@type": "WebPage",
       "@id": `${BASE}/hindi-stories`,
       name: "Hindi Stories for Kids — Personalised Bedtime Stories in Hindi",
-      description: "AI-powered personalised Hindi bedtime stories for children aged 2–10, with natural Hindi narration and illustrated scenes.",
+      description: "Personalised Hindi bedtime stories for children aged 2–10, with natural Hindi narration and illustrated scenes.",
       url: `${BASE}/hindi-stories`,
       inLanguage: ["en-IN", "hi-IN"],
       publisher: { "@type": "Organization", name: "Lalli Fafa", url: BASE },
@@ -218,7 +218,7 @@ export default function HindiStoriesPage() {
                 margin: "0 auto 2rem",
               }}
             >
-              AI-powered personalised Hindi stories for children aged 2–10. Every story features your child by name, alongside beloved characters Lalli and Fafa — fully narrated in warm, natural Hindi with illustrated scenes.
+              Personalised Hindi stories for children aged 2–10. Every story features your child by name, alongside beloved characters Lalli and Fafa — fully narrated in warm, natural Hindi with illustrated scenes.
             </p>
 
             {/* CTAs */}
