@@ -70,7 +70,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-7 lg:py-10" style={{ background: "linear-gradient(150deg, #E6FAF6 0%, #F0FFFD 100%)" }}>
+    <section className="py-4 lg:py-6" style={{ background: "linear-gradient(150deg, #E6FAF6 0%, #F0FFFD 100%)" }}>
       <div className="mx-auto px-6" style={{ maxWidth: 1200 }}>
         {/* Header */}
         <div className="text-center mb-5 flex flex-col items-center gap-2">

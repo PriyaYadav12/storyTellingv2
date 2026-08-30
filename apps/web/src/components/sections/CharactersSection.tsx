@@ -42,7 +42,7 @@ export function CharactersSection() {
     <section id="characters" style={{ background: "linear-gradient(160deg, #FFF8E7 0%, #FFE8A8 100%)" }}>
 
       {/* ── Header ── */}
-      <div className="text-center pt-7 pb-5 px-6">
+      <div className="text-center pt-4 pb-3 px-6">
         <span
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider"
           style={{ background: "rgba(255,193,7,0.15)", color: "#92680a" }}
@@ -70,7 +70,7 @@ export function CharactersSection() {
       </div>
 
       {/* ── Main: Lalli card | hero image | Fafa card ── */}
-      <div className="mx-auto px-6 pb-6" style={{ maxWidth: 1200 }}>
+      <div className="mx-auto px-6 pb-4" style={{ maxWidth: 1200 }}>
         <div className="grid md:grid-cols-[220px_1fr_220px] gap-6 items-stretch">
 
           {/* Lalli card — desktop only */}

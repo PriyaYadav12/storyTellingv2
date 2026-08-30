@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s | Lalli Fafa",
   },
   description:
-    "AI personalised kids stories in English & Hindi — your child is the hero with Lalli & Fafa. Free to start, safe, ad-free.",
+    "Personalised kids stories in English & Hindi — your child is the hero with Lalli & Fafa. Free to start, safe, ad-free.",
   keywords: [
     "personalised stories for kids",
     "ai children stories",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     siteName: "Lalli Fafa",
     title: "Lalli Fafa — Personalised Stories for Kids in English & Hindi",
     description:
-      "AI-powered personalised children's stories where your child is the hero alongside Lalli & Fafa. English & Hindi. Safe, ad-free, loved by families across India.",
+      "Personalised children's stories where your child is the hero alongside Lalli & Fafa. English & Hindi. Safe, ad-free, loved by families across India.",
     images: [
       {
         url: `${BASE}/opengraph-image`,
@@ -92,7 +92,7 @@ export const metadata: Metadata = {
     creator: "@lallifafa",
     title: "Lalli Fafa — Personalised Stories for Kids",
     description:
-      "AI-powered personalised children's stories in English & Hindi. Your child is the hero!",
+      "Personalised children's stories in English & Hindi. Your child is the hero!",
     images: [`${BASE}/opengraph-image`],
   },
 

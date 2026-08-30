@@ -28,6 +28,22 @@ export function HeroSection() {
       className="relative overflow-hidden"
       style={{ paddingTop: 76, background: "var(--lf-cream)" }}
     >
+      {/* ── Pillars ticker — the main branding statement, front and centre ── */}
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(90deg,var(--lf-teal) 0%,#00a38d 50%,var(--lf-teal) 100%)" }}>
+        <div className="flex gap-10 animate-marquee py-2.5" style={{ width: "max-content" }}>
+          {[...pillars, ...pillars, ...pillars].map((p, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-2 flex-shrink-0"
+              style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem", color: "#fff", letterSpacing: "0.01em" }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>{p.emoji}</span> {p.label}
+              <span style={{ opacity: 0.5, marginLeft: "1.5rem" }}>✦</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* Soft background gradients */}
       <div className="absolute inset-0 -z-10 pointer-events-none">
         <div
@@ -111,28 +127,11 @@ export function HeroSection() {
               }}
               className="mx-auto lg:mx-0"
             >
-              AI-powered personalised stories featuring{" "}
+              Personalised stories featuring{" "}
               <strong style={{ color: "var(--lf-dark)", fontWeight: 700 }}>Lalli &amp; Fafa</strong> — with
               beautiful narration in <strong style={{ color: "var(--lf-dark)" }}>English &amp; Hindi</strong>.
               Perfect for bedtime, screen time that matters, and growing little hearts.
             </p>
-
-            {/* 4 Pillars — named directly in the hero, not buried in the page */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-2 pt-1">
-              {pillars.map((p) => (
-                <span
-                  key={p.label}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
-                  style={{
-                    background: "#fff",
-                    color: "var(--lf-dark)",
-                    border: "1.5px solid #c9b99a",
-                  }}
-                >
-                  <span>{p.emoji}</span> {p.label}
-                </span>
-              ))}
-            </div>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-1">

@@ -9,7 +9,7 @@ export function CTASection() {
   const isLoggedIn = !!session;
 
   return (
-    <section className="py-7 lg:py-10" style={{ background: "#fff" }}>
+    <section className="py-4 lg:py-6" style={{ background: "#fff" }}>
       <div className="mx-auto px-6" style={{ maxWidth: 900 }}>
         <div
           className="relative rounded-3xl overflow-hidden p-8 lg:p-10 text-center flex flex-col items-center gap-4"

@@ -69,7 +69,7 @@ function Stars({ count }: { count: number }) {
 
 export function TestimonialsSection() {
   return (
-    <section className="py-7 lg:py-10" style={{ background: "linear-gradient(160deg, #B8F0E6 0%, #D8F8F2 100%)" }}>
+    <section className="py-4 lg:py-6" style={{ background: "linear-gradient(160deg, #B8F0E6 0%, #D8F8F2 100%)" }}>
       <div className="mx-auto px-6" style={{ maxWidth: 1200 }}>
         {/* Header */}
         <div className="text-center mb-5 flex flex-col items-center gap-2">

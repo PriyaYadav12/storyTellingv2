@@ -52,7 +52,7 @@ export function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="py-7 lg:py-10"
+      className="py-4 lg:py-6"
       style={{ background: "linear-gradient(160deg, #FFFDE8 0%, #F2FFF9 100%)" }}
     >
       <div className="mx-auto px-6" style={{ maxWidth: 1100 }}>

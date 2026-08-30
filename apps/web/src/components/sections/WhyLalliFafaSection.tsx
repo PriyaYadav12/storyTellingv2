@@ -39,7 +39,7 @@ export function WhyLalliFafaSection() {
   return (
     <section
       id="why-lalli-fafa"
-      className="py-10 lg:py-14"
+      className="py-6 lg:py-8"
       style={{ background: "linear-gradient(160deg, #fffef9 0%, #f5fff9 100%)" }}
     >
       <div className="mx-auto px-6" style={{ maxWidth: 900 }}>
@@ -47,7 +47,7 @@ export function WhyLalliFafaSection() {
         {/* ── Table of Contents ── */}
         <nav
           aria-label="Section contents"
-          className="rounded-2xl p-5 mb-10"
+          className="rounded-2xl p-5 mb-6"
           style={{ background: "rgba(0,201,167,0.06)", border: "1.5px solid rgba(0,201,167,0.18)" }}
         >
           <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.88rem", color: "rgba(14,10,31,0.5)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
@@ -77,7 +77,7 @@ export function WhyLalliFafaSection() {
         {/* ── Key Takeaways ── */}
         <div
           id="key-takeaways"
-          className="rounded-3xl p-6 mb-10"
+          className="rounded-3xl p-6 mb-6"
           style={{
             background: "linear-gradient(135deg, rgba(249,199,0,0.12) 0%, rgba(0,201,167,0.08) 100%)",
             border: "1.5px solid rgba(249,199,0,0.3)",
@@ -110,7 +110,7 @@ export function WhyLalliFafaSection() {
         </div>
 
         {/* ── Research-backed benefits ── */}
-        <div id="research-benefits" className="mb-10">
+        <div id="research-benefits" className="mb-6">
           <h2
             style={{
               fontFamily: "'Baloo 2', sans-serif",
@@ -154,7 +154,7 @@ export function WhyLalliFafaSection() {
         {/* ── Quick facts ── */}
         <div
           id="quick-facts"
-          className="rounded-2xl p-5 mb-10"
+          className="rounded-2xl p-5 mb-6"
           style={{ background: "rgba(14,10,31,0.03)", border: "1px solid rgba(14,10,31,0.08)" }}
         >
           <h3
@@ -189,7 +189,7 @@ export function WhyLalliFafaSection() {
         </div>
 
         {/* ── Comparison table ── */}
-        <div id="comparison" className="mb-10">
+        <div id="comparison" className="mb-6">
           <h2
             style={{
               fontFamily: "'Baloo 2', sans-serif",
@@ -244,7 +244,7 @@ export function WhyLalliFafaSection() {
         </div>
 
         {/* ── Glossary of key terms ── */}
-        <div id="glossary" className="mb-10">
+        <div id="glossary" className="mb-6">
           <h2
             style={{
               fontFamily: "'Baloo 2', sans-serif",
