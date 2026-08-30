@@ -84,8 +84,8 @@ export function UpgradeModal({ open, onClose, trigger, childName, lockedLength }
       <div
         className="w-full max-w-sm rounded-3xl relative overflow-hidden"
         style={{
-          background: "linear-gradient(160deg,#1a1740 0%,#0e2920 55%,#1a1040 100%)",
-          border: "1.5px solid rgba(0,201,167,0.35)",
+          background: "linear-gradient(160deg,#1a1740 0%,#231a3d 55%,#1a1040 100%)",
+          border: "1.5px solid rgba(168,85,247,0.35)",
           boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -105,7 +105,7 @@ export function UpgradeModal({ open, onClose, trigger, childName, lockedLength }
           <div
             className="absolute inset-x-0 top-0 h-36"
             style={{
-              background: "radial-gradient(ellipse at 50% 0%, rgba(0,201,167,0.18) 0%, transparent 70%)",
+              background: "radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.18) 0%, transparent 70%)",
             }}
           />
           <div className="relative" style={{ width: 120, height: 120 }}>
@@ -169,9 +169,9 @@ export function UpgradeModal({ open, onClose, trigger, childName, lockedLength }
           {/* Price hint */}
           <div
             className="flex items-center justify-center gap-2 py-2 px-4 rounded-2xl"
-            style={{ background: "rgba(0,201,167,0.12)", border: "1px solid rgba(0,201,167,0.25)" }}
+            style={{ background: "rgba(168,85,247,0.14)", border: "1px solid rgba(168,85,247,0.3)" }}
           >
-            <Zap size={14} style={{ color: "var(--lf-teal)", flexShrink: 0 }} />
+            <Zap size={14} style={{ color: "var(--lf-electric)", flexShrink: 0 }} />
             <span
               style={{
                 fontFamily: "'Nunito', sans-serif",
@@ -192,10 +192,10 @@ export function UpgradeModal({ open, onClose, trigger, childName, lockedLength }
             }}
             className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] active:scale-95"
             style={{
-              background: "linear-gradient(135deg,var(--lf-teal) 0%,#00a38d 100%)",
+              background: "linear-gradient(135deg,var(--lf-electric) 0%,#7c3aed 100%)",
               color: "#fff",
               fontFamily: "'Baloo 2', sans-serif",
-              boxShadow: "0 6px 24px rgba(0,201,167,0.4)",
+              boxShadow: "0 6px 24px rgba(168,85,247,0.4)",
               letterSpacing: "0.01em",
             }}
           >

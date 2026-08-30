@@ -137,7 +137,7 @@ function FillBlankArea({
                 minHeight: 52,
                 padding: "10px 18px",
                 borderRadius: 14,
-                border: `2px solid ${isWrong ? "#e57373" : isSelected ? "var(--lf-teal)" : "rgba(14,10,31,0.12)"}`,
+                border: `2px solid ${isWrong ? "#e57373" : isSelected ? "var(--lf-teal)" : "#c9b99a"}`,
                 background: isWrong ? "rgba(229,115,115,0.1)" : isSelected ? "rgba(0,201,167,0.1)" : "#fff",
                 fontFamily: "'Nunito', sans-serif",
                 fontWeight: 700,
@@ -200,7 +200,7 @@ function MatchColumnArea({
               ? "#e57373"
               : isSelected
               ? "var(--lf-teal)"
-              : "rgba(14,10,31,0.12)";
+              : "#c9b99a";
             return (
               <button
                 key={item.id}
@@ -251,7 +251,7 @@ function MatchColumnArea({
                   minHeight: 52,
                   padding: "10px 12px",
                   borderRadius: 14,
-                  border: `2px solid ${isMatched ? PAIR_COLORS[pairIdx % PAIR_COLORS.length] : isWrong ? "#e57373" : "rgba(14,10,31,0.12)"}`,
+                  border: `2px solid ${isMatched ? PAIR_COLORS[pairIdx % PAIR_COLORS.length] : isWrong ? "#e57373" : "#c9b99a"}`,
                   background: isMatched ? `${PAIR_COLORS[pairIdx % PAIR_COLORS.length]}18` : isWrong ? "rgba(229,115,115,0.08)" : "#fff",
                   fontFamily: "'Nunito', sans-serif",
                   fontWeight: 700,
@@ -312,7 +312,7 @@ function SequenceArea({
                 minHeight: 60,
                 padding: "12px 14px",
                 borderRadius: 16,
-                border: `2px solid ${isOrdered ? PILLAR_COLORS[pillar] : "rgba(14,10,31,0.1)"}`,
+                border: `2px solid ${isOrdered ? PILLAR_COLORS[pillar] : "#c9b99a"}`,
                 background: isOrdered ? `${PILLAR_COLORS[pillar]}12` : "#fff",
                 fontFamily: "'Nunito', sans-serif",
                 fontWeight: 700,
@@ -389,12 +389,26 @@ export default function StoryChallengeScreen() {
   const submitChallenge = useMutation(api["testserver/challenge"].submitChallenge);
 
   const triggeredRef = useRef(false);
+  const [genError, setGenError] = useState<string | null>(null);
   useEffect(() => {
     if (challenge === null && !triggeredRef.current) {
       triggeredRef.current = true;
-      generateChallenge({ storyId: sid }).catch(() => { triggeredRef.current = false; });
+      setGenError(null);
+      generateChallenge({ storyId: sid }).catch((err: unknown) => {
+        triggeredRef.current = false;
+        setGenError(err instanceof Error ? err.message : "Couldn't get your questions ready");
+      });
     }
   }, [challenge, generateChallenge, sid]);
+
+  function retryGeneration() {
+    setGenError(null);
+    triggeredRef.current = true;
+    generateChallenge({ storyId: sid }).catch((err: unknown) => {
+      triggeredRef.current = false;
+      setGenError(err instanceof Error ? err.message : "Couldn't get your questions ready");
+    });
+  }
 
   useEffect(() => {
     if (challenge?.status === "completed") {
@@ -470,6 +484,17 @@ export default function StoryChallengeScreen() {
   }, [index]);
 
   if (!challenge || challenge.status === "completed" || !questions) {
+    if (genError) {
+      return (
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 24, textAlign: "center" }}>
+          <span style={{ fontSize: 38 }}>😔</span>
+          <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 17, color: "var(--lf-dark)", maxWidth: 280, margin: 0 }}>
+            That one didn&apos;t come out right.
+          </p>
+          <button className="btn-primary" onClick={retryGeneration}>Try again</button>
+        </div>
+      );
+    }
     return (
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14 }}>
         <Loader2 className="animate-spin" size={32} color="var(--lf-teal)" />
@@ -689,7 +714,7 @@ export default function StoryChallengeScreen() {
                       ? "#e57373"
                       : isCorrect
                       ? "#4caf50"
-                      : "rgba(14,10,31,0.1)"
+                      : "#c9b99a"
                   }`,
                   background: isWrong
                     ? "rgba(229,115,115,0.1)"

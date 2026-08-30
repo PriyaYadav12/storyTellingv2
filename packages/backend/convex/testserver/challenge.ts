@@ -11,8 +11,8 @@ import { v } from "convex/values";
 import { GoogleGenAI } from "@google/genai";
 import { api, internal } from "../_generated/api";
 import {
-  assertAdmin,
-  assertAdminInAction,
+  assertChallengeAccess,
+  assertChallengeAccessInAction,
   PILLARS,
   QUICK_CHECK_INDICES,
   type Pillar,
@@ -338,7 +338,7 @@ function parseQuestion(raw: any, pillar: Pillar): any {
 export const generateChallenge = action({
   args: { storyId: v.id("stories") },
   handler: async (ctx, { storyId }): Promise<{ challengeId: string }> => {
-    const { userId } = await assertAdminInAction(ctx);
+    const { userId } = await assertChallengeAccessInAction(ctx);
 
     // If a completed challenge already exists for this story+user, return it.
     // Prevents children from retaking a challenge on any child-facing path.
@@ -693,7 +693,7 @@ export const submitQuickCheck = mutation({
     answeredIndex: v.optional(v.number()), // legacy MCQ fallback
   },
   handler: async (ctx, { challengeId, questionIndex, answeredData, answeredIndex }) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     const row = await ctx.db.get(challengeId);
     if (!row || row.userId !== userId) throw new Error("Not found");
 
@@ -720,7 +720,7 @@ export const submitQuickCheck = mutation({
 export const getNextQuickCheck = query({
   args: { challengeId: v.id("testserver_challenges") },
   handler: async (ctx, { challengeId }) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     const row = await ctx.db.get(challengeId);
     if (!row || row.userId !== userId) return null;
     const quickCheckIndices = row.quickCheckIndices ?? QUICK_CHECK_INDICES;
@@ -750,7 +750,7 @@ function resolveChallengeIndices(row: {
 export const getChallengeQuestions = query({
   args: { challengeId: v.id("testserver_challenges") },
   handler: async (ctx, { challengeId }) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     const row = await ctx.db.get(challengeId);
     if (!row || row.userId !== userId) return null;
     const indices = resolveChallengeIndices(row);
@@ -769,7 +769,7 @@ export const submitChallenge = mutation({
     })),
   },
   handler: async (ctx, { challengeId, answers }) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     const row = await ctx.db.get(challengeId);
     if (!row || row.userId !== userId) throw new Error("Not found");
     if (row.status === "completed") return row.score;
@@ -885,7 +885,7 @@ export const _getCompletedForStory = internalQuery({
 export const getChallenge = query({
   args: { challengeId: v.id("testserver_challenges") },
   handler: async (ctx, { challengeId }) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     const row = await ctx.db.get(challengeId);
     if (!row || row.userId !== userId) return null;
     return row;
@@ -895,7 +895,7 @@ export const getChallenge = query({
 export const getForStory = query({
   args: { storyId: v.id("stories") },
   handler: async (ctx, { storyId }) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     return await ctx.db
       .query("testserver_challenges")
       .withIndex("by_story", (q) => q.eq("storyId", storyId))
@@ -907,7 +907,7 @@ export const getForStory = query({
 export const getHistory = query({
   args: {},
   handler: async (ctx) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     const rows = await ctx.db
       .query("testserver_challenges")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -921,12 +921,70 @@ export const getHistory = query({
 export const getStarsBalance = query({
   args: {},
   handler: async (ctx) => {
-    const { userId } = await assertAdmin(ctx);
+    const { userId } = await assertChallengeAccess(ctx);
     const rows = await ctx.db
       .query("testserver_stars")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
     return rows.reduce((sum, r) => sum + r.amount, 0);
+  },
+});
+
+// ─── Dashboard summary (Phase 4) ───────────────────────────────────────────
+// Used by both the compact dashboard teaser card and the Growth tab. Always
+// compares against the LAST COMPLETED Challenge (never a calendar week) —
+// same rule as the Results screen's already-correct "up from X" comparison,
+// so a family with an irregular cadence never sees a false reading.
+export const getDashboardSummary = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await assertChallengeAccess(ctx);
+
+    const completed = (
+      await ctx.db
+        .query("testserver_challenges")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect()
+    )
+      .filter((r) => r.status === "completed" && r.score)
+      .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
+
+    const latestRow = completed[0];
+    const previousRow = completed[1];
+
+    // "Pending" = the user's most recent ready story doesn't have a
+    // completed Challenge yet. Only looks at the single latest story, not
+    // every story ever, since Challenge is opt-in per story, not mandatory.
+    const recentStories = await ctx.db
+      .query("stories")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(5);
+    const latestReadyStory = recentStories.find((s) =>
+      ["ready", "voice_ready", "images_ready", "text_ready"].includes(s.status)
+    );
+    const latestStoryHasCompletedChallenge =
+      !!latestReadyStory && completed.some((c) => c.storyId === latestReadyStory._id);
+    const pending = !!latestReadyStory && !latestStoryHasCompletedChallenge;
+
+    return {
+      pending,
+      pendingStoryId: pending ? latestReadyStory!._id : null,
+      latest: latestRow
+        ? {
+            completedAt: latestRow.completedAt,
+            childName: latestRow.childName,
+            growingIn: latestRow.score!.growingInPillar,
+            superpower: latestRow.score!.superpowerPillar,
+            perPillar: latestRow.score!.perPillar,
+            gradableCorrect: latestRow.score!.gradableCorrect,
+            gradableTotal: latestRow.score!.gradableTotal,
+          }
+        : null,
+      previous: previousRow?.score
+        ? { gradableCorrect: previousRow.score.gradableCorrect, gradableTotal: previousRow.score.gradableTotal }
+        : null,
+    };
   },
 });
 

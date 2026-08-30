@@ -14,6 +14,15 @@ export const PILLAR_LABELS: Record<Pillar, string> = {
   cognitive: "Cognitive growth",
 };
 
+// Shortened for tight spaces (dashboard teaser card mini-badges) — the
+// Growth tab and Results screen use the full PILLAR_LABELS above instead.
+export const PILLAR_LABELS_SHORT: Record<Pillar, string> = {
+  listening: "Listening",
+  attention: "Focus",
+  emotional: "Feelings",
+  cognitive: "Thinking",
+};
+
 export const PILLAR_COLORS: Record<Pillar, string> = {
   listening: "#2979FF",
   attention: "#FF5722",

@@ -27,8 +27,11 @@ import {
   Loader2,
   Plus,
   Play,
+  Trophy,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PILLAR_ORDER, PILLAR_EMOJI, PILLAR_LABELS_SHORT } from "../testserver/_lib/pillars";
 
 /* ── Theme → scene image map ── */
 const THEME_IMAGES: Record<string, string> = {
@@ -166,6 +169,17 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
   const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
   const isSubscribed = subscription !== null && subscription !== undefined && (subscription as { status?: string })?.status === "active";
 
+  // Story Challenge staged rollout (Phase 5) — teaser card only renders for
+  // allowlisted/admin accounts.
+  const challengeEnabled = useQuery(
+    api["testserver/_shared"].isChallengeRolloutEnabled,
+    isAuthenticated ? {} : "skip"
+  );
+  const challengeSummary = useQuery(
+    api["testserver/challenge"].getDashboardSummary,
+    isAuthenticated && challengeEnabled ? {} : "skip"
+  );
+
   const stats = useMemo(() => {
     const list = stories ?? [];
     const storiesCreated = list.length;
@@ -231,6 +245,11 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           <Link href="/library" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-black/5" style={{ color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif" }}>
             <Library size={15} /> Library
           </Link>
+          {challengeEnabled && (
+            <Link href="/growth" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-black/5" style={{ color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif" }}>
+              <TrendingUp size={15} /> Growth
+            </Link>
+          )}
           <Link href="/profile" className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-black/5" style={{ color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif" }}>
             <User size={15} /> Profile
           </Link>
@@ -365,6 +384,46 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
             </div>
             <Link href="/checkout?plan=monthly" className="btn-primary" style={{ padding: "0.5rem 1.2rem", fontSize: "0.85rem", flexShrink: 0 }}>
               Top up
+            </Link>
+          </div>
+        )}
+
+        {/* ── Story Challenge teaser (Phase 4 — staged rollout, only shows for
+             allowlisted/admin accounts) ── */}
+        {challengeEnabled && challengeSummary && (
+          <div
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-2xl"
+            style={{ background: "linear-gradient(135deg,rgba(249,199,0,0.1),rgba(0,201,167,0.06))", border: "1.5px solid rgba(249,199,0,0.35)" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#f9c700,#e6ac00)" }}>
+                {challengeSummary.pending ? <Trophy size={19} color="#1a1a2e" /> : <TrendingUp size={19} color="#1a1a2e" />}
+              </div>
+              <div>
+                <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "var(--lf-dark)" }}>
+                  {challengeSummary.pending ? "Story Challenge ready" : "See this week's growth"}
+                </p>
+                {challengeSummary.latest && (
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                    {[["listening", "attention"], ["cognitive", "emotional"]].map((row, ri) => (
+                      <div key={ri} className="flex gap-3">
+                        {row.map((p) => (
+                          <span key={p} style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.74rem", fontWeight: 700, color: "rgba(45,45,45,0.55)" }}>
+                            {PILLAR_EMOJI[p as keyof typeof PILLAR_EMOJI]} {PILLAR_LABELS_SHORT[p as keyof typeof PILLAR_LABELS_SHORT]}
+                          </span>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <Link
+              href={challengeSummary.pending ? `/testserver/challenge/${challengeSummary.pendingStoryId}` : "/growth"}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95 flex-shrink-0"
+              style={{ background: "linear-gradient(135deg,#f9c700,#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif" }}
+            >
+              {challengeSummary.pending ? "Start now" : "View growth"} <ChevronRight size={15} />
             </Link>
           </div>
         )}
@@ -621,6 +680,12 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           <Library size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
           <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Library</span>
         </Link>
+        {challengeEnabled && (
+          <Link href="/growth" className="flex flex-col items-center gap-0.5">
+            <TrendingUp size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Growth</span>
+          </Link>
+        )}
         <Link href="/profile" className="flex flex-col items-center gap-0.5">
           <User size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
           <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Profile</span>

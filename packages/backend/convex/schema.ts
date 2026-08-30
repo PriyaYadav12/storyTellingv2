@@ -322,9 +322,14 @@ flavor_openings: defineTable({
 	.index("by_user_story", ["userId", "storyId"]),
 
 	// ─── TESTSERVER (admin-gated /testserver staging route, Functional Spec v1.1) ───
-	// Additive-only block. Safe to delete entirely, together with
-	// convex/testserver/* and apps/web/src/app/testserver/*, once no longer
-	// needed — nothing outside those locations references these tables.
+	// NOTE (Story Challenge promoted to production): testserver_challenges is
+	// now the live production data store for Story Challenge — generateStoryV2.ts
+	// reads it for the "growing in" pillar signal, and the production dashboard
+	// Growth tab / end-of-story CTA read from it too, gated by the rollout
+	// allowlist in testserver/_shared.ts (assertChallengeAccess), not just
+	// convex/testserver/* and apps/web/src/app/testserver/* pages. It is NOT
+	// safe to delete this table or those directories anymore. testserver_consent
+	// and testserver_stars remain testserver-only scaffolding as before.
 	testserver_consent: defineTable({
 		userId: v.string(),
 		parentName: v.string(),

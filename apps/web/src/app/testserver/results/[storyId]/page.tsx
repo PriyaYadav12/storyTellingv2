@@ -83,6 +83,13 @@ export default function ResultsScreen() {
   const [starting, setStarting] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const stars = useLottieJson("/lottie/stars.json");
+  // Real (allowlisted, non-admin) users land here from the production end-of-
+  // story screen and should stay in the production story/dashboard flow, not
+  // get routed into testserver's own parallel generating/player pages, which
+  // are for admin testing only.
+  const role = useQuery(api.auth.getUserRole, {});
+  const isAdmin = role === "admin";
+  const homeHref = isAdmin ? "/testserver" : "/dashboard";
 
   if (!challenge || challenge.status !== "completed" || !challenge.score || !history) {
     return (
@@ -119,7 +126,7 @@ export default function ResultsScreen() {
           childId: "1",
         },
       });
-      router.push(`/testserver/generating/${result.storyId}`);
+      router.push(isAdmin ? `/testserver/generating/${result.storyId}` : `/story/${result.storyId}`);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Couldn't start the next story");
       setStarting(false);
@@ -224,7 +231,7 @@ export default function ResultsScreen() {
           {starting ? "Starting…" : `${suggestion.emoji} Next: "${suggestion.title}"`}
         </button>
         <button
-          onClick={() => router.push("/testserver")}
+          onClick={() => router.push(homeHref)}
           className="btn-ghost"
           style={{ justifyContent: "center", fontSize: 13.5, padding: "0.6rem", border: "none" }}
         >

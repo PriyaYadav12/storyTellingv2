@@ -156,9 +156,9 @@ export default function TestServerOnboarding() {
                 onClick={() => setStoryType(st.code)}
                 style={{
                   display: "flex", alignItems: "flex-start", gap: 12, padding: 12, borderRadius: 16, textAlign: "left", cursor: "pointer",
-                  background: storyType === st.code ? "var(--lf-dark)" : "#fff",
-                  border: `2px solid ${storyType === st.code ? "var(--lf-dark)" : "rgba(0,0,0,0.08)"}`,
-                  color: storyType === st.code ? "#fff" : "var(--lf-dark)",
+                  background: "#fff",
+                  border: `2px solid ${storyType === st.code ? "var(--lf-teal)" : "#c9b99a"}`,
+                  color: "var(--lf-dark)",
                 }}
               >
                 <span style={{ fontSize: 26, lineHeight: 1, flexShrink: 0 }}>{st.emoji}</span>
@@ -188,9 +188,9 @@ export default function TestServerOnboarding() {
                   }}
                   style={{
                     display: "flex", flexDirection: "column", gap: 2, padding: "10px 16px", borderRadius: 16, minWidth: 90, textAlign: "left", cursor: "pointer",
-                    background: selected ? "var(--lf-dark)" : "#fff",
-                    border: `2px solid ${selected ? "var(--lf-dark)" : locked ? "rgba(0,201,167,0.3)" : "rgba(0,0,0,0.08)"}`,
-                    color: selected ? "#fff" : "var(--lf-dark)",
+                    background: "#fff",
+                    border: `2px solid ${selected ? "var(--lf-teal)" : locked ? "rgba(0,201,167,0.3)" : "#c9b99a"}`,
+                    color: "var(--lf-dark)",
                   }}
                 >
                   <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 13.5 }}>{l.label}{locked ? " 🔒" : ""}</span>
@@ -212,13 +212,14 @@ export default function TestServerOnboarding() {
                 onClick={() => setLanguageCode(lang.code)}
                 style={{
                   display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Nunito', sans-serif",
-                  background: languageCode === lang.code ? "var(--lf-teal)" : "#fff",
-                  border: `1.5px solid ${languageCode === lang.code ? "var(--lf-teal)" : "rgba(0,0,0,0.1)"}`,
-                  color: languageCode === lang.code ? "#fff" : "var(--lf-dark)",
+                  background: "#fff",
+                  border: `2px solid ${languageCode === lang.code ? "var(--lf-teal)" : "#c9b99a"}`,
+                  color: "var(--lf-dark)",
                 }}
               >
                 <span>{lang.flag}</span><span>{lang.name}</span>
                 {lang.nativeName !== lang.name && <span style={{ opacity: 0.7, fontSize: 11.5 }}>({lang.nativeName})</span>}
+                {languageCode === lang.code && <Check size={13} color="var(--lf-teal)" />}
               </button>
             ))}
           </div>
@@ -234,9 +235,9 @@ export default function TestServerOnboarding() {
                   onClick={() => setTheme(theme === t.name ? "" : t.name)}
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "10px 4px", borderRadius: 16, textAlign: "center", cursor: "pointer",
-                    background: isSelected ? "var(--lf-dark)" : CARD_TINTS[i % CARD_TINTS.length],
-                    border: `1.5px solid ${isSelected ? "var(--lf-dark)" : "rgba(0,0,0,0.06)"}`,
-                    color: isSelected ? "#fff" : "var(--lf-dark)",
+                    background: CARD_TINTS[i % CARD_TINTS.length],
+                    border: `2px solid ${isSelected ? "var(--lf-teal)" : "#c9b99a"}`,
+                    color: "var(--lf-dark)",
                   }}
                 >
                   <span style={{ fontSize: 22, lineHeight: 1 }}>{THEME_ICONS[t.name] ?? DEFAULT_THEME_ICON}</span>
@@ -255,14 +256,14 @@ export default function TestServerOnboarding() {
               onClick={() => setLesson("")}
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "10px 4px", borderRadius: 16, cursor: "pointer",
-                background: lesson === "" ? "var(--lf-teal)" : "#fff",
-                border: `1.5px solid ${lesson === "" ? "var(--lf-teal)" : "rgba(0,0,0,0.08)"}`,
-                color: lesson === "" ? "#fff" : "var(--lf-dark)",
+                background: "#fff",
+                border: `2px solid ${lesson === "" ? "var(--lf-teal)" : "#c9b99a"}`,
+                color: "var(--lf-dark)",
               }}
             >
               <span style={{ fontSize: 22 }}>🚫</span>
               <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 11 }}>None</span>
-              {lesson === "" && <Check size={12} />}
+              {lesson === "" && <Check size={12} color="var(--lf-teal)" />}
             </button>
             {(lessons ?? []).map((l: { name: string }, i: number) => {
               const isSelected = lesson === l.name;
@@ -272,14 +273,14 @@ export default function TestServerOnboarding() {
                   onClick={() => setLesson(lesson === l.name ? "" : l.name)}
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "10px 4px", borderRadius: 16, cursor: "pointer",
-                    background: isSelected ? "var(--lf-teal)" : CARD_TINTS[(i + 1) % CARD_TINTS.length],
-                    border: `1.5px solid ${isSelected ? "var(--lf-teal)" : "rgba(0,0,0,0.06)"}`,
-                    color: isSelected ? "#fff" : "var(--lf-dark)",
+                    background: CARD_TINTS[(i + 1) % CARD_TINTS.length],
+                    border: `2px solid ${isSelected ? "var(--lf-teal)" : "#c9b99a"}`,
+                    color: "var(--lf-dark)",
                   }}
                 >
                   <span style={{ fontSize: 22 }}>{LESSON_ICONS[l.name] ?? DEFAULT_LESSON_ICON}</span>
                   <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: 11, lineHeight: 1.2 }}>{l.name}</span>
-                  {isSelected && <Check size={12} />}
+                  {isSelected && <Check size={12} color="var(--lf-teal)" />}
                 </button>
               );
             })}

@@ -39,6 +39,7 @@ import {
   RefreshCw,
   Maximize,
   Minimize,
+  Trophy,
 } from "lucide-react";
 import { UpgradeModal } from "@/components/ui/UpgradeModal";
 
@@ -554,6 +555,12 @@ function StoryViewer({
   const { isAuthenticated } = useConvexAuth();
   const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
   const isPremium = subscription?.status === "active";
+  // Story Challenge staged rollout (Phase 5) — only allowlisted/admin accounts
+  // see the Challenge CTA; everyone else gets the original 2-option end screen.
+  const challengeEnabled = useQuery(
+    api["testserver/_shared"].isChallengeRolloutEnabled,
+    isAuthenticated ? {} : "skip"
+  );
 
   /* Scene state */
   const scenes: SceneMeta[] = story?.sceneMetadata ?? [];
@@ -1365,24 +1372,37 @@ function StoryViewer({
               </p>
             </div>
 
-            {/* CTAs */}
-            <div className="w-full grid grid-cols-2 gap-3">
-              <button
-                onClick={handleSequel}
-                disabled={sequelLoading}
-                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
-                style={{ background: "linear-gradient(135deg,var(--lf-sunshine),#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(249,199,0,0.35)", opacity: sequelLoading ? 0.7 : 1 }}
-              >
-                {sequelLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                {sequelLoading ? "Creating…" : "Next Adventure"}
-              </button>
-              <Link
-                href="/generate"
-                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
-                style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 3px 14px rgba(0,201,167,0.35)" }}
-              >
-                <Sparkles size={16} /> New Story
-              </Link>
+            {/* CTAs — Story Challenge is the most prominent option (gold, primary
+                action rule), when this account is in the staged rollout.
+                Continue/New Story stay available, secondary treatment, below. */}
+            <div className="w-full flex flex-col gap-3">
+              {challengeEnabled && story?._id && (
+                <Link
+                  href={`/testserver/challenge/${story._id}`}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] active:scale-95"
+                  style={{ background: "linear-gradient(135deg,var(--lf-sunshine),#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif", boxShadow: "0 4px 20px rgba(249,199,0,0.4)" }}
+                >
+                  <Trophy size={18} /> Story Challenge
+                </Link>
+              )}
+              <div className="w-full grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleSequel}
+                  disabled={sequelLoading}
+                  className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                  style={{ background: "#fff", color: "var(--lf-dark)", border: "2px solid var(--lf-teal)", fontFamily: "'Baloo 2', sans-serif", opacity: sequelLoading ? 0.7 : 1 }}
+                >
+                  {sequelLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} color="var(--lf-teal)" />}
+                  {sequelLoading ? "Creating…" : "Continue Adventure"}
+                </button>
+                <Link
+                  href="/generate"
+                  className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
+                  style={{ background: "#fff", color: "var(--lf-dark)", border: "2px solid #c9b99a", fontFamily: "'Baloo 2', sans-serif" }}
+                >
+                  <Sparkles size={16} color="var(--lf-teal)" /> Start New
+                </Link>
+              </div>
             </div>
 
             {/* Share row */}
