@@ -1089,18 +1089,63 @@ export const _generateContentV2 = internalAction({
       validationIssues = [...deterministicIssues, ...llmIssues];
     }
 
-    const issuesRequiringRepair = validationIssues.filter(
+    let issuesToRepair = validationIssues.filter(
       (i) => i.severity === "critical"
     );
 
-    if (issuesRequiringRepair.length > 0) {
+    if (issuesToRepair.length > 0) {
       console.warn(
-        `[v2] ${issuesRequiringRepair.length} critical issue(s) — running targeted repair:`,
-        issuesRequiringRepair.map((i) => i.code).join(", ")
+        `[v2] ${issuesToRepair.length} critical issue(s) — running targeted repair:`,
+        issuesToRepair.map((i) => i.code).join(", ")
       );
-      content = await runTargetedRepair(
-        content, issuesRequiringRepair, wordCount.label, makeRequest
-      );
+
+      // Repair is itself an LLM call — its output is not guaranteed to
+      // actually satisfy what it was asked to fix. Re-run the same
+      // deterministic checks that flagged the issue after each attempt,
+      // bounded to 3 total tries, re-targeting whatever is still broken.
+      // (Root-caused from a real incident: repair ran, returned >200 chars,
+      // was accepted unverified, but never added a single Lalli:/Fafa:/
+      // child: line — the story shipped fully narrator-only.)
+      const MAX_REPAIR_ATTEMPTS = 3;
+      let attempt = 0;
+
+      while (issuesToRepair.length > 0 && attempt < MAX_REPAIR_ATTEMPTS) {
+        attempt++;
+        content = await runTargetedRepair(
+          content, issuesToRepair, wordCount.label, makeRequest
+        );
+
+        const recheck = runDeterministicValidation(content, childInfo.name, ageGroup);
+        issuesToRepair = recheck.filter((i) => i.severity === "critical");
+
+        if (issuesToRepair.length === 0) {
+          console.log(`[v2] Repair verified on attempt ${attempt} — all critical issues resolved.`);
+        } else {
+          console.warn(
+            `[v2] Repair attempt ${attempt} still has ${issuesToRepair.length} critical issue(s):`,
+            issuesToRepair.map((i) => i.code).join(", ")
+          );
+        }
+      }
+
+      if (issuesToRepair.length > 0) {
+        // Give up loudly, not silently: persist the failed attempt for
+        // debugging, mark the story as errored (the existing, already-
+        // wired failure path — see story/[id]/page.tsx's error screen),
+        // and stop before credits are deducted or images/narration are
+        // scheduled. A family never sees a silently-broken "ready" story.
+        console.error(
+          `[v2] Repair failed after ${MAX_REPAIR_ATTEMPTS} attempts — blocking, not marking ready:`,
+          issuesToRepair.map((i) => i.code).join(", ")
+        );
+        await ctx.runMutation(api.stories._setContent, { storyId, content });
+        await ctx.runMutation(api.stories._markStatus, {
+          storyId,
+          status: "error",
+          error: `Story failed content validation after ${MAX_REPAIR_ATTEMPTS} repair attempts (${issuesToRepair.map((i) => i.code).join(", ")}). No credits were charged.`,
+        });
+        return;
+      }
     } else if (validationIssues.length > 0) {
       // Warnings only — log but proceed
       console.log(
