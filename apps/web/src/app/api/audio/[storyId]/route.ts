@@ -34,17 +34,31 @@ export async function GET(
 
   const sourceUrl = result?.url;
   if (!sourceUrl) {
-    return NextResponse.json({ error: "Narration not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Narration not found" },
+      { status: 404, headers: { "Cache-Control": "no-store" } }
+    );
   }
 
   const upstream = await fetch(sourceUrl);
-  if (!upstream.ok || !upstream.body) {
-    return NextResponse.json({ error: "Failed to fetch narration" }, { status: 502 });
+  const contentLength = upstream.headers.get("Content-Length");
+
+  // Never cache an empty or failed narration file as if it were the real
+  // thing. Real incident: Convex storage returned 200 with Content-Length:
+  // 0 for a story whose narration synthesis had silently produced nothing
+  // -- upstream.ok and upstream.body were both truthy (a 0-byte stream is
+  // still a stream), so the old check here didn't catch it, and the empty
+  // response got cached "immutable" for a year. Even after the real audio
+  // was regenerated, the CDN kept serving the empty one from cache.
+  if (!upstream.ok || !upstream.body || contentLength === "0") {
+    return NextResponse.json(
+      { error: "Narration not found or empty" },
+      { status: 502, headers: { "Cache-Control": "no-store" } }
+    );
   }
 
   const headers = new Headers();
   headers.set("Content-Type", upstream.headers.get("Content-Type") ?? "audio/mpeg");
-  const contentLength = upstream.headers.get("Content-Length");
   if (contentLength) headers.set("Content-Length", contentLength);
   headers.set("Cache-Control", "public, max-age=31536000, immutable");
 
