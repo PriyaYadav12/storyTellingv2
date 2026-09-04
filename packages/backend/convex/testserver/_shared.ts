@@ -49,28 +49,16 @@ export async function assertAdminInAction(
   return { userId, email: String((user as any).email || "") };
 }
 
-// ─── Story Challenge staged rollout (Phase 5) ──────────────────────────────
+// ─── Story Challenge — general availability ────────────────────────────────
 //
-// Story Challenge is promoted to production but gated behind an allowlist
-// stored at system_config key "challenge_rollout_emails" (a JSON array of
-// lowercased emails), so it can be verified on real accounts one at a time
-// before opening to everyone. Admins always pass (dev/testing convenience,
-// same as before promotion). Widen the rollout by adding emails to that
-// array via systemConfig.set — no redeploy needed.
-const CHALLENGE_ROLLOUT_KEY = "challenge_rollout_emails";
+// Was gated behind an allowlist stored at system_config key
+// "challenge_rollout_emails" for staged verification (Phase 5). That
+// verification is done; the allowlist check has been removed outright
+// (not bypassed) so Story Challenge is available to every authenticated
+// user. Only requirement now is being signed in, same as every other
+// authenticated feature.
 
-function parseRolloutEmails(raw: string | undefined): Set<string> {
-  if (!raw) return new Set();
-  try {
-    const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return new Set();
-    return new Set(arr.map((e: unknown) => String(e).trim().toLowerCase()).filter(Boolean));
-  } catch {
-    return new Set();
-  }
-}
-
-/** Query/mutation contexts: direct db read of the rollout allowlist. */
+/** Query/mutation contexts. */
 export async function assertChallengeAccess(
   ctx: GenericQueryCtx<any> | GenericMutationCtx<any>
 ): Promise<{ userId: string; email: string; isAdmin: boolean }> {
@@ -83,17 +71,7 @@ export async function assertChallengeAccess(
     .query("user_roles")
     .withIndex("by_user", (q: any) => q.eq("userId", userId))
     .first();
-  const isAdmin = role?.role === "admin";
-  if (isAdmin) return { userId, email, isAdmin: true };
-
-  const config = await ctx.db
-    .query("system_config")
-    .withIndex("by_key", (q: any) => q.eq("key", CHALLENGE_ROLLOUT_KEY))
-    .first();
-  if (!parseRolloutEmails(config?.value).has(email)) {
-    throw new Error("Story Challenge is not yet available on this account");
-  }
-  return { userId, email, isAdmin: false };
+  return { userId, email, isAdmin: role?.role === "admin" };
 }
 
 /** Action contexts: no direct db access, routes through public queries. */
@@ -106,34 +84,17 @@ export async function assertChallengeAccessInAction(
   const email = String((user as any).email || "").trim().toLowerCase();
 
   const role = await ctx.runQuery(api.auth.getUserRole, {});
-  if (role === "admin") return { userId, email, isAdmin: true };
-
-  const config = await ctx.runQuery(api.systemConfig.get, { key: CHALLENGE_ROLLOUT_KEY });
-  if (!parseRolloutEmails(config?.value).has(email)) {
-    throw new Error("Story Challenge is not yet available on this account");
-  }
-  return { userId, email, isAdmin: false };
+  return { userId, email, isAdmin: role === "admin" };
 }
 
 /** Client-side-safe check (no db access needed) — used by production UI to
- * decide whether to show the Story Challenge entry point at all. */
+ * decide whether to show the Story Challenge entry point at all. Now just
+ * an auth check: true for any signed-in user. */
 export const isChallengeRolloutEnabled = query({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx as any);
-    if (!user) return false;
-    const userId = String((user as any).userId || (user as any)._id);
-    const email = String((user as any).email || "").trim().toLowerCase();
-    const role = await ctx.db
-      .query("user_roles")
-      .withIndex("by_user", (q: any) => q.eq("userId", userId))
-      .first();
-    if (role?.role === "admin") return true;
-    const config = await ctx.db
-      .query("system_config")
-      .withIndex("by_key", (q: any) => q.eq("key", CHALLENGE_ROLLOUT_KEY))
-      .first();
-    return parseRolloutEmails(config?.value).has(email);
+    return !!user;
   },
 });
 
