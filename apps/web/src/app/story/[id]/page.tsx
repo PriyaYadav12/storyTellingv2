@@ -2441,6 +2441,13 @@ const WAITING_SLIDER: Array<{ src: string; caption: string }> = [
   { src: "/ChatGPT_Image_2026-01-11_01.png", caption: "Learning about the solar system 🪐" },
   { src: "/frame_1 (3).png", caption: "A magical meadow picnic 🦚" },
   { src: "/lalli-fafa-frame-2--action (42).png", caption: "Waving the flag with pride 🇮🇳" },
+  { src: "/lf-scene-bilingual-grandma.jpg", caption: "Story time with Dadi 👵" },
+  { src: "/lf-scene-cognitive-blocks.jpg", caption: "Building and thinking together 🧩" },
+  { src: "/lf-scene-feelings-bench.jpg", caption: "There for each other, always 💛" },
+  { src: "/lf-scene-reading-aloud.jpg", caption: "Reading a favourite tale 📚" },
+  { src: "/land2.png", caption: "Cleaning up the beach together 🌊" },
+  { src: "/land3.png", caption: "Giggles on a pillow pile 😄" },
+  { src: "/lf-scene-puppy.png", caption: "Making a new furry friend 🐶" },
 ];
 
 function StoryForgeLoadingScreen({
