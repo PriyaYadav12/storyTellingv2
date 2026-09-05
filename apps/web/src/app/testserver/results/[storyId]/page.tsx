@@ -196,12 +196,32 @@ export default function ResultsScreen() {
       </div>
 
       <div style={{ padding: "16px 20px 20px", flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
-          {PILLAR_ORDER.map((p) => (
-            <span key={p} style={{ fontFamily: "'Nunito', sans-serif", fontSize: 10.5, fontWeight: 700, color: "rgba(14,10,31,0.55)", background: "#fff", border: "1px solid rgba(14,10,31,0.08)", borderRadius: 999, padding: "4px 10px" }}>
-              {PILLAR_EMOJI[p]} {PILLAR_LABELS[p]}
-            </span>
-          ))}
+        {/* Each pillar gets its real brand color instead of a flat white pill;
+            the two that matter for this result (superpower/growing-in) are
+            filled solid so this row reads as a legend for the cards below
+            rather than plain repeated white-on-white chips. */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 7, marginBottom: 18, flexWrap: "wrap" }}>
+          {PILLAR_ORDER.map((p) => {
+            const isHighlighted = p === superpower || p === growingIn;
+            return (
+              <span
+                key={p}
+                style={{
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: 10.5,
+                  fontWeight: 800,
+                  color: isHighlighted ? "#fff" : PILLAR_COLORS[p],
+                  background: isHighlighted ? PILLAR_COLORS[p] : `${PILLAR_COLORS[p]}1a`,
+                  border: `1.5px solid ${PILLAR_COLORS[p]}`,
+                  borderRadius: 999,
+                  padding: "5px 11px",
+                  boxShadow: isHighlighted ? `0 2px 8px ${PILLAR_COLORS[p]}55` : "none",
+                }}
+              >
+                {PILLAR_EMOJI[p]} {PILLAR_LABELS[p]}
+              </span>
+            );
+          })}
         </div>
 
         <PillarCard
@@ -322,8 +342,13 @@ function PillarCard({
 function CharacterAvatar({ src, ringColor }: { src: string; ringColor: string }) {
   return (
     <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: `2.5px solid ${ringColor}`, background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
-      <div style={{ position: "relative", width: "100%", height: "100%", transform: "scale(1.6) translateY(6%)" }}>
-        <Image src={src} alt="" fill style={{ objectFit: "cover" }} />
+      {/* Source art is full-body on a white ground with the face in the top
+          ~15-35% band — cover-fit alone centers on the torso, not the face.
+          objectPosition pins the crop to the face band; the extra scale
+          zooms in so the face actually fills the circle instead of reading
+          as a small head floating in a sea of white. */}
+      <div style={{ position: "relative", width: "100%", height: "100%", transform: "scale(1.9)", transformOrigin: "50% 22%" }}>
+        <Image src={src} alt="" fill style={{ objectFit: "cover", objectPosition: "50% 22%" }} />
       </div>
     </div>
   );
