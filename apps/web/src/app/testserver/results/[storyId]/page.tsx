@@ -9,7 +9,7 @@
 // questions are still never graded right/wrong (§5.5) — only the 7 gradable
 // questions get green/red treatment in the review.
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
@@ -91,6 +91,17 @@ export default function ResultsScreen() {
   const isAdmin = role === "admin";
   const homeHref = isAdmin ? "/testserver" : "/dashboard";
 
+  // Chosen once per themes-list load, not re-rolled on every render or at
+  // click time, so the CTA's displayed name and the theme startGrowthStory
+  // actually generates always match. Previously the button showed a fixed,
+  // hardcoded title ("The whispering woods") tied to the growingIn pillar,
+  // completely disconnected from the random theme generation actually used.
+  const nextTheme = useMemo(() => {
+    return themes && themes.length > 0
+      ? themes[Math.floor(Math.random() * themes.length)].name
+      : "Magical Forest";
+  }, [themes]);
+
   if (!challenge || challenge.status !== "completed" || !challenge.score || !history) {
     return (
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -115,10 +126,9 @@ export default function ResultsScreen() {
   async function startGrowthStory() {
     setStarting(true);
     try {
-      const setting = themes && themes.length > 0 ? themes[Math.floor(Math.random() * themes.length)].name : "Magical Forest";
       const result = await generateStory({
         params: {
-          theme: setting,
+          theme: nextTheme,
           lesson: suggestion.lesson,
           storyType: "adventure",
           length: challenge.length,
@@ -228,7 +238,7 @@ export default function ResultsScreen() {
         </div>
 
         <button onClick={startGrowthStory} disabled={starting} className="btn-primary" style={{ justifyContent: "center", width: "100%", marginBottom: 8, fontSize: 15.5, padding: "0.85rem" }}>
-          {starting ? "Starting…" : `${suggestion.emoji} Next: "${suggestion.title}"`}
+          {starting ? "Starting…" : `${suggestion.emoji} Next: "${nextTheme}"`}
         </button>
         <button
           onClick={() => router.push(homeHref)}

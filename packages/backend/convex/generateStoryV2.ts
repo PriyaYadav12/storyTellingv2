@@ -1170,11 +1170,15 @@ export const _generateContentV2 = internalAction({
         // MAX_REPAIR_ATTEMPTS repair calls) — persist it the same way a
         // successful generation does, rather than discarding it on this
         // early return. maybeComputeFinalCost (scheduled by _setTextUsage)
-        // won't produce a dollar figure since images/audio never run for a
-        // failed story, but the real token counts are no longer silently lost.
+        // won't produce a dollar figure on its own, since it waits for
+        // images/audio that will never arrive for a failed story — this
+        // story is terminal (images/narration never get scheduled below),
+        // so compute a text-only estimatedCostUSD directly instead of
+        // leaving it permanently unset.
         await ctx.runMutation((api as any).stories._setTextUsage, {
           storyId, textInputTokens, textOutputTokens,
         });
+        await ctx.runMutation(internal.costTracking.computeTextOnlyCost, { storyId });
         await ctx.runMutation(api.stories._markStatus, {
           storyId,
           status: "error",

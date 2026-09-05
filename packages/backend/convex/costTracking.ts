@@ -78,6 +78,29 @@ export const maybeComputeFinalCost = internalMutation({
   },
 });
 
+// For stories that failed content validation and were blocked before images
+// or narration ever ran (generateStoryV2's fail-loud path) — those phases
+// will never happen, so maybeComputeFinalCost's wait-for-all-three gate
+// would otherwise leave estimatedCostUSD permanently unset despite the real
+// text-generation spend (1 initial + up to 3 repair calls) already being on
+// the record via _setTextUsage. Computes cost from text tokens alone, using
+// the same rates and formula (image/audio usage is absent, so those terms
+// are simply 0). Only call this for a story that is truly terminal — never
+// for one still mid-pipeline, or a later real image/audio cost would be lost
+// when maybeComputeFinalCost's gate never re-fires to recompute the total.
+export const computeTextOnlyCost = internalMutation({
+  args: { storyId: v.id("stories") },
+  handler: async (ctx, { storyId }) => {
+    const story = await ctx.db.get(storyId);
+    if (!story) return;
+    if (story.textInputTokens == null || story.textOutputTokens == null) return;
+
+    const rates = await getCostRates(ctx);
+    const estimatedCostUSD = computeCostUSD(rates, story);
+    await ctx.db.patch(storyId, { estimatedCostUSD });
+  },
+});
+
 export const getRates = query({
   args: {},
   handler: async (ctx) => getCostRates(ctx),
