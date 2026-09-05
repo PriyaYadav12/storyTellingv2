@@ -467,25 +467,11 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
               )}
             </Section>
 
-            {/* Lesson */}
+            {/* Lesson — no explicit "None" card: tap a lesson to select it,
+                tap again to deselect. Keeps the grid even (matches the
+                Theme grid's card count/rhythm) and every card the same size. */}
             <Section icon={<BookOpen size={18} />} title="Lesson (optional)">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                <button
-                  onClick={() => setLesson("")}
-                  className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
-                  style={{
-                    position: "relative",
-                    background: CARD_TINTS[0],
-                    border: `2px solid ${lesson === "" ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
-                    color: "var(--lf-dark)",
-                  }}
-                >
-                  <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>🚫</span>
-                  <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
-                    None
-                  </span>
-                  {lesson === "" && <CheckBadge />}
-                </button>
                 {(lessons ?? []).map((l: { name: string }, i: number) => {
                   const isSelected = lesson === l.name;
                   return (
@@ -495,7 +481,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-center transition-all"
                       style={{
                         position: "relative",
-                        background: CARD_TINTS[(i + 1) % CARD_TINTS.length],
+                        background: CARD_TINTS[i % CARD_TINTS.length],
                         border: `2px solid ${isSelected ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
                         color: "var(--lf-dark)",
                       }}
