@@ -22,13 +22,13 @@ import {
   Globe,
   Loader2,
   Check,
-  Ruler,
 } from "lucide-react";
 import { toast } from "sonner";
 import { UserPill } from "@/components/layout/UserPill";
 import { trackStoryGenerated, trackUpgradeClick } from "@/lib/analytics";
 import { UpgradeModal, type UpgradeTrigger } from "@/components/ui/UpgradeModal";
 import { authClient } from "@/lib/auth-client";
+import { PILLAR_ORDER, PILLAR_EMOJI, PILLAR_LABELS_SHORT, PILLAR_COLORS } from "../testserver/_lib/pillars";
 
 const OTP_RESEND_COOLDOWN = 60;
 
@@ -36,6 +36,7 @@ const THEME_ICONS: Record<string, string> = {
   "Magical Forest": "🌳",
   "Ocean Adventure": "🌊",
   "Space Journey": "🚀",
+  "Space Adventure": "🚀",
   "Jungle Safari": "🐘",
   "Mountain Quest": "⛰️",
   "Dinosaurs Park": "🦕",
@@ -44,11 +45,11 @@ const THEME_ICONS: Record<string, string> = {
   "Circus Fun": "🎪",
   "Desert Trek": "🏜️",
   "Treasure Hunt": "🗺️",
-  "Ancient Kingdom": "🏰",
   "Festival Night": "🎉",
-  "Cloud Kingdom": "☁️",
   "Underwater City": "🐠",
   "Village Fair": "🎡",
+  "School Day Adventure": "🎒",
+  "Camping Trip": "🏕️",
 };
 const DEFAULT_THEME_ICON = "✨";
 
@@ -68,11 +69,8 @@ const LESSON_ICONS: Record<string, string> = {
 };
 const DEFAULT_LESSON_ICON = "📖";
 
-const LENGTHS: { value: "short" | "medium" | "long"; label: string; desc: string; credits: number; premium?: boolean }[] = [
-  { value: "short",  label: "Short",  desc: "~3 min read",  credits: 80 },
-  { value: "medium", label: "Medium", desc: "~6 min read",  credits: 100, premium: true },
-  { value: "long",   label: "Long",   desc: "~10 min read", credits: 150, premium: true },
-];
+// Every story is Short now (~3 min read) — Medium/Long removed entirely.
+const SHORT_STORY_CREDITS = 80;
 
 // Subtle pastel backgrounds cycled across unselected cards for a bit of color variety.
 const CARD_TINTS = ["#FFF4E0", "#E6FAF6", "#F3EEFF", "#FFE8EC", "#E8F5E9", "#FFF9DB"];
@@ -123,12 +121,9 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
   const credits = useQuery(api.credit.list, isAuthenticated ? {} : "skip");
   const themes = useQuery(api["migration/theme"].list, isAuthenticated ? {} : "skip");
   const lessons = useQuery(api["migration/lesson"].list, isAuthenticated ? {} : "skip");
-  const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
   // Story types and languages from DB so admin panel toggles (isActive) control what users see.
   const dbStoryTypes = useQuery((api as any)["migration/story_types"].list, isAuthenticated ? {} : "skip");
   const dbLanguages = useQuery((api as any)["migration/languages"].list, isAuthenticated ? {} : "skip");
-
-  const isPremium = subscription?.status === "active";
 
   // Redirect to onboarding if user has no profile yet
   useEffect(() => {
@@ -142,12 +137,14 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   const [childId, setChildId] = useState<"1" | "2">("1");
   const [storyType, setStoryType] = useState<string>("quest");
-  const [length, setLength] = useState<"short" | "medium" | "long">("short");
+  // Only one story length exists now — Medium/Long (previously a Magic Pass
+  // paywall differentiator) are gone from this page entirely, not just hidden.
+  const length = "short" as const;
   const [languageCode, setLanguageCode] = useState<string>("en");
   const [theme, setTheme] = useState(prefilledTheme);
   const [lesson, setLesson] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger: UpgradeTrigger; lockedLength?: "medium" | "long" }>({ open: false, trigger: "no_credits" });
+  const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger: UpgradeTrigger }>({ open: false, trigger: "no_credits" });
 
   const { data: session } = authClient.useSession();
   const [otpModal, setOtpModal] = useState(false);
@@ -163,7 +160,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
     return () => clearInterval(t);
   }, [otpCooldown]);
 
-  const CREDIT_COST = LENGTHS.find((l) => l.value === length)?.credits ?? 80;
+  const CREDIT_COST = SHORT_STORY_CREDITS;
   const canAfford = availableCredits >= CREDIT_COST;
   // If the user can't afford the story, the button is always clickable to open the upgrade modal.
   // If they can afford it, the button requires a theme and no in-progress generation.
@@ -322,6 +319,10 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
           </div>
         </div>
 
+        {/* Every story builds these 4 skills — reinforces the app's core value
+            right where a parent decides to create one. */}
+        <PillarStrip />
+
         {/* Credits */}
         <div className="flex items-center justify-between px-5 py-3 rounded-2xl" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
           <div className="flex items-center gap-2 flex-wrap">
@@ -330,7 +331,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
               {isLoading ? "—" : availableCredits} credits available
             </span>
             <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: "rgba(45,45,45,0.4)" }}>
-              · 80–150 credits/story
+              · {SHORT_STORY_CREDITS} credits/story
             </span>
           </div>
           {!isLoading && availableCredits < 120 && (
@@ -369,14 +370,16 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
               </Section>
             )}
 
-            {/* Story Type */}
-            <Section icon={<Sparkles size={18} />} title="Story type">
-              <div className="flex flex-col gap-3">
+            {/* Story type + Language — merged into one section (was two full
+                cards for two simple choices; Story length used to sit
+                between them but is gone now that every story is Short). */}
+            <Section icon={<Sparkles size={18} />} title="Story type & language">
+              <div className="flex flex-col gap-2.5">
                 {resolvedStoryTypes.map((st: any) => (
                   <button
                     key={st.code}
                     onClick={() => setStoryType(st.code)}
-                    className="flex items-start gap-4 p-4 rounded-2xl text-left transition-all"
+                    className="flex items-start gap-3 p-3 rounded-2xl text-left transition-all"
                     style={{
                       position: "relative",
                       background: "#fff",
@@ -384,14 +387,14 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                       color: "var(--lf-dark)",
                     }}
                   >
-                    <span style={{ fontSize: "1.8rem", flexShrink: 0, lineHeight: 1 }}>{st.emoji}</span>
+                    <span style={{ fontSize: "1.6rem", flexShrink: 0, lineHeight: 1 }}>{st.emoji}</span>
                     <div className="flex flex-col gap-0.5 flex-1">
-                      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1rem" }}>
+                      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem" }}>
                         {st.name}
                       </span>
                       <span style={{
                         fontFamily: "'Nunito', sans-serif",
-                        fontSize: "0.83rem",
+                        fontSize: "0.8rem",
                         opacity: 0.55,
                       }}>
                         {st.description}
@@ -401,58 +404,16 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                   </button>
                 ))}
               </div>
-            </Section>
 
-            {/* Story length */}
-            <Section icon={<Ruler size={18} />} title="Story length">
-              <div className="flex gap-3 flex-wrap">
-                {LENGTHS.map((l) => {
-                  const locked = l.premium && !isPremium;
-                  const selected = length === l.value;
-                  return (
-                    <button
-                      key={l.value}
-                      onClick={() => {
-                        if (locked) {
-                          setUpgradeModal({ open: true, trigger: "locked_length", lockedLength: l.value as "medium" | "long" });
-                        } else {
-                          setLength(l.value);
-                        }
-                      }}
-                      className="flex flex-col gap-1 px-5 py-3 rounded-2xl text-left transition-all"
-                      style={{
-                        position: "relative",
-                        background: "#fff",
-                        border: `2px solid ${selected ? "var(--lf-teal)" : locked ? "rgba(0,201,167,0.3)" : LF_BORDER_IDLE}`,
-                        color: "var(--lf-dark)",
-                        cursor: "pointer",
-                        minWidth: 90,
-                      }}
-                    >
-                      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.9rem" }}>
-                        {l.label}{locked ? " 🔒" : ""}
-                      </span>
-                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", opacity: 0.75 }}>
-                        {l.desc}
-                      </span>
-                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: selected ? "var(--lf-teal)" : locked ? "var(--lf-teal)" : "rgba(45,45,45,0.45)" }}>
-                        {locked ? "Magic Pass only ✨" : `${l.credits} credits`}
-                      </span>
-                      {selected && <CheckBadge />}
-                    </button>
-                  );
-                })}
-              </div>
-            </Section>
+              <div style={{ height: 1, background: "rgba(0,0,0,0.06)", margin: "2px 0" }} />
 
-            {/* Language */}
-            <Section icon={<Globe size={18} />} title="Language">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Globe size={15} style={{ color: "rgba(45,45,45,0.4)", flexShrink: 0 }} />
                 {resolvedLanguages.map((lang: any) => (
                   <button
                     key={lang.code}
                     onClick={() => setLanguageCode(lang.code)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all"
                     style={{
                       background: "#fff",
                       border: `2px solid ${languageCode === lang.code ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
@@ -480,7 +441,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                     <button
                       key={t.name}
                       onClick={() => setTheme(theme === t.name ? "" : t.name)}
-                      className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
+                      className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-center transition-all"
                       style={{
                         position: "relative",
                         background: CARD_TINTS[i % CARD_TINTS.length],
@@ -488,10 +449,10 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                         color: "var(--lf-dark)",
                       }}
                     >
-                      <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>
+                      <span style={{ fontSize: "1.4rem", lineHeight: 1 }}>
                         {THEME_ICONS[t.name] ?? DEFAULT_THEME_ICON}
                       </span>
-                      <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.76rem", lineHeight: 1.2 }}>
                         {t.name}
                       </span>
                       {isSelected && <CheckBadge />}
@@ -531,7 +492,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                     <button
                       key={l.name}
                       onClick={() => setLesson(lesson === l.name ? "" : l.name)}
-                      className="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-center transition-all"
+                      className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-center transition-all"
                       style={{
                         position: "relative",
                         background: CARD_TINTS[(i + 1) % CARD_TINTS.length],
@@ -539,10 +500,10 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                         color: "var(--lf-dark)",
                       }}
                     >
-                      <span style={{ fontSize: "1.7rem", lineHeight: 1 }}>
+                      <span style={{ fontSize: "1.4rem", lineHeight: 1 }}>
                         {LESSON_ICONS[l.name] ?? DEFAULT_LESSON_ICON}
                       </span>
-                      <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1.2 }}>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: "0.76rem", lineHeight: 1.2 }}>
                         {l.name}
                       </span>
                       {isSelected && <CheckBadge />}
@@ -584,10 +545,12 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                 <button
                   onClick={handleGenerate}
                   disabled={(canAfford && !canGenerate) || otpSending}
-                  className="btn-primary w-full justify-center"
+                  className="btn-primary w-full justify-center transition-all hover:scale-[1.02] active:scale-95"
                   style={{
-                    fontSize: "1.05rem",
-                    padding: "1rem",
+                    background: "linear-gradient(135deg,#f9c700,#e6ac00)",
+                    fontSize: "1.1rem",
+                    padding: "1.15rem",
+                    boxShadow: (canGenerate && !otpSending) ? "0 6px 24px rgba(249,199,0,0.45)" : "none",
                     opacity: (canGenerate && !otpSending) ? 1 : 0.45,
                     cursor: (canGenerate && !otpSending) ? "pointer" : "not-allowed",
                   }}
@@ -624,7 +587,6 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
         open={upgradeModal.open}
         onClose={() => setUpgradeModal((m) => ({ ...m, open: false }))}
         trigger={upgradeModal.trigger}
-        lockedLength={upgradeModal.lockedLength}
         childName={childName}
       />
 
@@ -727,6 +689,36 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 }
 
 /* ── Small helpers ── */
+
+function PillarStrip() {
+  return (
+    <div className="rounded-2xl p-4" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+      <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", fontWeight: 800, color: "rgba(45,45,45,0.45)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 10px" }}>
+        Every story builds
+      </p>
+      <div className="grid grid-cols-4 gap-2">
+        {PILLAR_ORDER.map((p) => (
+          <div key={p} className="flex flex-col items-center gap-1 text-center">
+            <div
+              style={{
+                width: 38, height: 38, borderRadius: "50%",
+                background: `${PILLAR_COLORS[p]}1a`,
+                border: `1.5px solid ${PILLAR_COLORS[p]}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "1.1rem", flexShrink: 0,
+              }}
+            >
+              {PILLAR_EMOJI[p]}
+            </div>
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.64rem", fontWeight: 800, color: PILLAR_COLORS[p], lineHeight: 1.2 }}>
+              {PILLAR_LABELS_SHORT[p]}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
