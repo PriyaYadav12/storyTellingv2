@@ -404,6 +404,13 @@ export const generateChallenge = action({
 
     const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
+    // Real Gemini cost for this generation — was previously not tracked
+    // anywhere (see Task 5). Accumulated across the first attempt and the
+    // one retry-on-validation-failure, then persisted after a successful
+    // generation so it's folded into the story's estimatedCostUSD.
+    let challengeTextInputTokens = 0;
+    let challengeTextOutputTokens = 0;
+
     async function ask(extraInstruction?: string): Promise<any> {
       const userMessage = extraInstruction
         ? `${extraInstruction}\n\n${JSON.stringify(payload)}`
@@ -417,6 +424,9 @@ export const generateChallenge = action({
         },
         contents: [{ role: "user", parts: [{ text: userMessage }] }],
       });
+      const u = resp.usageMetadata;
+      challengeTextInputTokens += u?.promptTokenCount ?? 0;
+      challengeTextOutputTokens += (u?.candidatesTokenCount ?? 0) + (u?.thoughtsTokenCount ?? 0);
       const text = resp.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
       return JSON.parse(cleanJson(text));
     }
@@ -476,6 +486,13 @@ export const generateChallenge = action({
       quickCheckIndices: qcIndices,
       pillarFormatHistory,
     });
+
+    await ctx.runMutation(api.stories._setChallengeCost, {
+      storyId,
+      challengeTextInputTokens,
+      challengeTextOutputTokens,
+    });
+    await ctx.runMutation(internal.costTracking.maybeComputeFinalCost, { storyId });
 
     return { challengeId };
   },

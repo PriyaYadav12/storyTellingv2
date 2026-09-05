@@ -159,6 +159,19 @@ export const _markStatus = mutation({
 	},
 });
 
+export const _setChallengeCost = mutation({
+	args: {
+		storyId: v.id("stories"),
+		challengeTextInputTokens: v.number(),
+		challengeTextOutputTokens: v.number(),
+	},
+	handler: async (ctx, { storyId, challengeTextInputTokens, challengeTextOutputTokens }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) throw new Error("Story not found");
+		return await ctx.db.patch(storyId, { challengeTextInputTokens, challengeTextOutputTokens });
+	},
+});
+
 export const _setContent = mutation({
 	args: { storyId: v.id("stories"), content: v.string() },
 	handler: async (ctx, { storyId, content }) => {

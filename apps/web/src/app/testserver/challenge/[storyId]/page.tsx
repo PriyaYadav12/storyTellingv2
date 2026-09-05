@@ -679,12 +679,11 @@ export default function StoryChallengeScreen() {
         </span>
       </div>
 
-      {/* Story grounding snippet */}
-      {(q.storyGrounding ?? q.snippet) && (
-        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12.5, fontStyle: "italic", color: "rgba(14,10,31,0.55)", background: "var(--lf-peach)", borderRadius: 14, padding: "10px 14px", margin: "0 0 14px" }}>
-          &ldquo;{q.storyGrounding ?? q.snippet}&rdquo;
-        </p>
-      )}
+      {/* Story grounding snippet removed: the quote consistently named the correct
+          answer before the question was attempted (e.g. quoting the exact map
+          detail a question then asked about). No reliable way to guarantee a
+          model-generated quote never overlaps the answer, so the box is gone
+          rather than risk leaking it again. */}
 
       {/* Question text — skipped for fill_blank (FillBlankArea renders the sentence with blank itself) */}
       {fmt !== "fill_blank" && (

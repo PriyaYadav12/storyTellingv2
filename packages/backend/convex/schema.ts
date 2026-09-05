@@ -117,6 +117,11 @@ export default defineSchema({
 		textOutputTokens:    v.optional(v.number()),
 		imageGenerationCalls: v.optional(v.number()),
 		audioCharactersUsed: v.optional(v.number()),
+		// Written once by generateChallenge, if/when a Story Challenge is
+		// generated for this story — not part of the original three-phase set,
+		// since Challenge generation is a separate, later, on-demand call.
+		challengeTextInputTokens:  v.optional(v.number()),
+		challengeTextOutputTokens: v.optional(v.number()),
 		estimatedCostUSD:    v.optional(v.number()),
 
 		createdAt: v.number(),
