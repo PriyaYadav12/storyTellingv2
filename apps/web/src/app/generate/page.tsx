@@ -77,6 +77,12 @@ const CARD_TINTS = ["#FFF4E0", "#E6FAF6", "#F3EEFF", "#FFE8EC", "#E8F5E9", "#FFF
 
 const LF_BORDER_IDLE = "#c9b99a";
 
+// Shared "premium" card surface — a soft warm gradient + deeper shadow
+// instead of flat white, used across every Section/strip/bar on this page.
+const SURFACE_BG = "linear-gradient(180deg,#FFFFFF 0%,#FFFAF0 100%)";
+const SURFACE_BORDER = "1.5px solid rgba(201,185,154,0.3)";
+const SURFACE_SHADOW = "0 6px 20px rgba(80,60,20,0.07), 0 1px 3px rgba(0,0,0,0.04)";
+
 function CheckBadge() {
   return (
     <div style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18,
@@ -324,7 +330,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
         <PillarStrip />
 
         {/* Credits */}
-        <div className="flex items-center justify-between px-5 py-3 rounded-2xl" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center justify-between px-5 py-3 rounded-2xl" style={{ background: SURFACE_BG, border: SURFACE_BORDER, boxShadow: SURFACE_SHADOW }}>
           <div className="flex items-center gap-2 flex-wrap">
             <Zap size={18} style={{ color: "var(--lf-electric)" }} />
             <span style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 600, color: "var(--lf-dark)", fontSize: "0.9rem" }}>
@@ -355,7 +361,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
             {hasSecondChild && (
               <Section icon={<User size={18} />} title="Which child?">
                 <div className="flex gap-3">
-                  {(["1", "2"] as const).map((id) => {
+                  {(["1", "2"] as const).map((id, i) => {
                     const name = id === "1" ? profile?.childName : (profile as { child2Name?: string })?.child2Name;
                     return (
                       <OptionButton
@@ -363,6 +369,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                         selected={childId === id}
                         onClick={() => setChildId(id)}
                         label={name ?? `Child ${id}`}
+                        tint={CARD_TINTS[i % CARD_TINTS.length]}
                       />
                     );
                   })}
@@ -375,16 +382,17 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                 between them but is gone now that every story is Short). */}
             <Section icon={<Sparkles size={18} />} title="Story type & language">
               <div className="flex flex-col gap-2.5">
-                {resolvedStoryTypes.map((st: any) => (
+                {resolvedStoryTypes.map((st: any, i: number) => (
                   <button
                     key={st.code}
                     onClick={() => setStoryType(st.code)}
-                    className="flex items-start gap-3 p-3 rounded-2xl text-left transition-all"
+                    className="flex items-center gap-3 p-3 rounded-2xl text-left transition-all"
                     style={{
                       position: "relative",
-                      background: "#fff",
+                      background: CARD_TINTS[i % CARD_TINTS.length],
                       border: `2px solid ${storyType === st.code ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
                       color: "var(--lf-dark)",
+                      overflow: "hidden",
                     }}
                   >
                     <span style={{ fontSize: "1.6rem", flexShrink: 0, lineHeight: 1 }}>{st.emoji}</span>
@@ -400,6 +408,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                         {st.description}
                       </span>
                     </div>
+                    {i < 2 && <CharacterCrop side={i === 0 ? "left" : "right"} width={58} height={84} />}
                     {storyType === st.code && <CheckBadge />}
                   </button>
                 ))}
@@ -409,13 +418,13 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
               <div className="flex items-center gap-2 flex-wrap">
                 <Globe size={15} style={{ color: "rgba(45,45,45,0.4)", flexShrink: 0 }} />
-                {resolvedLanguages.map((lang: any) => (
+                {resolvedLanguages.map((lang: any, i: number) => (
                   <button
                     key={lang.code}
                     onClick={() => setLanguageCode(lang.code)}
                     className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all"
                     style={{
-                      background: "#fff",
+                      background: CARD_TINTS[i % CARD_TINTS.length],
                       border: `2px solid ${languageCode === lang.code ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
                       color: "var(--lf-dark)",
                       fontFamily: "'Nunito', sans-serif",
@@ -678,10 +687,15 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
 
 function PillarStrip() {
   return (
-    <div className="rounded-2xl p-4" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-      <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", fontWeight: 800, color: "rgba(45,45,45,0.45)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 10px" }}>
-        Every story builds
-      </p>
+    <div className="rounded-2xl p-4" style={{ position: "relative", background: SURFACE_BG, border: SURFACE_BORDER, boxShadow: SURFACE_SHADOW }}>
+      <div className="flex items-start justify-between">
+        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.7rem", fontWeight: 800, color: "rgba(45,45,45,0.45)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 10px" }}>
+          Every story builds
+        </p>
+        <div className="relative flex-shrink-0" style={{ width: 64, height: 82, marginTop: -36 }}>
+          <Image src="/lf-hero.png" alt="Lalli and Fafa" fill className="object-contain" style={{ objectPosition: "top", filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.15))" }} />
+        </div>
+      </div>
       <div className="grid grid-cols-4 gap-2">
         {PILLAR_ORDER.map((p) => (
           <div key={p} className="flex flex-col items-center gap-1 text-center">
@@ -706,11 +720,32 @@ function PillarStrip() {
   );
 }
 
+// Crops a single character (Lalli or Fafa) out of the shared lf-hero.png
+// duo image via object-fit:cover + a narrow container — no separate asset
+// needed since Lalli sits in the left half of that image and Fafa the right.
+function CharacterCrop({ side, width, height }: { side: "left" | "right"; width: number; height: number }) {
+  return (
+    <div className="relative flex-shrink-0" style={{ width, height }}>
+      <Image
+        src="/lf-hero.png"
+        alt=""
+        fill
+        style={{ objectFit: "cover", objectPosition: side === "left" ? "0% 8%" : "100% 8%" }}
+      />
+    </div>
+  );
+}
+
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 p-5 rounded-2xl" style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-      <div className="flex items-center gap-2" style={{ color: "var(--lf-dark)" }}>
-        <span style={{ color: "var(--lf-teal)" }}>{icon}</span>
+    <div className="flex flex-col gap-3 p-5 rounded-2xl" style={{ background: SURFACE_BG, border: SURFACE_BORDER, boxShadow: SURFACE_SHADOW }}>
+      <div className="flex items-center gap-2.5" style={{ color: "var(--lf-dark)" }}>
+        <div
+          className="flex items-center justify-center flex-shrink-0"
+          style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(0,201,167,0.12)", color: "var(--lf-teal)" }}
+        >
+          {icon}
+        </div>
         <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.95rem" }}>{title}</span>
       </div>
       {children}
@@ -718,13 +753,13 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
   );
 }
 
-function OptionButton({ selected, onClick, label }: { selected: boolean; onClick: () => void; label: React.ReactNode }) {
+function OptionButton({ selected, onClick, label, tint }: { selected: boolean; onClick: () => void; label: React.ReactNode; tint?: string }) {
   return (
     <button
       onClick={onClick}
       className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold transition-all"
       style={{
-        background: "#fff",
+        background: tint ?? "#fff",
         border: `2px solid ${selected ? "var(--lf-teal)" : LF_BORDER_IDLE}`,
         color: "var(--lf-dark)",
         fontFamily: "'Nunito', sans-serif",
