@@ -172,6 +172,31 @@ export const _setChallengeCost = mutation({
 	},
 });
 
+// Real visibility for Challenge generation exhausting every retry — previously
+// this only ever surfaced as an uncaught error inside a fire-and-forget
+// scheduled job, invisible anywhere in the product.
+export const _flagChallengeGenerationFailed = internalMutation({
+	args: { storyId: v.id("stories"), reason: v.string() },
+	handler: async (ctx, { storyId, reason }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story) return;
+		await ctx.db.patch(storyId, {
+			challengeGenerationError: `${new Date().toISOString()}: ${reason}`,
+		});
+	},
+});
+
+// Called once a later attempt (the client's on-demand fallback) succeeds, so
+// a resolved failure doesn't linger as a stale flag.
+export const _clearChallengeGenerationFailed = internalMutation({
+	args: { storyId: v.id("stories") },
+	handler: async (ctx, { storyId }) => {
+		const story = await ctx.db.get(storyId);
+		if (!story?.challengeGenerationError) return;
+		await ctx.db.patch(storyId, { challengeGenerationError: undefined });
+	},
+});
+
 export const _setContent = mutation({
 	args: { storyId: v.id("stories"), content: v.string() },
 	handler: async (ctx, { storyId, content }) => {

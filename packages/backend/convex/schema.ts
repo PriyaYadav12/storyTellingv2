@@ -131,6 +131,12 @@ export default defineSchema({
 		challengeTextInputTokens:  v.optional(v.number()),
 		challengeTextOutputTokens: v.optional(v.number()),
 		estimatedCostUSD:    v.optional(v.number()),
+		// Set when Challenge generation exhausts every retry (e.g. the model
+		// keeps producing an invalid EQ answer set) — previously this failed
+		// silently inside a fire-and-forget scheduled job with zero visibility
+		// anywhere in the product. Cleared automatically if a later attempt
+		// (the client's on-demand fallback) succeeds.
+		challengeGenerationError: v.optional(v.string()),
 
 		createdAt: v.number(),
 		updatedAt: v.number(),

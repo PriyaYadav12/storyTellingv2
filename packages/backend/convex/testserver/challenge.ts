@@ -277,6 +277,28 @@ function validateQuestions(
   return { ok: true };
 }
 
+// Turns a terse validation retryHint into a fuller corrective instruction for
+// the specific failure modes we have real evidence of the model repeating
+// across a retry. Real incident: an EQ question kept getting exactly 1
+// correctOptionId (not the required 2-3) through both the initial attempt
+// and the one retry that existed at the time — the terse hint alone wasn't
+// enough for the model to reliably self-correct. Falls back to the plain
+// hint, unchanged, for every other validation failure.
+function buildRetryCorrection(retryHint: string | undefined): string {
+  if (!retryHint) return "";
+  if (/must have 2 or 3 correctOptionIds/.test(retryHint)) {
+    return (
+      `CORRECTION REQUIRED: ${retryHint}\n\n` +
+      `Reminder: Emotional intelligence questions are deliberately NOT single-answer. ` +
+      `Feelings are ambiguous — define 2 or 3 reasonably valid feeling words as the ` +
+      `accepted set (e.g. both "nervous" and "worried" for a scene that's mildly ` +
+      `unsettling but not terrifying), never a single rigid "correct" feeling. Every ` +
+      `EQ question's correctOptionIds array must contain exactly 2 or 3 ids — not 1, not 4.`
+    );
+  }
+  return `CORRECTION REQUIRED: ${retryHint}`;
+}
+
 // ─── Parse model output into stored question shape ───────────────────────────
 
 function parseQuestion(raw: any, pillar: Pillar): any {
@@ -444,29 +466,41 @@ export const generateChallenge = action({
       parsed = null;
     }
 
-    // Validate; on failure retry once with targeted hint
     let validation: ValidationResult = { ok: false, retryHint: "Parse failed" };
     if (parsed?.questions && Array.isArray(parsed.questions)) {
       validation = validateQuestions(parsed.questions, dist, allowedFormats, qcIndices);
     }
 
-    if (!validation.ok) {
+    // Up to 2 retries (3 attempts total) with a targeted correction, not just
+    // 1 — real incident: an EQ question kept getting exactly 1
+    // correctOptionId through both the initial attempt and the single retry
+    // that used to exist, so the whole generation failed and (being a
+    // fire-and-forget scheduled job when eager-triggered) vanished with zero
+    // visibility. _flagChallengeGenerationFailed makes that visible now.
+    const MAX_CHALLENGE_ATTEMPTS = 3;
+    let attempt = 1;
+    while (!validation.ok && attempt < MAX_CHALLENGE_ATTEMPTS) {
+      attempt++;
       try {
-        parsed = await ask(validation.retryHint ? `CORRECTION REQUIRED: ${validation.retryHint}` : undefined);
+        parsed = await ask(buildRetryCorrection(validation.retryHint));
       } catch {
-        throw new Error("Story Challenge generation failed after retry. Flagged for manual review.");
+        parsed = null;
       }
-      if (parsed?.questions && Array.isArray(parsed.questions)) {
-        validation = validateQuestions(parsed.questions, dist, allowedFormats, qcIndices);
-      } else {
-        validation = { ok: false };
-      }
-      if (!validation.ok) {
-        throw new Error(
-          `Story Challenge generation failed validation twice. Flagged for manual review. Last issue: ${validation.retryHint ?? "unknown"}`
-        );
-      }
+      validation = parsed?.questions && Array.isArray(parsed.questions)
+        ? validateQuestions(parsed.questions, dist, allowedFormats, qcIndices)
+        : { ok: false, retryHint: "Parse failed" };
     }
+
+    if (!validation.ok) {
+      const reason = `failed validation after ${attempt} attempts. Last issue: ${validation.retryHint ?? "unknown"}`;
+      await ctx.runMutation(internal.stories._flagChallengeGenerationFailed, { storyId, reason });
+      throw new Error(`Story Challenge generation ${reason} Flagged for manual review.`);
+    }
+    // A different, earlier invocation for this story (e.g. the eager
+    // scheduled attempt) may have failed and flagged itself — this one
+    // succeeded, so clear any stale flag regardless of which attempt within
+    // *this* call it took. Safe no-op if nothing was flagged.
+    await ctx.runMutation(internal.stories._clearChallengeGenerationFailed, { storyId });
 
     // Map raw output to stored question shape
     const questions = parsed.questions.map((q: any, i: number) =>
@@ -546,6 +580,13 @@ export const generateChallengeBypass = internalAction({
   handler: async (ctx, { storyId, userId, childAge: childAgeOverride }): Promise<{ challengeId: string }> => {
     const story = await ctx.runQuery(api.stories.get, { storyId });
     if (!story || !story.content) throw new Error("Story not ready yet");
+
+    // Same dedup as generateChallenge above — Convex's scheduler is
+    // at-least-once, not exactly-once, so a re-delivered job (or any future
+    // caller invoking this action twice for the same story) must converge on
+    // the same row rather than silently inserting a second challenge.
+    const existing = await ctx.runQuery(internal.testserver.challenge._getExistingForStory, { userId, storyId });
+    if (existing) return { challengeId: existing._id };
 
     const childName: string = (story as any).params?.childName || "the child";
 
@@ -637,21 +678,28 @@ export const generateChallengeBypass = internalAction({
       validation = validateQuestions(parsed.questions, dist, allowedFormats, qcIndices);
     }
 
-    if (!validation.ok) {
+    // Same 3-attempt-total, targeted-correction, real-visibility fix as
+    // generateChallenge above — see that copy for the incident this fixes.
+    const MAX_CHALLENGE_ATTEMPTS = 3;
+    let attempt = 1;
+    while (!validation.ok && attempt < MAX_CHALLENGE_ATTEMPTS) {
+      attempt++;
       try {
-        parsed = await ask(validation.retryHint ? `CORRECTION REQUIRED: ${validation.retryHint}` : undefined);
+        parsed = await ask(buildRetryCorrection(validation.retryHint));
       } catch {
-        throw new Error("Story Challenge generation failed after retry");
+        parsed = null;
       }
-      if (parsed?.questions && Array.isArray(parsed.questions)) {
-        validation = validateQuestions(parsed.questions, dist, allowedFormats, qcIndices);
-      } else {
-        validation = { ok: false };
-      }
-      if (!validation.ok) {
-        throw new Error(`Story Challenge generation failed validation twice. Last issue: ${validation.retryHint ?? "unknown"}`);
-      }
+      validation = parsed?.questions && Array.isArray(parsed.questions)
+        ? validateQuestions(parsed.questions, dist, allowedFormats, qcIndices)
+        : { ok: false, retryHint: "Parse failed" };
     }
+
+    if (!validation.ok) {
+      const reason = `failed validation after ${attempt} attempts. Last issue: ${validation.retryHint ?? "unknown"}`;
+      await ctx.runMutation(internal.stories._flagChallengeGenerationFailed, { storyId, reason });
+      throw new Error(`Story Challenge generation ${reason}`);
+    }
+    await ctx.runMutation(internal.stories._clearChallengeGenerationFailed, { storyId });
 
     const questions = parsed.questions.map((q: any, i: number) => parseQuestion(q, pillarPlan[i]));
     const pillarFormatHistory = questions.map((q: any) => ({ pillar: q.pillar, format: q.format ?? "mcq" }));
