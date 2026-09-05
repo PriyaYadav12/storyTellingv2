@@ -2,7 +2,7 @@
 
 import { use, useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Lottie from "lottie-react";
@@ -555,12 +555,17 @@ function StoryViewer({
   const { isAuthenticated } = useConvexAuth();
   const subscription = useQuery(api.subscription.getSubscription, isAuthenticated ? {} : "skip");
   const isPremium = subscription?.status === "active";
-  // Story Challenge staged rollout (Phase 5) — only allowlisted/admin accounts
-  // see the Challenge CTA; everyone else gets the original 2-option end screen.
+  // Story Challenge is available to every authenticated account (the earlier
+  // staged-rollout allowlist was removed once verified). Unauthenticated
+  // visitors get the original End screen instead.
   const challengeEnabled = useQuery(
     api["testserver/_shared"].isChallengeRolloutEnabled,
     isAuthenticated ? {} : "skip"
   );
+  const searchParams = useSearchParams();
+  // Set by the Challenge screen's own "Do it later" opt-out (Task 4) — lands
+  // back here instead of being redirected straight back into Challenge.
+  const skipChallenge = searchParams.get("skipChallenge") === "1";
 
   /* Scene state */
   const scenes: SceneMeta[] = story?.sceneMetadata ?? [];
@@ -668,6 +673,21 @@ function StoryViewer({
 
   const storyRouter = useRouter();
   const generateStoryAction = useAction(api.generateStoryV2.enqueueStoryV2);
+
+  // Task 4 — direct transition: playback ending goes straight into Story
+  // Challenge instead of an intermediate "The End" card, since Challenge
+  // generation is now kicked off eagerly during story generation and is
+  // normally already waiting by the time this fires. Skipped when the user
+  // came back here via the Challenge screen's own "Do it later" opt-out.
+  useEffect(() => {
+    if (!storyEnded || skipChallenge) return;
+    if (challengeEnabled === undefined) return; // still resolving — wait rather than flash the old screen
+    if (!challengeEnabled) return;
+    // StoryViewer isn't passed the story id as a prop (see the Share section
+    // below, which derives it the same way) — pull it from the URL instead.
+    const sid = typeof window !== "undefined" ? window.location.pathname.split("/").pop() ?? "" : "";
+    if (sid) storyRouter.push(`/testserver/challenge/${sid}`);
+  }, [storyEnded, skipChallenge, challengeEnabled, storyRouter]);
 
   const handleSequel = async () => {
     if (sequelLoading || !story) return;
@@ -1335,8 +1355,11 @@ function StoryViewer({
         transition: "filter 0.8s ease, background 0.4s ease",
       }}
     >
-      {/* ── "The End" overlay — fixed modal that appears when narration finishes ── */}
-      {storyEnded && (
+      {/* ── "The End" overlay ── shown only as a fallback now: when the user opted
+          out of the direct Challenge transition ("Do it later"), or when Challenge
+          isn't available for this account (e.g. unauthenticated). Otherwise
+          storyEnded routes straight into Story Challenge — see the useEffect above. */}
+      {storyEnded && (skipChallenge || challengeEnabled === false) && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center px-5"
           style={{ background: "rgba(0,0,0,0.78)", backdropFilter: "blur(10px)" }}

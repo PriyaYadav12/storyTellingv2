@@ -105,6 +105,11 @@ interface ValidationIssue {
   severity:    ValidationSeverity;
   description: string;
   repairHint:  string;
+  // True when the underlying speaker has NO matching lines at all (not just
+  // fewer than the minimum) — the repair prompt needs to explicitly mandate
+  // the "Name: ..." line format in this case, since there's no existing
+  // instance of it in the story to imitate.
+  zeroLines?:  boolean;
 }
 
 // ─── Deterministic validator ──────────────────────────────────────────────────
@@ -204,17 +209,20 @@ function runDeterministicValidation(
     severity: "critical",
     description: `Lalli speaks ${lalliCount} line(s); minimum is 2.`,
     repairHint:  "Add at least one more Lalli dialogue line that fits naturally in the story.",
+    zeroLines:   lalliCount === 0,
   });
   if (fafaCount < 2) issues.push({
     code: "FAFA_TOO_FEW_LINES",
     severity: "critical",
     description: `Fafa speaks ${fafaCount} line(s); minimum is 2 (gag + one other).`,
     repairHint:  "Add a Fafa dialogue line (not the gag) that fits naturally.",
+    zeroLines:   fafaCount === 0,
   });
   if (childCount < 1) issues.push({
     code: "CHILD_NO_LINES",
     severity: "critical",
     description: `${childName} has no dialogue.`,
+    zeroLines: true,
     repairHint:  `Add one meaningful dialogue line for ${childName} that actively contributes to the plot.`,
   });
 
@@ -387,13 +395,32 @@ async function runTargetedRepair(
   content:       string,
   issues:        ValidationIssue[],
   wordCountLabel: string,
+  childName:     string,
   makeRequest:   (temp: number, text: string) => Promise<{ candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }>
 ): Promise<string> {
   const criticals = issues.filter((i) => i.severity === "critical");
   const warnings  = issues.filter((i) => i.severity === "warning");
 
+  const speakerLabelFor = (code: string): string =>
+    code === "LALLI_TOO_FEW_LINES" ? "Lalli" :
+    code === "FAFA_TOO_FEW_LINES"  ? "Fafa"  :
+    code === "CHILD_NO_LINES"      ? childName : "";
+
+  // Root-caused from a real incident: the blanket "keep structural labels
+  // unchanged" rule below presumes a speaker's lines already exist somewhere
+  // to imitate. When a speaker has ZERO lines in the whole story (the model
+  // wrote pure narration with inline quotes instead), that assumption is
+  // false — repair kept producing more narration-with-quotes because nothing
+  // told it the exact "Name: ..." prefix format had to be introduced, not
+  // just preserved. This ran 3 times identically before failing loud.
+  const zeroLinesMandate = (i: ValidationIssue): string => {
+    if (!i.zeroLines) return "";
+    const speaker = speakerLabelFor(i.code);
+    return `\n  MANDATORY FORMAT: ${speaker} currently has ZERO lines anywhere in this story — there is no existing "${speaker}:" line to match. You must introduce a brand-new line written EXACTLY as ${speaker}: "..." starting at the beginning of its own line. Do NOT embed it as a quote inside narration prose (e.g. NOT ${speaker} said, "..."). The "${speaker}:" prefix at the start of the line is mandatory — this is what determines whether the fix is accepted.`;
+  };
+
   const issueBlock = [
-    ...criticals.map((i, n) => `CRITICAL ${n + 1}: ${i.description}\n  FIX: ${i.repairHint}`),
+    ...criticals.map((i, n) => `CRITICAL ${n + 1}: ${i.description}\n  FIX: ${i.repairHint}${zeroLinesMandate(i)}`),
     ...warnings .map((i, n) => `WARNING  ${n + 1}: ${i.description}\n  FIX: ${i.repairHint}`),
   ].join("\n\n");
 
@@ -404,7 +431,7 @@ async function runTargetedRepair(
     `• Fix ONLY the listed issues — do not change plot, setting, or character names.\n` +
     `• Keep the word count close to ${wordCountLabel} words in the story body.\n` +
     `• Do not add or remove scenes.\n` +
-    `• Keep all structural labels (SCENE METADATA, Scene 1:, Lalli:, Fafa:) unchanged.\n` +
+    `• Every line of dialogue must use the exact format Name: "line" at the start of its own line (Lalli:, Fafa:, or ${childName}:) — never as a quote embedded inside narration prose. This applies whether that format already exists in the story or needs to be introduced for a speaker who currently has none.\n` +
     `• Return the COMPLETE corrected story: title + body + SCENE METADATA.\n\n` +
     `ORIGINAL STORY:\n${content}\n\nCORRECTED STORY:`;
 
@@ -422,9 +449,9 @@ async function runTargetedRepair(
   const topIssues = criticals.slice(0, 3);
   const fallbackPrompt =
     `Rewrite this children's story to fix these problems:\n` +
-    topIssues.map((i, n) => `${n + 1}. ${i.repairHint}`).join("\n") +
+    topIssues.map((i, n) => `${n + 1}. ${i.repairHint}${zeroLinesMandate(i)}`).join("\n") +
     `\n\nRules: keep the same characters, setting, and plot. Stay close to ${wordCountLabel} words. ` +
-    `Preserve all structural labels (SCENE METADATA, Scene N:, Lalli:, Fafa:). Return the complete story.\n\n` +
+    `Every line of dialogue must use the exact format Name: "line" at the start of its own line (Lalli:, Fafa:, or ${childName}:), introducing it for a speaker who currently has none if needed. Preserve all other structural labels (SCENE METADATA, Scene N:). Return the complete story.\n\n` +
     `STORY:\n${content}\n\nREWRITTEN STORY:`;
 
   try {
@@ -1112,7 +1139,7 @@ export const _generateContentV2 = internalAction({
       while (issuesToRepair.length > 0 && attempt < MAX_REPAIR_ATTEMPTS) {
         attempt++;
         content = await runTargetedRepair(
-          content, issuesToRepair, wordCount.label, makeRequest
+          content, issuesToRepair, wordCount.label, childInfo.name, makeRequest
         );
 
         const recheck = runDeterministicValidation(content, childInfo.name, ageGroup);
@@ -1139,6 +1166,15 @@ export const _generateContentV2 = internalAction({
           issuesToRepair.map((i) => i.code).join(", ")
         );
         await ctx.runMutation(api.stories._setContent, { storyId, content });
+        // Real Gemini cost was already spent (1 initial generation + up to
+        // MAX_REPAIR_ATTEMPTS repair calls) — persist it the same way a
+        // successful generation does, rather than discarding it on this
+        // early return. maybeComputeFinalCost (scheduled by _setTextUsage)
+        // won't produce a dollar figure since images/audio never run for a
+        // failed story, but the real token counts are no longer silently lost.
+        await ctx.runMutation((api as any).stories._setTextUsage, {
+          storyId, textInputTokens, textOutputTokens,
+        });
         await ctx.runMutation(api.stories._markStatus, {
           storyId,
           status: "error",
@@ -1204,6 +1240,18 @@ export const _generateContentV2 = internalAction({
     await ctx.scheduler.runAfter(0, internal.internal.generateNarration.generateNarration, {
       storyId,
       child: { name: childInfo.name, gender: childInfo.gender, phoneticName: childInfo.phoneticName },
+    });
+
+    // Story Challenge generation, eager for every story (Task 4): kicked off
+    // here, in parallel with images/narration, rather than waiting for a
+    // user tap on the "The End" screen. Uses generateChallengeBypass, not
+    // the client-facing generateChallenge action, because there is no user
+    // session/auth context inside a scheduled server action — see that
+    // function's own doc comment for why the no-auth path is safe here
+    // (internalAction, never reachable from any client).
+    await ctx.scheduler.runAfter(0, internal.testserver.challenge.generateChallengeBypass, {
+      storyId,
+      userId,
     });
 
     // ── 5c. Voice/emotion metadata extraction ────────────────────────────

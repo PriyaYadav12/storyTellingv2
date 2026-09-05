@@ -373,6 +373,29 @@ function SequenceArea({
   );
 }
 
+// Opt-out for the now-direct playback-end → Challenge transition (Task 4):
+// the old "The End" 3-button card is skipped, so this is the only way to
+// back out of Challenge without answering it.
+function OptOutLinks({ storyId }: { storyId: string }) {
+  const router = useRouter();
+  return (
+    <div style={{ display: "flex", gap: 16 }}>
+      <button
+        onClick={() => router.push(`/story/${storyId}?skipChallenge=1`)}
+        style={{ background: "none", border: "none", padding: 0, fontFamily: "'Nunito', sans-serif", fontSize: 12.5, fontWeight: 700, color: "rgba(14,10,31,0.45)", textDecoration: "underline", cursor: "pointer" }}
+      >
+        Do it later
+      </button>
+      <button
+        onClick={() => router.push("/generate")}
+        style={{ background: "none", border: "none", padding: 0, fontFamily: "'Nunito', sans-serif", fontSize: 12.5, fontWeight: 700, color: "rgba(14,10,31,0.45)", textDecoration: "underline", cursor: "pointer" }}
+      >
+        Generate a new story
+      </button>
+    </div>
+  );
+}
+
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function StoryChallengeScreen() {
@@ -492,6 +515,7 @@ export default function StoryChallengeScreen() {
             That one didn&apos;t come out right.
           </p>
           <button className="btn-primary" onClick={retryGeneration}>Try again</button>
+          <OptOutLinks storyId={String(sid)} />
         </div>
       );
     }
@@ -501,6 +525,7 @@ export default function StoryChallengeScreen() {
         <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 14, color: "var(--lf-dark)" }}>
           Lalli and Fafa are getting your questions ready…
         </p>
+        <OptOutLinks storyId={String(sid)} />
       </div>
     );
   }
@@ -646,6 +671,10 @@ export default function StoryChallengeScreen() {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 20, maxWidth: 460, margin: "0 auto", width: "100%" }}>
       <audio ref={bgAudioRef} src={track} loop />
+
+      <div style={{ marginBottom: 10 }}>
+        <OptOutLinks storyId={String(sid)} />
+      </div>
 
       {/* Progress row */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>

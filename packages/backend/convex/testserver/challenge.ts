@@ -498,7 +498,7 @@ export const generateChallenge = action({
   },
 });
 
-// ─── No-session challenge generator — testserver dashboard use only ──────────
+// ─── No-session challenge generator ──────────────────────────────────────────
 //
 // SECURITY NOTE — NO AUTH CHECK IS INTENTIONAL AND SAFE ONLY UNDER ONE CONDITION:
 //
@@ -518,10 +518,14 @@ export const generateChallenge = action({
 //
 // PURPOSE:
 //   Replicates `generateChallenge` for cases where no active user session is
-//   available — primarily dashboard-triggered generation for test/QA stories.
-//   Accepts an explicit userId so pillar-format history and the stored challenge
-//   row are correctly tied to the right account. Derives childAge from the
-//   story's linked profile automatically (pass childAge only to override).
+//   available. Originally built for dashboard-triggered generation on test/QA
+//   stories; as of Task 4 (eager Challenge generation) this is now also the
+//   primary path — generateStoryV2 schedules it for every real story right
+//   after text_ready, in parallel with images/narration, since there is no
+//   user session inside a scheduled server action. Accepts an explicit userId
+//   so pillar-format history and the stored challenge row are correctly tied
+//   to the right account. Derives childAge from the story's linked profile
+//   automatically (pass childAge only to override).
 //
 // Usage: Convex dashboard → Functions → Run internal function
 //   internal > testserver > challenge > generateChallengeBypass
@@ -599,6 +603,9 @@ export const generateChallengeBypass = internalAction({
 
     const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
+    let challengeTextInputTokens = 0;
+    let challengeTextOutputTokens = 0;
+
     async function ask(extraInstruction?: string): Promise<any> {
       const userMessage = extraInstruction
         ? `${extraInstruction}\n\n${JSON.stringify(payload)}`
@@ -608,6 +615,9 @@ export const generateChallengeBypass = internalAction({
         config: { temperature: 0.7, responseMimeType: "application/json", systemInstruction: systemPrompt },
         contents: [{ role: "user", parts: [{ text: userMessage }] }],
       });
+      const u = resp.usageMetadata;
+      challengeTextInputTokens += u?.promptTokenCount ?? 0;
+      challengeTextOutputTokens += (u?.candidatesTokenCount ?? 0) + (u?.thoughtsTokenCount ?? 0);
       const text = resp.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
       return JSON.parse(cleanJson(text));
     }
@@ -651,6 +661,13 @@ export const generateChallengeBypass = internalAction({
       quickCheckIndices: qcIndices,
       pillarFormatHistory,
     });
+
+    await ctx.runMutation(api.stories._setChallengeCost, {
+      storyId,
+      challengeTextInputTokens,
+      challengeTextOutputTokens,
+    });
+    await ctx.runMutation(internal.costTracking.maybeComputeFinalCost, { storyId });
 
     return { challengeId };
   },
