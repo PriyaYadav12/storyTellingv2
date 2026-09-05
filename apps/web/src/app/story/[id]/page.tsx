@@ -1873,7 +1873,7 @@ function StoryViewer({
                   {formatTime(currentTime)}
                 </span>
                 <div className="flex-1 relative h-1.5 rounded-full" style={{ background: lightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.12)" }}>
-                  <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%", background: "linear-gradient(90deg,var(--lf-teal),#00a38d)" }} />
+                  <div className="absolute left-0 top-0 h-full rounded-full" style={{ width: duration ? `${Math.min(100, (currentTime / duration) * 100)}%` : "0%", background: "linear-gradient(90deg,var(--lf-teal),#00a38d)" }} />
                   <input type="range" min={0} max={duration || 0} step={0.1} value={currentTime} onChange={onScrubberChange} onMouseDown={() => setSeeking(true)} onMouseUp={() => setSeeking(false)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style={{ margin: 0 }} />
                 </div>
                 <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.72rem", fontWeight: 700, color: t.textFaint, minWidth: 34 }}>
