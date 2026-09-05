@@ -253,9 +253,17 @@ export default function ResultsScreen() {
 
         <div style={{ flex: 1 }} />
 
-        <button onClick={startGrowthStory} disabled={starting} className="btn-primary" style={{ justifyContent: "center", width: "100%", marginBottom: 8, marginTop: 16, fontSize: 15.5, padding: "0.85rem" }}>
-          {starting ? "Starting…" : `${suggestion.emoji} Next: "${nextTheme}"`}
+        <button onClick={startGrowthStory} disabled={starting} className="btn-primary" style={{ justifyContent: "center", width: "100%", marginTop: 16, fontSize: 15.5, padding: "0.85rem" }}>
+          {starting ? "Starting…" : `Next: "${nextTheme}"`}
         </button>
+        {/* Names the actual connection driving this suggestion — the button
+            alone just shows a theme name, indistinguishable from a random
+            pick. suggestion.emoji lives here (next to the pillar it
+            represents) instead of next to the theme, since it's tied to
+            growingIn, not to nextTheme. */}
+        <p style={{ textAlign: "center", margin: "6px 0 8px", fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700, color: "rgba(14,10,31,0.5)" }}>
+          {suggestion.emoji} A {suggestion.lesson} story to help build {PILLAR_LABELS[growingIn]}
+        </p>
         <button
           onClick={() => router.push(homeHref)}
           className="btn-ghost"
@@ -291,12 +299,12 @@ function PillarCard({
 }) {
   return (
     <div style={{ borderRadius: 18, overflow: "hidden", marginBottom: 12, border: `1px solid ${borderColor}` }}>
-      <div style={{ position: "relative", width: "100%", height: 165, background: "#eee" }}>
+      <div style={{ position: "relative", width: "100%", height: 175, background: "#eee" }}>
         <Image
           src={PILLAR_IMAGES[pillar]}
           alt={PILLAR_LABELS[pillar]}
           fill
-          style={{ objectFit: "cover", objectPosition: "center 38%" }}
+          style={{ objectFit: "cover", objectPosition: "center 50%" }}
         />
       </div>
       <div style={{ background: panelBg, padding: "10px 14px 13px" }}>

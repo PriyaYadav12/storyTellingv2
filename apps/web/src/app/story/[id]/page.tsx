@@ -1042,17 +1042,35 @@ function StoryViewer({
   }, [playbackRate]);
 
   // Accept a finite duration from the audio element; ignore Infinity (no Accept-Ranges on Convex).
+  //
+  // Settle once, then stop: real incident — for an MP3 with no Xing/VBRI
+  // duration header served via Range requests, Chrome's live duration
+  // estimate kept climbing well past the file's real length as more of it
+  // buffered during playback (a real narration file measured at 163s via
+  // stored audioDurationSeconds AND file-size÷bitrate reported 163.1s on
+  // first load, then 196s+ later in the same playback, with nothing new
+  // actually in the file). Take the larger of the stored value and the
+  // FIRST live reading once, then ignore every later durationchange —
+  // those are the re-estimate, not new information.
+  const settleDuration = (liveSeconds: number) => {
+    if (reliableDuration > 0) return; // already settled — later events are the bug, not new data
+    const stored = story?.audioDurationSeconds;
+    const settled = stored && stored > 0 ? Math.max(stored, liveSeconds) : liveSeconds;
+    setDuration(settled);
+    setReliableDuration(settled);
+  };
   const onLoadedMetadata = () => {
     if (!audioRef.current) return;
     const d = audioRef.current.duration;
-    if (isFinite(d) && d > 0) { setDuration(d); setReliableDuration(d); }
+    if (isFinite(d) && d > 0) settleDuration(d);
     audioRef.current.playbackRate = playbackRate;
   };
-  // durationchange fires later as the browser buffers more — catch it too.
+  // durationchange fires later as the browser buffers more — catch it too
+  // (still gated by settleDuration's own "already settled" check).
   const onDurationChange = () => {
     if (!audioRef.current) return;
     const d = audioRef.current.duration;
-    if (isFinite(d) && d > 0) { setDuration(d); setReliableDuration(d); }
+    if (isFinite(d) && d > 0) settleDuration(d);
   };
   const onEnded = () => { setIsPlaying(false); setStoryEnded(true); };
 
