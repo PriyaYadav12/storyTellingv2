@@ -477,47 +477,48 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           ))}
         </section>
 
-        {/* ── Quick actions ── */}
-        <section className="grid sm:grid-cols-3 gap-4">
+        {/* ── Quick actions — horizontal icon+text rows instead of stacked
+             icon-over-text with p-5, matching the stat-card tightening above. ── */}
+        <section className="grid sm:grid-cols-3 gap-3">
           <button
             onClick={() => router.push('/generate')}
-            className="flex flex-col items-start gap-3 p-5 rounded-2xl text-left transition-all hover:-translate-y-1 hover:shadow-lg active:scale-98"
+            className="flex items-center gap-3 py-3 px-3.5 rounded-xl text-left transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-98"
             style={{ background: "linear-gradient(135deg,rgba(0,201,167,0.12),rgba(0,201,167,0.06))", border: "1.5px solid rgba(0,201,167,0.35)" }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--lf-teal)" }}>
-              <Sparkles size={20} color="#fff" />
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--lf-teal)" }}>
+              <Sparkles size={17} color="#fff" />
             </div>
-            <div>
-              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "1rem", color: "var(--lf-dark)" }}>Generate Story</p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.55)" }}>Ready in under 2 minutes</p>
+            <div className="min-w-0">
+              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.9rem", color: "var(--lf-dark)" }}>Generate Story</p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.74rem", color: "rgba(45,45,45,0.55)" }}>Ready in under 2 minutes</p>
             </div>
           </button>
 
           <Link
             href="/library"
-            className="flex flex-col items-start gap-3 p-5 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg"
+            className="flex items-center gap-3 py-3 px-3.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md"
             style={{ background: "linear-gradient(135deg,rgba(249,199,0,0.12),rgba(249,199,0,0.06))", border: "1.5px solid rgba(249,199,0,0.4)" }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#f9c700" }}>
-              <Library size={20} color="#fff" />
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#f9c700" }}>
+              <Library size={17} color="#fff" />
             </div>
-            <div>
-              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "1rem", color: "var(--lf-dark)" }}>My Library</p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.55)" }}>All {stats.storiesCreated} stories</p>
+            <div className="min-w-0">
+              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.9rem", color: "var(--lf-dark)" }}>My Library</p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.74rem", color: "rgba(45,45,45,0.55)" }}>All {stats.storiesCreated} stories</p>
             </div>
           </Link>
 
           <Link
             href="/profile"
-            className="flex flex-col items-start gap-3 p-5 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg"
+            className="flex items-center gap-3 py-3 px-3.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md"
             style={{ background: "linear-gradient(135deg,rgba(168,85,247,0.1),rgba(168,85,247,0.05))", border: "1.5px solid rgba(168,85,247,0.3)" }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--lf-electric)" }}>
-              <User size={20} color="#fff" />
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--lf-electric)" }}>
+              <User size={17} color="#fff" />
             </div>
-            <div>
-              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "1rem", color: "var(--lf-dark)" }}>Child Profile</p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.82rem", color: "rgba(45,45,45,0.55)" }}>Update {childName}'s info</p>
+            <div className="min-w-0">
+              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: "0.9rem", color: "var(--lf-dark)" }}>Child Profile</p>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.74rem", color: "rgba(45,45,45,0.55)" }}>Update {childName}'s info</p>
             </div>
           </Link>
         </section>
