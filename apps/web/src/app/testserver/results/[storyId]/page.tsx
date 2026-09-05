@@ -291,12 +291,12 @@ function PillarCard({
 }) {
   return (
     <div style={{ borderRadius: 18, overflow: "hidden", marginBottom: 12, border: `1px solid ${borderColor}` }}>
-      <div style={{ position: "relative", width: "100%", height: 130, background: "#eee" }}>
+      <div style={{ position: "relative", width: "100%", height: 165, background: "#eee" }}>
         <Image
           src={PILLAR_IMAGES[pillar]}
           alt={PILLAR_LABELS[pillar]}
           fill
-          style={{ objectFit: "cover", objectPosition: "top center" }}
+          style={{ objectFit: "cover", objectPosition: "center 38%" }}
         />
       </div>
       <div style={{ background: panelBg, padding: "10px 14px 13px" }}>
