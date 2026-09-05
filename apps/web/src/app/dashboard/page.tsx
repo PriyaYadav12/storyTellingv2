@@ -31,7 +31,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PILLAR_ORDER, PILLAR_EMOJI, PILLAR_LABELS_SHORT } from "../testserver/_lib/pillars";
+import { PILLAR_ORDER, PILLAR_EMOJI, PILLAR_LABELS_SHORT, PILLAR_COLORS } from "../testserver/_lib/pillars";
 
 /* ── Theme → scene image map ── */
 const THEME_IMAGES: Record<string, string> = {
@@ -274,14 +274,14 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-5 py-8 pb-24 md:pb-8 flex flex-col gap-8">
+      <main className="max-w-6xl mx-auto px-5 py-6 pb-24 md:pb-8 flex flex-col gap-6">
 
         {/* ── Hero welcome banner ── */}
         <section
           className="relative overflow-hidden rounded-3xl"
           style={{
             background: "linear-gradient(135deg,#131020 0%,#1a1740 50%,#0d2d26 100%)",
-            minHeight: 220,
+            minHeight: 180,
           }}
         >
           {/* Floating sparkles */}
@@ -295,7 +295,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
           <div className="absolute" style={{ top: -60, right: 120, width: 280, height: 280, background: "radial-gradient(circle,rgba(0,201,167,0.25) 0%,transparent 70%)", pointerEvents: "none" }} />
           <div className="absolute" style={{ bottom: -40, left: 80, width: 200, height: 200, background: "radial-gradient(circle,rgba(249,199,0,0.2) 0%,transparent 70%)", pointerEvents: "none" }} />
 
-          <div className="relative flex flex-col md:flex-row items-center gap-6 px-8 py-8">
+          <div className="relative flex flex-col md:flex-row items-center gap-6 px-6 py-6">
             {/* Text */}
             <div className="flex-1 flex flex-col gap-4">
               <div>
@@ -389,67 +389,90 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
         )}
 
         {/* ── Story Challenge teaser (Phase 4 — staged rollout, only shows for
-             allowlisted/admin accounts) ── */}
+             allowlisted/admin accounts) ── real per-pillar scores shown right
+             here now — previously this only listed pillar names with no
+             values at all, so "growth" was invisible unless you clicked
+             through to /growth. The data (perPillar correct/total) was
+             already being fetched, just never rendered. ── */}
         {challengeEnabled && challengeSummary && (
           <div
-            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-2xl"
+            className="flex flex-col gap-3 p-4 rounded-2xl"
             style={{ background: "linear-gradient(135deg,rgba(249,199,0,0.1),rgba(0,201,167,0.06))", border: "1.5px solid rgba(249,199,0,0.35)" }}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#f9c700,#e6ac00)" }}>
-                {challengeSummary.pending ? <Trophy size={19} color="#1a1a2e" /> : <TrendingUp size={19} color="#1a1a2e" />}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#f9c700,#e6ac00)" }}>
+                  {challengeSummary.pending ? <Trophy size={19} color="#1a1a2e" /> : <TrendingUp size={19} color="#1a1a2e" />}
+                </div>
+                <div>
+                  <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "var(--lf-dark)" }}>
+                    {challengeSummary.pending ? "Story Challenge ready" : "This week's growth"}
+                  </p>
+                  {challengeSummary.latest && (
+                    <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", fontWeight: 600, color: "rgba(45,45,45,0.55)" }}>
+                      {challengeSummary.latest.gradableCorrect}/{challengeSummary.latest.gradableTotal} correct · superpower: {PILLAR_LABELS_SHORT[challengeSummary.latest.superpower as keyof typeof PILLAR_LABELS_SHORT]}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div>
-                <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "0.95rem", color: "var(--lf-dark)" }}>
-                  {challengeSummary.pending ? "Story Challenge ready" : "See this week's growth"}
-                </p>
-                {challengeSummary.latest && (
-                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
-                    {[["listening", "attention"], ["cognitive", "emotional"]].map((row, ri) => (
-                      <div key={ri} className="flex gap-3">
-                        {row.map((p) => (
-                          <span key={p} style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.74rem", fontWeight: 700, color: "rgba(45,45,45,0.55)" }}>
-                            {PILLAR_EMOJI[p as keyof typeof PILLAR_EMOJI]} {PILLAR_LABELS_SHORT[p as keyof typeof PILLAR_LABELS_SHORT]}
-                          </span>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <Link
+                href={challengeSummary.pending ? `/testserver/challenge/${challengeSummary.pendingStoryId}` : "/growth"}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95 flex-shrink-0"
+                style={{ background: "linear-gradient(135deg,#f9c700,#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif" }}
+              >
+                {challengeSummary.pending ? "Start now" : "Full details"} <ChevronRight size={15} />
+              </Link>
             </div>
-            <Link
-              href={challengeSummary.pending ? `/testserver/challenge/${challengeSummary.pendingStoryId}` : "/growth"}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95 flex-shrink-0"
-              style={{ background: "linear-gradient(135deg,#f9c700,#e6ac00)", color: "#1a1a2e", fontFamily: "'Baloo 2', sans-serif" }}
-            >
-              {challengeSummary.pending ? "Start now" : "View growth"} <ChevronRight size={15} />
-            </Link>
+
+            {challengeSummary.latest && (
+              <div className="grid grid-cols-4 gap-3 pt-1">
+                {PILLAR_ORDER.map((p) => {
+                  const stat = challengeSummary.latest!.perPillar.find((x: { pillar: string }) => x.pillar === p);
+                  const pct = stat && stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
+                  return (
+                    <div key={p} className="flex flex-col gap-1">
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", fontWeight: 800, color: PILLAR_COLORS[p] }}>
+                        {PILLAR_EMOJI[p]} {PILLAR_LABELS_SHORT[p]}
+                      </span>
+                      <div style={{ height: 6, borderRadius: 99, background: "rgba(14,10,31,0.08)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: PILLAR_COLORS[p], transition: "width 0.4s ease" }} />
+                      </div>
+                      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: "0.72rem", fontWeight: 800, color: "var(--lf-dark)" }}>{pct}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
-        {/* ── Stats row ── */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* ── Stats row — compact strip, not 4 hero-sized cards for single
+             numbers. Each used p-5 + a 1.7rem number + a decorative blob for
+             one metric; this is the same information in a fraction of the
+             vertical space. ── */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { icon: <BookOpen size={22} />, label: "Stories created", value: stats.storiesCreated, delay: "0s" },
-            { icon: <Flame size={22} />, label: "Reading minutes", value: `${stats.readingTime}m`, delay: "0.08s" },
-            { icon: <Star size={22} />, label: "Fave theme", value: stats.favoriteTheme, delay: "0.16s" },
-            { icon: <Zap size={22} />, label: "Credits left", value: availableCredits ?? "—", delay: "0.24s" },
+            { icon: <BookOpen size={16} />, label: "Stories created", value: stats.storiesCreated, delay: "0s" },
+            { icon: <Flame size={16} />, label: "Reading minutes", value: `${stats.readingTime}m`, delay: "0.08s" },
+            { icon: <Star size={16} />, label: "Fave theme", value: stats.favoriteTheme, delay: "0.16s" },
+            { icon: <Zap size={16} />, label: "Credits left", value: availableCredits ?? "—", delay: "0.24s" },
           ].map((s, i) => (
             <div
               key={s.label}
-              className="stat-card flex flex-col gap-3 p-5 rounded-2xl relative overflow-hidden"
+              className="stat-card flex items-center gap-2.5 py-2.5 px-3 rounded-xl"
               style={{ background: STAT_COLORS[i].bg, animationDelay: s.delay }}
             >
-              {/* Background glow */}
-              <div className="absolute top-0 right-0 w-20 h-20 rounded-full" style={{ background: STAT_COLORS[i].icon, transform: "translate(30%,-30%)" }} />
-              <div style={{ color: STAT_COLORS[i].text, opacity: 0.9, position: "relative" }}>{s.icon}</div>
-              <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.7rem", color: STAT_COLORS[i].text, lineHeight: 1, position: "relative" }}>
-                {s.value}
-              </p>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", color: STAT_COLORS[i].text, opacity: 0.8, fontWeight: 600, position: "relative" }}>
-                {s.label}
-              </p>
+              <div className="flex items-center justify-center rounded-lg flex-shrink-0" style={{ width: 30, height: 30, background: "rgba(255,255,255,0.22)", color: STAT_COLORS[i].text }}>
+                {s.icon}
+              </div>
+              <div className="min-w-0">
+                <p style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: "1.05rem", color: STAT_COLORS[i].text, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {s.value}
+                </p>
+                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.68rem", color: STAT_COLORS[i].text, opacity: 0.85, fontWeight: 600, whiteSpace: "nowrap" }}>
+                  {s.label}
+                </p>
+              </div>
             </div>
           ))}
         </section>
