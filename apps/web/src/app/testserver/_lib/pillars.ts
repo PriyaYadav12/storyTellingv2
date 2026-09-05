@@ -44,6 +44,16 @@ export const PILLAR_EMOJI: Record<Pillar, string> = {
   cognitive: "🧠",
 };
 
+// Same 4 illustrations used on the homepage's PillarsSection — reused here
+// (Results screen) so the Superpower/Growing In cards show a real character
+// illustration instead of just an emoji.
+export const PILLAR_IMAGES: Record<Pillar, string> = {
+  listening: "/pillar-listening.jpg",
+  attention: "/pillar-attention.jpg",
+  emotional: "/pillar-emotional.jpg",
+  cognitive: "/pillar-cognitive.jpg",
+};
+
 export const LENGTH_LABELS: Record<string, { label: string; minutes: string }> = {
   short: { label: "5 minutes", minutes: "~5 min" },
   medium: { label: "10 minutes", minutes: "~10 min" },

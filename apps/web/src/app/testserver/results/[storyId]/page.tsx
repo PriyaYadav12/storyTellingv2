@@ -14,7 +14,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
-import { Check, ChevronDown, Loader2, Star, X } from "lucide-react";
+import { Check, ChevronDown, Loader2, Star, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import Lottie from "lottie-react";
@@ -24,6 +24,7 @@ import {
   GROWTH_STORY_SUGGESTIONS,
   PILLAR_COLORS,
   PILLAR_EMOJI,
+  PILLAR_IMAGES,
   PILLAR_LABELS,
   PILLAR_ORDER,
   SUPERPOWER_COPY,
@@ -58,10 +59,10 @@ const MOOD_THEME: Record<Mood, {
     bg: "linear-gradient(160deg,#F3EEFF 0%,#FFF3E0 100%)",
     border: "rgba(124,77,255,0.3)",
     badge: "#6a3fd6",
-    moodEmoji: "🥺",
-    headline: (name) => `You tried so hard, ${name}! 💛`,
-    lalliLine: () => "Every story makes us smarter, let's try again together 🌙",
-    fafaLine: (name) => `I believe in you, ${name}! We'll practice more next time 🤗`,
+    moodEmoji: "🌱",
+    headline: (name) => `You can do it, ${name}!`,
+    lalliLine: () => "Try again with us — every story makes you smarter! 🌙",
+    fafaLine: (name) => `You can do it, ${name}! I believe in you 🤗`,
   },
 };
 
@@ -146,9 +147,9 @@ export default function ResultsScreen() {
   return (
     <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", maxWidth: 460, margin: "0 auto", width: "100%", overflow: "hidden" }}>
       {/* ── Mood-reactive celebration header ── */}
-      <div style={{ position: "relative", background: theme.bg, borderBottom: `1px solid ${theme.border}`, padding: "16px 16px 20px", overflow: "hidden" }}>
+      <div style={{ position: "relative", background: theme.bg, borderBottom: `1px solid ${theme.border}`, padding: mood === "high" ? "16px 16px 26px" : "16px 16px 20px", overflow: "hidden" }}>
         {stars && mood === "high" && (
-          <div style={{ position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", width: 260, height: 200, pointerEvents: "none", zIndex: 0, opacity: 0.9 }}>
+          <div style={{ position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", width: 300, height: 240, pointerEvents: "none", zIndex: 0, opacity: 0.9 }}>
             <Lottie animationData={stars} loop={false} autoplay style={{ width: "100%", height: "100%" }} />
           </div>
         )}
@@ -165,11 +166,19 @@ export default function ResultsScreen() {
           <Bubble align="right" color="var(--lf-teal)">{theme.fafaLine(childName)}</Bubble>
         </div>
 
+        {/* Score + stars — the emotional highlight of the screen for a high
+            score, so both scale up substantially for that band instead of
+            reading as the same small text across every band. */}
         <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 800, color: theme.badge, textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 2px" }}>
+          {mood === "high" && (
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 2 }}>
+              <Trophy size={46} color="#c9960a" fill="#ffd54a" strokeWidth={1.5} style={{ filter: "drop-shadow(0 3px 8px rgba(201,150,10,0.4))" }} />
+            </div>
+          )}
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: mood === "high" ? 13.5 : 12, fontWeight: 800, color: theme.badge, textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 2px" }}>
             {theme.moodEmoji} {theme.headline(childName)}
           </p>
-          <h1 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 34, fontWeight: 800, margin: "2px 0 0" }}>
+          <h1 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: mood === "high" ? 60 : mood === "average" ? 46 : 40, fontWeight: 800, margin: "2px 0 0", lineHeight: 1.05 }}>
             <span className="text-gradient-teal">{score.gradableCorrect} out of {score.gradableTotal}</span>
           </h1>
           {previous && (
@@ -177,6 +186,12 @@ export default function ResultsScreen() {
               up from {previous.score?.gradableCorrect ?? 0} last time
             </p>
           )}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: mood === "high" ? 12 : 8 }}>
+            <Star size={mood === "high" ? 28 : 18} color="var(--lf-sunshine)" fill="var(--lf-sunshine)" />
+            <span style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: mood === "high" ? 26 : 17, fontWeight: 800, color: "var(--lf-dark)" }}>
+              +{score.starsEarned} stars
+            </span>
+          </div>
         </div>
       </div>
 
@@ -189,19 +204,25 @@ export default function ResultsScreen() {
           ))}
         </div>
 
-        <div style={{ background: "linear-gradient(135deg,#FFF9DB,#FFF3E0)", borderRadius: 18, padding: 14, marginBottom: 10, border: "1px solid rgba(249,199,0,0.3)" }}>
-          <p style={{ margin: 0, fontFamily: "'Nunito', sans-serif", fontSize: 11, fontWeight: 800, color: "#a16a00", textTransform: "uppercase", letterSpacing: "0.04em" }}>🌟 Superpower</p>
-          <p style={{ margin: "4px 0 0", fontFamily: "'Baloo 2', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--lf-dark)" }}>
-            {PILLAR_EMOJI[superpower]} {PILLAR_LABELS[superpower]}: {childName} {SUPERPOWER_COPY[superpower]}
-          </p>
-        </div>
+        <PillarCard
+          icon="🌟"
+          label="Superpower"
+          pillar={superpower}
+          badgeColor="#a16a00"
+          panelBg="linear-gradient(135deg,#FFF9DB,#FFF3E0)"
+          borderColor="rgba(249,199,0,0.3)"
+          description={`${childName} ${SUPERPOWER_COPY[superpower]}`}
+        />
 
-        <div style={{ background: "linear-gradient(135deg,#F3EEFF,#F5FFFE)", borderRadius: 18, padding: 14, marginBottom: 12, border: "1px solid rgba(124,77,255,0.2)" }}>
-          <p style={{ margin: 0, fontFamily: "'Nunito', sans-serif", fontSize: 11, fontWeight: 800, color: "#6a3fd6", textTransform: "uppercase", letterSpacing: "0.04em" }}>🌱 Growing in</p>
-          <p style={{ margin: "4px 0 0", fontFamily: "'Baloo 2', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--lf-dark)" }}>
-            {PILLAR_EMOJI[growingIn]} {PILLAR_LABELS[growingIn]}: {GROWING_IN_COPY[growingIn]}
-          </p>
-        </div>
+        <PillarCard
+          icon="🌱"
+          label="Growing in"
+          pillar={growingIn}
+          badgeColor="#6a3fd6"
+          panelBg="linear-gradient(135deg,#F3EEFF,#F5FFFE)"
+          borderColor="rgba(124,77,255,0.2)"
+          description={GROWING_IN_COPY[growingIn]}
+        />
 
         {/* ── Full assessment review toggle ── */}
         <button
@@ -232,12 +253,7 @@ export default function ResultsScreen() {
 
         <div style={{ flex: 1 }} />
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, margin: "16px 0 12px" }}>
-          <Star size={16} color="var(--lf-sunshine)" fill="var(--lf-sunshine)" />
-          <span style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 15, fontWeight: 800, color: "var(--lf-dark)" }}>+{score.starsEarned} stars</span>
-        </div>
-
-        <button onClick={startGrowthStory} disabled={starting} className="btn-primary" style={{ justifyContent: "center", width: "100%", marginBottom: 8, fontSize: 15.5, padding: "0.85rem" }}>
+        <button onClick={startGrowthStory} disabled={starting} className="btn-primary" style={{ justifyContent: "center", width: "100%", marginBottom: 8, marginTop: 16, fontSize: 15.5, padding: "0.85rem" }}>
           {starting ? "Starting…" : `${suggestion.emoji} Next: "${nextTheme}"`}
         </button>
         <button
@@ -247,6 +263,49 @@ export default function ResultsScreen() {
         >
           Back to home
         </button>
+      </div>
+    </div>
+  );
+}
+
+// Superpower / Growing In card — leads with the pillar's real illustration
+// (the same 4 images used on the homepage's PillarsSection) instead of just
+// an emoji, so the card reads as a specific, illustrated moment rather than
+// a plain colored box.
+function PillarCard({
+  icon,
+  label,
+  pillar,
+  badgeColor,
+  panelBg,
+  borderColor,
+  description,
+}: {
+  icon: string;
+  label: string;
+  pillar: Pillar;
+  badgeColor: string;
+  panelBg: string;
+  borderColor: string;
+  description: string;
+}) {
+  return (
+    <div style={{ borderRadius: 18, overflow: "hidden", marginBottom: 12, border: `1px solid ${borderColor}` }}>
+      <div style={{ position: "relative", width: "100%", height: 130, background: "#eee" }}>
+        <Image
+          src={PILLAR_IMAGES[pillar]}
+          alt={PILLAR_LABELS[pillar]}
+          fill
+          style={{ objectFit: "cover", objectPosition: "top center" }}
+        />
+      </div>
+      <div style={{ background: panelBg, padding: "10px 14px 13px" }}>
+        <p style={{ margin: 0, fontFamily: "'Nunito', sans-serif", fontSize: 11, fontWeight: 800, color: badgeColor, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          {icon} {label}
+        </p>
+        <p style={{ margin: "4px 0 0", fontFamily: "'Baloo 2', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--lf-dark)" }}>
+          {PILLAR_EMOJI[pillar]} {PILLAR_LABELS[pillar]}: {description}
+        </p>
       </div>
     </div>
   );
