@@ -408,7 +408,8 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                         {st.description}
                       </span>
                     </div>
-                    {i < 2 && <CharacterCrop side={i === 0 ? "left" : "right"} height={96} />}
+                    {i === 0 && <CharacterPortrait src="/Lalli-new.png" height={96} />}
+                    {i === 1 && <CharacterPortrait src="/Fafa_1.jpg" height={96} />}
                     {storyType === st.code && <CheckBadge />}
                   </button>
                 ))}
@@ -720,31 +721,16 @@ function PillarStrip() {
   );
 }
 
-// Crops a single character (Lalli or Fafa) out of the shared lf-hero.png duo
-// image (1024x1536, Lalli's figure roughly at x:40-510, Fafa's at x:520-990,
-// both head-to-feet within y:140-1490) — no separate asset needed. Uses an
-// oversized absolutely-positioned image inside an overflow:hidden box rather
-// than object-fit:cover, since cover can only crop one axis at a time and
-// this needs both (isolate one character AND trim empty margin).
-const HERO_NATURAL_W = 1024;
-const HERO_NATURAL_H = 1536;
-const HERO_CROP_Y0 = 140;
-const HERO_CROP_H = 1350;
-const HERO_CROP_W = 470;
-
-function CharacterCrop({ side, height }: { side: "left" | "right"; height: number }) {
-  const cropX0 = side === "left" ? 40 : 520;
-  const scale = height / HERO_CROP_H;
-  const width = Math.round(HERO_CROP_W * scale);
+// Solo character portraits — reuses the same standalone Lalli/Fafa cutouts
+// already live on the Results screen (CharacterAvatar there), rather than
+// trying to crop one character out of the two-kid lf-hero.png duo shot.
+// Lalli-new.png (waving, energetic) pairs with Quest; Fafa_1.jpg (calm,
+// hugging his bunny) pairs with Wonder — the poses already carry the right
+// personality contrast between the two story types.
+function CharacterPortrait({ src, height }: { src: string; height: number }) {
   return (
-    <div className="relative flex-shrink-0" style={{ width, height, overflow: "hidden", borderRadius: 10 }}>
-      <Image
-        src="/lf-hero.png"
-        alt=""
-        width={Math.round(HERO_NATURAL_W * scale)}
-        height={Math.round(HERO_NATURAL_H * scale)}
-        style={{ position: "absolute", left: -(cropX0 * scale), top: -(HERO_CROP_Y0 * scale), maxWidth: "none" }}
-      />
+    <div className="relative flex-shrink-0" style={{ width: Math.round(height * 0.667), height, borderRadius: 10, overflow: "hidden", background: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,0.12)" }}>
+      <Image src={src} alt="" fill style={{ objectFit: "contain" }} />
     </div>
   );
 }
