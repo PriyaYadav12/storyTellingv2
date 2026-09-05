@@ -2386,8 +2386,8 @@ function LoadingScreen() {
    Convex data to display which stage we're in and how many
    scene images have been painted so far.
 ──────────────────────────────────────────────────────────────── */
-const FORGE_MESSAGES = [
-  ["✍️", "Lalli is sharpening his pencil…"],
+const FORGE_MESSAGES: Array<[string, string]> = [
+  ["✍️", "Lalli is sharpening her pencil…"],
   ["🦊", "Fafa just had three ideas at once…"],
   ["🌟", "Mixing the perfect palette of words…"],
   ["🎨", "Fafa accidentally sat in the paint again…"],
@@ -2405,6 +2405,44 @@ const FORGE_MESSAGES = [
   ["🪄", "Almost time to turn the first page…"],
 ];
 
+// Appends a couple of messages personalised with the real child's name and
+// chosen theme when available, rather than replacing the generic set.
+function buildForgeMessages(childName?: string, theme?: string): Array<[string, string]> {
+  const messages = [...FORGE_MESSAGES];
+  if (childName) messages.push(["💫", `Getting everything just right for ${childName}…`]);
+  if (theme) messages.push(["🌟", `Adding extra sparkle to this ${theme} adventure…`]);
+  return messages;
+}
+
+// Playful reactions when a child taps Lalli & Fafa while waiting — a small
+// bit of "something to do" rather than only watching a progress bar.
+const POKE_LINES = [
+  "Hee hee, that tickles!",
+  "Almost done, we promise!",
+  "Lalli says hi! 👋",
+  "Fafa wants a snack while we wait 🐰",
+  "Shh… a big surprise is coming!",
+  "Tee-hee! Do that again!",
+];
+
+// Small badge emoji shown on the hero visual at each stage.
+const STAGE_BADGE: Record<1 | 2 | 3, string> = { 1: "✍️", 2: "🎨", 3: "🎙️" };
+
+// Rich illustrated scenes (real story art already used elsewhere on the
+// site) cycled as a slider during the "writing" stage — there's no real
+// generated artwork yet at that point, so this replaces what used to be one
+// static, plain character cutout with the same kind of visual variety the
+// child will see once their own story is ready.
+const WAITING_SLIDER: Array<{ src: string; caption: string }> = [
+  { src: "/frame-2-action (5).png", caption: "Picking oranges in the orchard 🍊" },
+  { src: "/frame-2-action (2).png", caption: "Snuggled up with a bedtime story 📖" },
+  { src: "/frame-1-setup (4).png", caption: "Game night by the fireplace 🎲" },
+  { src: "/ChatGPT_Image_2026-01-16_01.png", caption: "Flying kites on a sunny rooftop 🪁" },
+  { src: "/ChatGPT_Image_2026-01-11_01.png", caption: "Learning about the solar system 🪐" },
+  { src: "/frame_1 (3).png", caption: "A magical meadow picnic 🦚" },
+  { src: "/lalli-fafa-frame-2--action (42).png", caption: "Waving the flag with pride 🇮🇳" },
+];
+
 function StoryForgeLoadingScreen({
   story,
   imageUrls,
@@ -2417,6 +2455,29 @@ function StoryForgeLoadingScreen({
   const [msgIdx, setMsgIdx] = useState(0);
   const [dots, setDots] = useState(".");
   const [writingElapsed, setWritingElapsed] = useState(0);
+  const [poke, setPoke] = useState<string | null>(null);
+  const pokeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const childName = story.params?.childName?.trim() || undefined;
+  const theme = story.params?.theme;
+  const forgeMessages = useMemo(() => buildForgeMessages(childName, theme), [childName, theme]);
+
+  function handlePoke() {
+    setPoke(POKE_LINES[Math.floor(Math.random() * POKE_LINES.length)]);
+    if (pokeTimeoutRef.current) clearTimeout(pokeTimeoutRef.current);
+    pokeTimeoutRef.current = setTimeout(() => setPoke(null), 2200);
+  }
+
+  useEffect(() => () => { if (pokeTimeoutRef.current) clearTimeout(pokeTimeoutRef.current); }, []);
+
+  // Rotates the "writing stage" illustration slider every 4.5s. Tapping the
+  // card also advances it manually (plus triggers a poke reaction), so
+  // there's something to actively do, not just watch.
+  const [sliderIdx, setSliderIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setSliderIdx(i => (i + 1) % WAITING_SLIDER.length), 4500);
+    return () => clearInterval(id);
+  }, []);
 
   // Screen Wake Lock — keep screen on while story generates
   useEffect(() => {
@@ -2441,16 +2502,25 @@ function StoryForgeLoadingScreen({
 
   // Soft ambient music while waiting — picks one track at random and loops it quietly.
   const loadingMusicRef = useRef<HTMLAudioElement>(null);
-  const [musicTrack] = useState(() => BG_TRACKS[Math.floor(Math.random() * BG_TRACKS.length)]);
+  // Picked client-side only, after mount (starts null so server and first
+  // client render both omit `src`) — picking randomly in the useState
+  // initializer ran once during SSR and again on hydration, landing on two
+  // different tracks and triggering a real hydration mismatch every load.
+  const [musicTrack, setMusicTrack] = useState<string | null>(null);
+  useEffect(() => {
+    setMusicTrack(BG_TRACKS[Math.floor(Math.random() * BG_TRACKS.length)]);
+  }, []);
   const [musicMuted, setMusicMuted] = useState(false);
 
+  // Waits for `musicTrack` (and therefore the <audio> element's `src`) to
+  // actually commit before attempting playback, instead of racing it.
   useEffect(() => {
     const audio = loadingMusicRef.current;
-    if (!audio) return;
+    if (!audio || !musicTrack) return;
     audio.volume = BG_VOLUME;
     audio.muted = true;
     audio.play().then(() => { audio.muted = false; }).catch(() => { audio.muted = false; });
-  }, []);
+  }, [musicTrack]);
 
   const toggleMusic = () => {
     const audio = loadingMusicRef.current;
@@ -2463,9 +2533,9 @@ function StoryForgeLoadingScreen({
 
   // Cycle fun messages every 3.5 seconds
   useEffect(() => {
-    const id = setInterval(() => setMsgIdx(i => (i + 1) % FORGE_MESSAGES.length), 3500);
+    const id = setInterval(() => setMsgIdx(i => (i + 1) % forgeMessages.length), 3500);
     return () => clearInterval(id);
-  }, []);
+  }, [forgeMessages.length]);
 
   // Animate ellipsis
   useEffect(() => {
@@ -2493,13 +2563,13 @@ function StoryForgeLoadingScreen({
   if (status === "generating") {
     stage = 1;
     stageTitle = "Writing the story" + dots;
-    stageDesc = "Lalli & Fafa are crafting your personalised adventure";
+    stageDesc = childName ? `Lalli & Fafa are crafting ${childName}'s personalised adventure` : "Lalli & Fafa are crafting your personalised adventure";
     // Creep from 12% to 28% over the first ~40s, then hold — never reach stage 2's 30%.
     progress = Math.min(28, 12 + writingElapsed * 0.4);
   } else if (imagesReady < TOTAL_SCENES) {
     stage = 2;
     stageTitle = `Painting scene ${imagesReady + 1} of ${TOTAL_SCENES}` + dots;
-    stageDesc = "Creating unique illustrations for each moment";
+    stageDesc = theme ? `Bringing your ${theme} world to life, one scene at a time` : "Creating unique illustrations for each moment";
     progress = 30 + (imagesReady / TOTAL_SCENES) * 48;
   } else if (!narrationUrl) {
     stage = 3;
@@ -2509,24 +2579,32 @@ function StoryForgeLoadingScreen({
   } else {
     stage = 3;
     stageTitle = "Almost ready!";
-    stageDesc = "Just a moment more…";
+    stageDesc = childName ? `${childName}'s story is about to begin…` : "Just a moment more…";
     progress = 96;
   }
 
-  const [emoji, funMsg] = FORGE_MESSAGES[msgIdx];
+  const [emoji, funMsg] = forgeMessages[msgIdx % forgeMessages.length];
+  const badge = STAGE_BADGE[stage];
+  const slide = WAITING_SLIDER[sliderIdx % WAITING_SLIDER.length];
+  const lastSceneUrl = imageUrls?.[imagesReady - 1]?.url;
 
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 relative overflow-hidden"
       style={{ background: "linear-gradient(160deg, #FFF8E7 0%, #E6FAF6 40%, #F3EEFF 70%, #FFE8EC 100%)" }}
     >
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes bounceOnce { 0%,100% { transform: scale(1); } 30% { transform: scale(1.12) rotate(-3deg); } 60% { transform: scale(0.96) rotate(2deg); } }
+      `}</style>
       {/* Soft colorful glow orbs */}
       <div style={{ position: "absolute", top: "5%", left: "5%", width: 300, height: 300, background: "radial-gradient(circle, rgba(0,201,167,0.2) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: "8%", right: "3%", width: 350, height: 350, background: "radial-gradient(circle, rgba(249,199,0,0.18) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
       <div style={{ position: "absolute", top: "40%", right: "10%", width: 220, height: 220, background: "radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: "30%", left: "8%", width: 200, height: 200, background: "radial-gradient(circle, rgba(255,140,105,0.15) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
 
-      <audio ref={loadingMusicRef} src={musicTrack} loop />
+      {musicTrack && <audio ref={loadingMusicRef} src={musicTrack} loop />}
 
       <Link
         href="/library"
@@ -2545,19 +2623,51 @@ function StoryForgeLoadingScreen({
         {musicMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
       </button>
 
-      {/* Lalli & Fafa visual + brand */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="relative" style={{ width: 150, height: 150, animation: "float-slow 4s ease-in-out infinite" }}>
-          <Image src="/lf-characters.png" alt="Lalli and Fafa" fill className="object-contain" priority />
-        </div>
-        <div className="flex items-center gap-2">
-          <Sparkles size={14} style={{ color: "var(--lf-teal)" }} />
-          <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 900, fontSize: "1rem", letterSpacing: "0.1em", color: "var(--lf-teal)", textTransform: "uppercase" }}>
-            StoryForge
-          </span>
-          <Sparkles size={14} style={{ color: "var(--lf-teal)" }} />
-        </div>
+      {/* Brand wordmark */}
+      <div className="flex items-center gap-2">
+        <Sparkles size={14} style={{ color: "var(--lf-teal)" }} />
+        <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 900, fontSize: "1rem", letterSpacing: "0.1em", color: "var(--lf-teal)", textTransform: "uppercase" }}>
+          StoryForge
+        </span>
+        <Sparkles size={14} style={{ color: "var(--lf-teal)" }} />
       </div>
+
+      {/* Hero visual — while writing (nothing real to show yet), a rotating
+          slider of Lalli & Fafa's illustrated world stands in for what used
+          to be one static, plain character cutout. Once real scenes start
+          arriving (stage 2+), the actual generated artwork takes over below
+          instead — more exciting than stock art once the real thing exists. */}
+      {stage === 1 && (
+        <div className="relative flex flex-col items-center gap-2">
+          {poke && (
+            <div
+              className="absolute px-3 py-1.5 rounded-2xl text-xs font-bold text-center"
+              style={{ top: -16, background: "#fff", border: "1.5px solid var(--lf-teal)", color: "var(--lf-dark)", fontFamily: "'Nunito', sans-serif", animation: "fadeIn 0.3s ease", whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(0,0,0,0.12)", zIndex: 2 }}
+            >
+              {poke}
+            </div>
+          )}
+          <button
+            onClick={() => { handlePoke(); setSliderIdx(i => (i + 1) % WAITING_SLIDER.length); }}
+            aria-label="See another Lalli and Fafa moment"
+            className="relative rounded-2xl"
+            style={{ width: 220, height: 150, background: "#fff", padding: 6, boxShadow: "0 12px 30px rgba(0,0,0,0.18)", transform: "rotate(-1.5deg)", border: "none", cursor: "pointer" }}
+          >
+            <div key={sliderIdx} className="relative w-full h-full rounded-xl overflow-hidden">
+              <Image src={slide.src} alt="" fill className="object-cover" style={{ animation: poke ? "bounceOnce 0.5s ease" : "fadeIn 0.6s ease" }} />
+            </div>
+            <span
+              className="absolute flex items-center justify-center rounded-full"
+              style={{ top: -8, right: -8, width: 30, height: 30, background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.2)", fontSize: "1.05rem" }}
+            >
+              {badge}
+            </span>
+          </button>
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.78rem", fontWeight: 600, color: "rgba(45,45,45,0.5)", textAlign: "center" }}>
+            {slide.caption}
+          </p>
+        </div>
+      )}
 
       {/* Stage title */}
       <div className="flex flex-col items-center gap-1.5 text-center max-w-sm">
@@ -2624,43 +2734,40 @@ function StoryForgeLoadingScreen({
         </div>
       </div>
 
-      {/* Scene image slots — shown during painting stage */}
-      {stage === 2 && (
-        <div className="flex gap-2">
-          {Array.from({ length: TOTAL_SCENES }, (_, i) => {
-            const url = imageUrls?.[i]?.url;
-            return (
-              <div
+      {/* Storybook page preview — the latest painted scene, shown large as a
+          tilted polaroid rather than a row of tiny thumbnails, so watching
+          the illustrations arrive actually feels like something happening. */}
+      {lastSceneUrl && (
+        <div className="flex flex-col items-center gap-3">
+          <div
+            key={imagesReady}
+            className="relative rounded-2xl"
+            style={{ width: 220, height: 150, background: "#fff", padding: 6, boxShadow: "0 12px 30px rgba(0,0,0,0.18)", transform: "rotate(-1.5deg)", animation: "popIn 0.5s ease" }}
+          >
+            <div className="relative w-full h-full rounded-xl overflow-hidden">
+              <Image src={lastSceneUrl} alt={`Scene ${imagesReady}`} fill className="object-cover" style={{ animation: "fadeIn 0.6s ease" }} />
+            </div>
+            <div
+              className="absolute flex items-center justify-center rounded-full font-bold"
+              style={{ top: -8, right: -8, width: 30, height: 30, background: "var(--lf-teal)", color: "#fff", fontSize: "0.72rem", fontFamily: "'Nunito', sans-serif", boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}
+            >
+              {imagesReady}/{TOTAL_SCENES}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: TOTAL_SCENES }, (_, i) => (
+              <span
                 key={i}
-                className="relative rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
                 style={{
-                  width: 52,
-                  height: 52,
-                  background: url ? "transparent" : "rgba(255,255,255,0.05)",
-                  border: `1.5px solid ${url ? "rgba(0,201,167,0.5)" : i === imagesReady ? "rgba(249,199,0,0.4)" : "rgba(255,255,255,0.1)"}`,
-                  boxShadow: url ? "0 0 10px rgba(0,201,167,0.3)" : "none",
-                  transition: "all 0.5s",
+                  width: i < imagesReady ? 18 : 7,
+                  height: 7,
+                  borderRadius: 99,
+                  background: i < imagesReady ? "var(--lf-teal)" : "rgba(0,0,0,0.12)",
+                  transition: "all 0.4s ease",
                 }}
-              >
-                {url ? (
-                  <Image src={url} alt={`Scene ${i + 1}`} fill className="object-cover" />
-                ) : i === imagesReady ? (
-                  <Loader2 size={16} className="animate-spin" style={{ color: "#f9c700" }} />
-                ) : (
-                  <span style={{ fontSize: "1rem", opacity: 0.2 }}>🎨</span>
-                )}
-                {/* Scene number label */}
-                <div
-                  className="absolute bottom-0 left-0 right-0 flex items-center justify-center"
-                  style={{ background: "rgba(0,0,0,0.55)", height: 14 }}
-                >
-                  <span style={{ fontSize: "0.55rem", color: url ? "var(--lf-teal)" : "rgba(255,255,255,0.3)", fontFamily: "'Nunito', sans-serif", fontWeight: 700 }}>
-                    {url ? "✓" : i + 1}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+              />
+            ))}
+          </div>
         </div>
       )}
 
