@@ -416,7 +416,12 @@ export const generateChallenge = action({
         ? `${extraInstruction}\n\n${JSON.stringify(payload)}`
         : JSON.stringify(payload);
       const resp = await gemini.models.generateContent({
-        model: "gemini-2.5-pro",
+        // gemini-2.5-flash, not -pro: this is a rigid, schema-constrained
+        // quiz-writer grounded in a payload that already contains the full
+        // story text — not open-ended creative writing. Flash is ~4x
+        // cheaper both ways ($0.30/$2.50 vs $1.25/$10.00 per M tokens) and
+        // this task doesn't need frontier reasoning to follow the format.
+        model: "gemini-2.5-flash",
         config: {
           temperature: 0.7,
           responseMimeType: "application/json",
@@ -611,7 +616,9 @@ export const generateChallengeBypass = internalAction({
         ? `${extraInstruction}\n\n${JSON.stringify(payload)}`
         : JSON.stringify(payload);
       const resp = await gemini.models.generateContent({
-        model: "gemini-2.5-pro",
+        // Same flash downgrade as generateChallenge above — schema-constrained,
+        // grounded quiz generation doesn't need pro-tier reasoning.
+        model: "gemini-2.5-flash",
         config: { temperature: 0.7, responseMimeType: "application/json", systemInstruction: systemPrompt },
         contents: [{ role: "user", parts: [{ text: userMessage }] }],
       });

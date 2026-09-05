@@ -1023,48 +1023,62 @@ export const _generateContentV2 = internalAction({
       content = resp.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
     }
 
-    // Retry 1b (Hinglish only): detect English fallback or formal-Hindi output
+    // Retry 1b+2, combined (cost fix): Hinglish-fallback and word-count issues
+    // used to be two SEPARATE sequential retry calls. A Hinglish story that
+    // also landed outside the word-count range paid for 3 full generation
+    // passes (initial + Hinglish-fix + word-count-fix), each resending the
+    // entire payload — real production evidence: a 424-word Hindi story cost
+    // 20,567 output tokens, ~48 tokens/word, consistent with exactly this
+    // chain. Both issues are now detected up front on the same content and,
+    // if either (or both) apply, corrected in a single combined retry call —
+    // same detection logic and correction instructions as before, just not
+    // chained into up to 3 sequential API calls for one story.
+    let hinglishIssue = false;
+    let wordCountActual = 0;
+    let wordCountIssue: "short" | "long" | null = null;
+
     if (isHinglish && content.length > 200) {
       const storyBodyForScript = content.split(/^SCENE METADATA$/m)[0].trim();
       const devanagariMissing  = !hasDevanagari(storyBodyForScript);
       const englishDominant    = looksLikeEnglishFallback(storyBodyForScript);
+      hinglishIssue = devanagariMissing || englishDominant;
+      if (hinglishIssue) {
+        console.warn(`[v2] Hinglish fallback detected (devanagariMissing=${devanagariMissing}, englishDominant=${englishDominant}).`);
+      }
+    }
 
-      if (devanagariMissing || englishDominant) {
-        console.warn(
-          `[v2] Hinglish fallback detected (devanagariMissing=${devanagariMissing}, ` +
-          `englishDominant=${englishDominant}). Retrying with native Hinglish correction...`
-        );
-        resp = await makeRequest(0.6,
-          payload +
-          "\n\nCRITICAL — HINGLISH CORRECTION: Your previous response was written in English " +
+    const storyBodyForCount = content.split(/^SCENE METADATA$/m)[0].trim();
+    wordCountActual = storyBodyForCount.split(/\s+/).filter(Boolean).length;
+    if (wordCountActual < wordCount.min && content.length > 200) wordCountIssue = "short";
+    else if (wordCountActual > wordCount.max) wordCountIssue = "long";
+
+    if (hinglishIssue || wordCountIssue) {
+      const corrections: string[] = [];
+      if (hinglishIssue) {
+        corrections.push(
+          "CRITICAL — HINGLISH CORRECTION: Your previous response was written in English " +
           "or formal Hindi, not Hinglish. You MUST generate natively in Hinglish:\n" +
           "• Devanagari is the base script for all narration and dialogue.\n" +
           "• English loanwords (colours, animal names, bag, ball, school, park) stay in Latin " +
           "script inline — e.g. 'Fafa ne apna blue ball dhoondha, lekin woh kahin nahi mila.'\n" +
           "• Do NOT write in English then translate — generate directly in Hinglish.\n" +
-          "• Do NOT use formal/textbook Hindi with Sanskrit-origin words.\n" +
-          "Start the story now in Hinglish."
+          "• Do NOT use formal/textbook Hindi with Sanskrit-origin words."
         );
-        content = resp.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || content;
       }
-    }
+      if (wordCountIssue) {
+        const reason = wordCountIssue === "short"
+          ? `too short (${wordCountActual} words, need ${wordCount.label})`
+          : `too long (${wordCountActual} words, max ${wordCount.max})`;
+        console.warn(`[v2] Story body ${reason}${hinglishIssue ? " (combined with Hinglish retry)" : ""}, retrying...`);
+        corrections.push(
+          `CRITICAL — WORD COUNT: Your previous attempt produced ~${wordCountActual} words. ` +
+          `The story body MUST be ${wordCount.label} words — no more, no less. ` +
+          `Count your words before finalising. Stop at ${wordCount.max} words.`
+        );
+      }
 
-    // Retry 2: word count out of range
-    const storyBodyForCount = content.split(/^SCENE METADATA$/m)[0].trim();
-    const wordCountActual   = storyBodyForCount.split(/\s+/).filter(Boolean).length;
-    const tooShort = wordCountActual < wordCount.min && content.length > 200;
-    const tooLong  = wordCountActual > wordCount.max;
-
-    if (tooShort || tooLong) {
-      const reason = tooShort
-        ? `too short (${wordCountActual} words, need ${wordCount.label})`
-        : `too long (${wordCountActual} words, max ${wordCount.max})`;
-      console.warn(`[v2] Story body ${reason}, retrying...`);
-      resp = await makeRequest(0.5,
-        payload +
-        `\n\nCRITICAL: Your previous attempt produced ~${wordCountActual} words. ` +
-        `The story body MUST be ${wordCount.label} words — no more, no less. ` +
-        `Count your words before finalising. Stop at ${wordCount.max} words.`
+      resp = await makeRequest(0.6,
+        payload + "\n\n" + corrections.join("\n\n") + "\n\nGenerate the complete corrected story now."
       );
       content = resp.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || content;
       const retryCount = content.split(/^SCENE METADATA$/m)[0].trim().split(/\s+/).filter(Boolean).length;

@@ -264,10 +264,15 @@ export const _updateAvatarStorageId = mutation({
       updatedAt: Date.now(),
     };
 
+    // The style-lock reference image is generated from the avatar — a new
+    // avatar makes the cached style-lock stale, so clear it and let the next
+    // story regenerate it fresh from the new avatar.
     if (childId === "1") {
       updateData.childAvatarStorageId = avatarStorageId;
+      updateData.childStyleLockStorageId = undefined;
     } else {
       updateData.child2AvatarStorageId = avatarStorageId;
+      updateData.child2StyleLockStorageId = undefined;
     }
 
     return await ctx.db.patch(profile._id, updateData);
@@ -285,9 +290,29 @@ export const _updateAvatarStorageIdById = internalMutation({
     const updateData: any = { updatedAt: Date.now() };
     if (childId === "1") {
       updateData.childAvatarStorageId = avatarStorageId;
+      updateData.childStyleLockStorageId = undefined;
     } else {
       updateData.child2AvatarStorageId = avatarStorageId;
+      updateData.child2StyleLockStorageId = undefined;
     }
+    return await ctx.db.patch(profileId, updateData);
+  },
+});
+
+// Called from internalAction (no auth context) after a fresh style-lock
+// generation, so the next story for this child can reuse it instead of
+// paying for another Gemini image call.
+export const _updateStyleLockStorageIdById = internalMutation({
+  args: {
+    profileId: v.id("user_profiles"),
+    styleLockStorageId: v.string(),
+    childId: v.optional(v.union(v.literal("1"), v.literal("2"))),
+  },
+  handler: async (ctx, { profileId, styleLockStorageId, childId = "1" }) => {
+    const updateData: any =
+      childId === "1"
+        ? { childStyleLockStorageId: styleLockStorageId }
+        : { child2StyleLockStorageId: styleLockStorageId };
     return await ctx.db.patch(profileId, updateData);
   },
 });

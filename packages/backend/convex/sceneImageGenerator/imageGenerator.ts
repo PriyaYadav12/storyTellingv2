@@ -266,18 +266,43 @@ export async function generateAllSceneImages(
     }
   }
 
-  // Generate a style-lock reference image — a neutral character lineup that anchors every
-  // scene's visual continuity. All scenes (including Scene 1) receive this reference so
-  // Scene 1's stochastic style choices don't propagate and compound across the story.
-  console.log(`[generateAllSceneImages] Generating style-lock reference`);
-  const styleLockBase64 = await generateStyleLockImage(
-    ctx, child, charRefs.lalli, charRefs.fafa, childAvatarBase64
-  );
-  imageGenerationCalls++;
-  if (styleLockBase64) {
-    console.log(`[generateAllSceneImages] Style-lock ready`);
-  } else {
-    console.warn(`[generateAllSceneImages] Style-lock failed — scenes will use Scene 1 output as fallback anchor`);
+  // Style-lock reference image — a neutral character lineup that anchors every
+  // scene's visual continuity. Only depends on the child's avatar (+ the fixed
+  // Lalli/Fafa refs), not on this story's content, so it's cached on the
+  // child's profile and reused across every story for that child instead of
+  // being regenerated (and re-billed) from scratch every time. Cleared
+  // automatically whenever the avatar changes (see _updateAvatarStorageIdById).
+  let styleLockBase64: string | undefined;
+  let cachedStyleLockId: string | undefined;
+  if (profileId && childId) {
+    const cacheProfile: any = await ctx.runQuery(internal.userProfiles._getProfileById, { profileId });
+    cachedStyleLockId = childId === "1" ? cacheProfile?.childStyleLockStorageId : cacheProfile?.child2StyleLockStorageId;
+  }
+  if (cachedStyleLockId) {
+    styleLockBase64 = await loadImageFromStorage(ctx, cachedStyleLockId);
+    if (styleLockBase64) {
+      console.log(`[generateAllSceneImages] Reusing cached style-lock reference (no Gemini call)`);
+    } else {
+      console.warn(`[generateAllSceneImages] Cached style-lock storage id was unreadable — regenerating`);
+    }
+  }
+  if (!styleLockBase64) {
+    console.log(`[generateAllSceneImages] Generating style-lock reference`);
+    styleLockBase64 = await generateStyleLockImage(
+      ctx, child, charRefs.lalli, charRefs.fafa, childAvatarBase64
+    );
+    imageGenerationCalls++;
+    if (styleLockBase64) {
+      console.log(`[generateAllSceneImages] Style-lock ready`);
+      if (profileId && childId) {
+        const styleLockStorageId = await storeImageFromBase64(ctx, styleLockBase64);
+        await ctx.runMutation(internal.userProfiles._updateStyleLockStorageIdById, {
+          profileId, styleLockStorageId, childId,
+        });
+      }
+    } else {
+      console.warn(`[generateAllSceneImages] Style-lock failed — scenes will use Scene 1 output as fallback anchor`);
+    }
   }
 
   // Generate all scenes. Each scene uses the style-lock as its visual anchor so every

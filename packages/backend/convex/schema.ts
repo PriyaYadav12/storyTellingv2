@@ -21,8 +21,15 @@ export default defineSchema({
 		favoriteAnimal: v.optional(v.string()),
 		city: v.optional(v.string()),
 		country: v.optional(v.string()),
-		childAvatarStorageId: v.optional(v.string()), 
+		childAvatarStorageId: v.optional(v.string()),
 		childProfilePicture: v.optional(v.string()),
+		// Cached "character style reference" image (Lalli + this child + Fafa,
+		// neutral pose) used to anchor every scene's visual consistency.
+		// Previously regenerated fresh on every single story (a real, avoidable
+		// Gemini image cost) even though it only depends on the child's avatar,
+		// not the story content. Invalidated (cleared) whenever the avatar
+		// changes — see _updateAvatarStorageIdById / _updateAvatarStorageId.
+		childStyleLockStorageId: v.optional(v.string()),
 		createdAt: v.number(),
 		updatedAt: v.number(),
 		child2Name: v.optional(v.string()),
@@ -33,6 +40,7 @@ export default defineSchema({
 		child2FavoriteAnimal: v.optional(v.string()),
 		child2AvatarStorageId: v.optional(v.string()),
 		child2ProfilePicture: v.optional(v.string()),
+		child2StyleLockStorageId: v.optional(v.string()),
 		// Phonetic pronunciation hints — stored as-is and substituted into TTS text only.
 		// Never modifies the displayed story text; affects narration audio only.
 		childPhoneticName: v.optional(v.string()),
