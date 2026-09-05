@@ -60,6 +60,12 @@ function getSceneForTheme(theme?: string): string {
   return all[Math.abs(theme.charCodeAt(0)) % all.length];
 }
 
+/* ── Shared "premium" card surface — warm gradient + deeper shadow instead
+   of flat white, matching the treatment applied on /generate. ── */
+const SURFACE_BG = "linear-gradient(180deg,#FFFFFF 0%,#FFFAF0 100%)";
+const SURFACE_BORDER = "1.5px solid rgba(201,185,154,0.3)";
+const SURFACE_SHADOW = "0 6px 20px rgba(80,60,20,0.07), 0 1px 3px rgba(0,0,0,0.04)";
+
 /* ── Stat card colours ── */
 const STAT_COLORS = [
   { bg: "linear-gradient(135deg,#00c9a7 0%,#00a38d 100%)", icon: "rgba(255,255,255,0.3)", text: "#fff" },
@@ -579,7 +585,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
                       key={story._id}
                       href={`/story/${story._id}`}
                       className="story-card flex flex-col rounded-2xl overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl group"
-                      style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.07)", animationDelay: `${idx * 0.06}s` }}
+                      style={{ background: SURFACE_BG, border: SURFACE_BORDER, boxShadow: SURFACE_SHADOW, animationDelay: `${idx * 0.06}s` }}
                     >
                       {/* Story scene image */}
                       <div className="relative overflow-hidden story-img-skel" style={{ height: 140 }}>
