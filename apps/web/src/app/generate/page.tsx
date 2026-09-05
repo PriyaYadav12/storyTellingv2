@@ -408,7 +408,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
                         {st.description}
                       </span>
                     </div>
-                    {i < 2 && <CharacterCrop side={i === 0 ? "left" : "right"} width={58} height={84} />}
+                    {i < 2 && <CharacterCrop side={i === 0 ? "left" : "right"} height={96} />}
                     {storyType === st.code && <CheckBadge />}
                   </button>
                 ))}
@@ -720,17 +720,30 @@ function PillarStrip() {
   );
 }
 
-// Crops a single character (Lalli or Fafa) out of the shared lf-hero.png
-// duo image via object-fit:cover + a narrow container — no separate asset
-// needed since Lalli sits in the left half of that image and Fafa the right.
-function CharacterCrop({ side, width, height }: { side: "left" | "right"; width: number; height: number }) {
+// Crops a single character (Lalli or Fafa) out of the shared lf-hero.png duo
+// image (1024x1536, Lalli's figure roughly at x:40-510, Fafa's at x:520-990,
+// both head-to-feet within y:140-1490) — no separate asset needed. Uses an
+// oversized absolutely-positioned image inside an overflow:hidden box rather
+// than object-fit:cover, since cover can only crop one axis at a time and
+// this needs both (isolate one character AND trim empty margin).
+const HERO_NATURAL_W = 1024;
+const HERO_NATURAL_H = 1536;
+const HERO_CROP_Y0 = 140;
+const HERO_CROP_H = 1350;
+const HERO_CROP_W = 470;
+
+function CharacterCrop({ side, height }: { side: "left" | "right"; height: number }) {
+  const cropX0 = side === "left" ? 40 : 520;
+  const scale = height / HERO_CROP_H;
+  const width = Math.round(HERO_CROP_W * scale);
   return (
-    <div className="relative flex-shrink-0" style={{ width, height }}>
+    <div className="relative flex-shrink-0" style={{ width, height, overflow: "hidden", borderRadius: 10 }}>
       <Image
         src="/lf-hero.png"
         alt=""
-        fill
-        style={{ objectFit: "cover", objectPosition: side === "left" ? "0% 8%" : "100% 8%" }}
+        width={Math.round(HERO_NATURAL_W * scale)}
+        height={Math.round(HERO_NATURAL_H * scale)}
+        style={{ position: "absolute", left: -(cropX0 * scale), top: -(HERO_CROP_Y0 * scale), maxWidth: "none" }}
       />
     </div>
   );
