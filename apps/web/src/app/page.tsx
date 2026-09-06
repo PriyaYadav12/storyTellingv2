@@ -11,6 +11,7 @@ import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { FAQSection } from "@/components/sections/FAQSection";
 import { CTASection } from "@/components/sections/CTASection";
 import { WhyLalliFafaSection } from "@/components/sections/WhyLalliFafaSection";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 
 const BASE = "https://www.lallifafa.com";
 
@@ -364,6 +365,11 @@ export default function HomePage() {
         <CTASection />
       </main>
       <SiteFooter />
+      {/* Renders nothing for logged-out visitors (the vast majority of
+          homepage traffic) -- only shows for signed-in users who land
+          back on the marketing homepage, giving them the same one-tap
+          app navigation available everywhere else. */}
+      <MobileBottomNav />
     </>
   );
 }
