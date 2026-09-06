@@ -15,6 +15,7 @@ import {
 import { api } from "../../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { UserPill } from "@/components/layout/UserPill";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import {
   BookOpen,
   Search,
@@ -248,7 +249,7 @@ export default function LibraryPage() {
             </div>
           </header>
 
-          <main className="max-w-6xl mx-auto px-5 py-8 flex flex-col gap-8">
+          <main className="max-w-6xl mx-auto px-5 py-8 pb-24 md:pb-8 flex flex-col gap-8">
 
             {/* ── Hero banner ── */}
             <section
@@ -659,6 +660,7 @@ export default function LibraryPage() {
             )}
 
           </main>
+          <MobileBottomNav />
         </div>
       </Authenticated>
     </>

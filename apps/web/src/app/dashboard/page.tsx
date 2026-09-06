@@ -15,6 +15,7 @@ import {
 import { api } from "../../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { UserPill } from "@/components/layout/UserPill";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import {
   BookOpen,
   Sparkles,
@@ -693,40 +694,7 @@ function DashboardContent({ isAuthenticated }: { isAuthenticated: boolean }) {
 
       </main>
 
-      {/* Mobile bottom nav */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 md:hidden flex items-center justify-around px-4 py-3 z-50"
-        style={{ background: "rgba(255,252,245,0.96)", backdropFilter: "blur(16px)", borderTop: "1.5px solid rgba(0,0,0,0.08)" }}
-      >
-        <button
-          onClick={() => router.push("/generate")}
-          className="flex flex-col items-center gap-0.5"
-          style={{ background: "none", border: "none", cursor: "pointer" }}
-        >
-          <Sparkles size={22} style={{ color: "var(--lf-teal)" }} />
-          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "var(--lf-teal)" }}>Create</span>
-        </button>
-        <Link href="/library" className="flex flex-col items-center gap-0.5">
-          <Library size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
-          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Library</span>
-        </Link>
-        {challengeEnabled && (
-          <Link href="/growth" className="flex flex-col items-center gap-0.5">
-            <TrendingUp size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
-            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Growth</span>
-          </Link>
-        )}
-        <Link href="/profile" className="flex flex-col items-center gap-0.5">
-          <User size={22} style={{ color: "rgba(45,45,45,0.5)" }} />
-          <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "rgba(45,45,45,0.5)" }}>Profile</span>
-        </Link>
-        {!isSubscribed && (
-          <Link href="/checkout?plan=monthly" className="flex flex-col items-center gap-0.5">
-            <Zap size={22} style={{ color: "var(--lf-electric)" }} />
-            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: "0.65rem", fontWeight: 700, color: "var(--lf-electric)" }}>Upgrade</span>
-          </Link>
-        )}
-      </nav>
+      <MobileBottomNav />
 
     </div>
   );

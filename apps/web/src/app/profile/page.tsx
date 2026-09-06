@@ -15,6 +15,7 @@ import {
 } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { toast } from "sonner";
 import {
   BookOpen,
@@ -518,7 +519,7 @@ export default function ProfilePage() {
             const animal = animalEmoji(p.favoriteAnimal);
 
             return (
-              <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+              <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 pb-24 md:pb-8 flex flex-col gap-6">
 
                 {/* ══ KID CARD — dark hero style ══ */}
                 <div
@@ -893,6 +894,7 @@ export default function ProfilePage() {
             );
           })()}
         </div>
+        <MobileBottomNav />
       </Authenticated>
     </>
   );

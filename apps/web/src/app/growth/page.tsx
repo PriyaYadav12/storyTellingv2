@@ -18,6 +18,7 @@ import {
 import { useRouter } from "next/navigation";
 import { api } from "../../../convex/_generated/api";
 import { UserPill } from "@/components/layout/UserPill";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { ArrowLeft, Trophy, Sparkles, Loader2 } from "lucide-react";
 import { PILLAR_ORDER, PILLAR_EMOJI, PILLAR_LABELS, PILLAR_COLORS, type Pillar } from "../testserver/_lib/pillars";
 
@@ -89,7 +90,7 @@ function GrowthContent() {
         <UserPill variant="light" />
       </header>
 
-      <main className="max-w-2xl mx-auto px-5 py-8 flex flex-col gap-6">
+      <main className="max-w-2xl mx-auto px-5 py-8 pb-24 md:pb-8 flex flex-col gap-6">
         {!summary || !latest ? (
           <div className="flex flex-col items-center gap-4 py-16 text-center">
             <span style={{ fontSize: "2.5rem" }}>🌙</span>
@@ -172,6 +173,7 @@ function GrowthContent() {
           </>
         )}
       </main>
+      <MobileBottomNav />
     </div>
   );
 }

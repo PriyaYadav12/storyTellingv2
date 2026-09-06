@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { UserPill } from "@/components/layout/UserPill";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { trackStoryGenerated, trackUpgradeClick } from "@/lib/analytics";
 import { UpgradeModal, type UpgradeTrigger } from "@/components/ui/UpgradeModal";
 import { authClient } from "@/lib/auth-client";
@@ -309,7 +310,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
         </nav>
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 py-10 flex flex-col gap-8">
+      <main className="max-w-2xl mx-auto px-6 py-10 pb-24 md:pb-10 flex flex-col gap-8">
         {/* Page title */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -680,6 +681,7 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
           </div>
         </div>
       )}
+      <MobileBottomNav />
     </div>
   );
 }
