@@ -6,7 +6,7 @@ Lalli Fafa is a web application that generates personalised storybooks for child
 
 ## Product
 
-- Website: https://www.lallifafa.com
+- Website: [www.lallifafa.com](https://www.lallifafa.com)
 - Category: EdTech, Children's Media, AI-generated content
 - Target audience: Families with children aged 2–10, primarily in India
 - Languages supported: English, Hindi
@@ -40,8 +40,8 @@ The child using the platform becomes the "third hero" who joins Lalli and Fafa i
 
 - Founded: 2024
 - Country: India
-- Contact: contact@lallifafa.com
-- Social: Instagram @lallifafa, Facebook /lallifafa
+- Contact: [contact@lallifafa.com](mailto:contact@lallifafa.com)
+- Social: [Instagram](https://www.instagram.com/lallifafa), [Facebook](https://www.facebook.com/lallifafa)
 
 ## Content policy
 
@@ -49,9 +49,10 @@ All stories are age-appropriate, culturally inclusive, and free from violence, a
 
 ## Pages
 
-- / — Homepage with hero, characters, how it works, pricing overview, testimonials
-- /stories — Story themes browser
-- /pricing — Full pricing and plan comparison
-- /blog — Articles on parenting, storytelling, early childhood development
-- /learn — Learning outcomes and curriculum alignment
-- /sign-up — Free registration
+- [Homepage](https://www.lallifafa.com/) — hero, characters, how it works, pricing overview, testimonials
+- [Story themes](https://www.lallifafa.com/stories) — browse available story themes
+- [Pricing](https://www.lallifafa.com/pricing) — full pricing and plan comparison
+- [Blog](https://www.lallifafa.com/blog) — articles on parenting, storytelling, early childhood development
+- [Learn](https://www.lallifafa.com/learn) — learning outcomes and curriculum alignment
+- [About](https://www.lallifafa.com/about) — founder story and mission
+- [Sign up](https://www.lallifafa.com/sign-up) — free registration

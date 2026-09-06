@@ -105,7 +105,7 @@ export function HeroSection() {
               where your child{" "}
               <span className="text-gradient-sunshine">becomes</span>
               {" "}the{" "}
-              <span style={{ position: "relative", display: "inline-block", color: "var(--lf-teal)" }}>
+              <span style={{ position: "relative", display: "inline-block", color: "#00695c" }}>
                 hero
                 <svg
                   viewBox="0 0 120 12"
@@ -182,7 +182,9 @@ export function HeroSection() {
                       fontFamily: "'Baloo 2', sans-serif",
                       fontSize: "1rem",
                       fontWeight: 800,
-                      color: "var(--lf-teal)",
+                      // var(--lf-teal) is only ~2.1:1 against white -- this
+                      // darker shade of the same hue passes WCAG AA (~6.6:1).
+                      color: "#00695c",
                       lineHeight: 1.2,
                     }}
                   >
@@ -236,7 +238,7 @@ export function HeroSection() {
               </span>
               <span
                 className="px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md whitespace-nowrap"
-                style={{ background: "var(--lf-teal)", color: "#fff" }}
+                style={{ background: "#00695c", color: "#fff" }}
               >
                 💙 Fafa · age 3
               </span>

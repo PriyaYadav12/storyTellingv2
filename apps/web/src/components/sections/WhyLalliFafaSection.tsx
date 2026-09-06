@@ -58,10 +58,12 @@ const comparisonRows = [
 ];
 
 function Check() {
-  return <span style={{ color: "var(--lf-teal)", fontWeight: 800 }} aria-label="Yes">✓</span>;
+  // var(--lf-teal) is only ~2.1:1 against white -- darker shade passes WCAG AA.
+  return <span style={{ color: "#00695c", fontWeight: 800 }} aria-label="Yes">✓</span>;
 }
 function Cross() {
-  return <span style={{ color: "#e53e3e", fontWeight: 800 }} aria-label="No">✗</span>;
+  // #e53e3e was ~4.1:1 against white, just under the 4.5:1 AA requirement.
+  return <span style={{ color: "#c53030", fontWeight: 800 }} aria-label="No">✗</span>;
 }
 
 export function WhyLalliFafaSection() {

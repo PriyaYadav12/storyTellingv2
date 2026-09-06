@@ -117,7 +117,7 @@ export function PricingSection() {
                 <div
                   className="absolute top-5 right-5 px-3 py-1 rounded-full text-xs font-bold"
                   style={{
-                    background: plan.id === "yearly" ? "var(--lf-teal)" : "var(--lf-sunshine)",
+                    background: plan.id === "yearly" ? "#00695c" : "var(--lf-sunshine)",
                     color: plan.id === "yearly" ? "#fff" : "var(--lf-dark)",
                   }}
                 >
