@@ -17,6 +17,7 @@ import type * as credit from "../credit.js";
 import type * as crons from "../crons.js";
 import type * as emailActions from "../emailActions.js";
 import type * as favourites from "../favourites.js";
+import type * as geminiFreeTier from "../geminiFreeTier.js";
 import type * as generateStory from "../generateStory.js";
 import type * as generateStoryV2 from "../generateStoryV2.js";
 import type * as healthCheck from "../healthCheck.js";
@@ -89,6 +90,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   emailActions: typeof emailActions;
   favourites: typeof favourites;
+  geminiFreeTier: typeof geminiFreeTier;
   generateStory: typeof generateStory;
   generateStoryV2: typeof generateStoryV2;
   healthCheck: typeof healthCheck;
