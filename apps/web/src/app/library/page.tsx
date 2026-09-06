@@ -238,9 +238,16 @@ export default function LibraryPage() {
                   {availableCredits} credits
                 </span>
               </div>
+              {/* Hidden on mobile -- the bottom nav's Create tab already
+                  covers this, and keeping it here overflowed the header
+                  by ~32px on narrow screens, which is why the fixed
+                  bottom nav appeared to only "stick" after scrolling on
+                  real phones (horizontal overflow corrupts fixed-position
+                  rendering on mobile browsers until a scroll forces a
+                  repaint). */}
               <Link
                 href="/generate"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-bold transition-all hover:scale-105"
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-bold transition-all hover:scale-105"
                 style={{ background: "linear-gradient(135deg,var(--lf-teal),#00a38d)", color: "#fff", fontFamily: "'Nunito', sans-serif" }}
               >
                 <Sparkles size={14} /> New Story

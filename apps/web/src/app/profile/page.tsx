@@ -474,10 +474,15 @@ export default function ProfilePage() {
               </span>
             </Link>
             <nav className="flex items-center gap-2">
-              <Link href="/dashboard" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-all" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Nunito', sans-serif" }}>
+              {/* Both hidden on mobile: together with the logo and UserPill
+                  they overflowed the header by more than 30px on narrow
+                  screens, which corrupted the fixed bottom nav's rendering
+                  on real phones until a scroll forced a repaint. The bottom
+                  nav's Library tab already covers this navigation there. */}
+              <Link href="/dashboard" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-all" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Nunito', sans-serif" }}>
                 <LayoutDashboard size={15} /> Dashboard
               </Link>
-              <Link href="/library" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-all" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Nunito', sans-serif" }}>
+              <Link href="/library" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-all" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Nunito', sans-serif" }}>
                 <Library size={15} /> Library
               </Link>
               <UserPill variant="dark" />

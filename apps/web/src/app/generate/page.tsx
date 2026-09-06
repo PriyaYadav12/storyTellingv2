@@ -303,7 +303,11 @@ function GenerateForm({ isAuthenticated }: { isAuthenticated: boolean }) {
           </span>
         </Link>
         <nav className="flex items-center gap-2">
-          <Link href="/dashboard" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/10" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Nunito', sans-serif" }}>
+          {/* Hidden on mobile: overflowed the header ~32px on narrow
+              screens (the bottom nav's Create/Library tabs already cover
+              this navigation there), which corrupted the fixed bottom
+              nav's rendering on real phones until a scroll forced a repaint. */}
+          <Link href="/dashboard" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/10" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Nunito', sans-serif" }}>
             <ChevronLeft size={15} /> Dashboard
           </Link>
           <UserPill variant="dark" />
