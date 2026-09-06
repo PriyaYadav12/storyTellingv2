@@ -11,7 +11,9 @@ const steps = [
     title: "Tell us about your child",
     description: "Name, age, favourite colour & animal. Takes 2 minutes — and turns every story into magic.",
     color: "#b8860b",
-    colorFull: "var(--lf-sunshine)",
+    // var(--lf-sunshine) is only ~1.6:1 against the badge's white text --
+    // this darker gold (used elsewhere for the same tint) passes AA (~5:1).
+    colorFull: "#92680a",
     bg: "rgba(255,193,7,0.12)",
     border: "rgba(255,193,7,0.35)",
     image: "/land1.png",
@@ -24,7 +26,7 @@ const steps = [
     title: "Pick a theme & lesson",
     description: "Adventures, friendship, courage, kindness and more. Your child becomes the hero alongside Lalli & Fafa.",
     color: "#00695c",
-    colorFull: "var(--lf-teal)",
+    colorFull: "#00695c",
     bg: "rgba(0,201,167,0.1)",
     border: "rgba(0,201,167,0.35)",
     image: "/land2.png",
@@ -37,7 +39,7 @@ const steps = [
     title: "Watch, listen & grow",
     description: "Ready in under 2 minutes — fully narrated with illustrations in English or Hindi. Hit play!",
     color: "#bf360c",
-    colorFull: "var(--lf-mango)",
+    colorFull: "#bf360c",
     bg: "rgba(255,87,34,0.1)",
     border: "rgba(255,87,34,0.35)",
     image: "/land3.png",
@@ -123,6 +125,7 @@ export function HowItWorksSection() {
                   fill
                   className="object-cover"
                   style={{ objectPosition: step.imgPosition }}
+                  sizes="(max-width: 768px) 100vw, 340px"
                 />
                 {/* Label badge over image */}
                 <div className="absolute top-3 left-3">
@@ -168,7 +171,7 @@ export function HowItWorksSection() {
           style={{ background: "rgba(255,193,7,0.12)", border: "1.5px solid rgba(255,193,7,0.3)" }}
         >
           <div className="relative flex-shrink-0" style={{ width: 72, height: 72 }}>
-            <Image src="/lf-hero.png" alt="Lalli and Fafa" fill className="object-contain" style={{ mixBlendMode: "multiply" }} />
+            <Image src="/lf-hero.png" alt="Lalli and Fafa" fill className="object-contain" style={{ mixBlendMode: "multiply" }} sizes="72px" />
           </div>
           <p
             style={{

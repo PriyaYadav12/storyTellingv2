@@ -137,8 +137,9 @@ export default function RootLayout({
       className={`${baloo2.variable} ${nunito.variable} h-full`}
     >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* No preconnect to fonts.googleapis.com/gstatic.com -- next/font
+            downloads and self-hosts these at build time, so nothing at
+            runtime ever actually connects to Google's font CDN. */}
         <link rel="alternate" type="application/rss+xml" title="Lalli Fafa Blog" href="/feed.xml" />
         {/* Explicit hreflang links — belt-and-suspenders alongside metadata alternates */}
         <link rel="alternate" hrefLang="x-default" href="https://www.lallifafa.com/" />

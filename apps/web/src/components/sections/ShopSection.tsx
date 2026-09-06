@@ -19,7 +19,10 @@ const products = [
     price: "₹999 / month",
     image: "/subscriptionBox.jpg",
     tag: "⭐ Featured",
-    tagColor: "var(--lf-mango)",
+    // var(--lf-mango) is only ~3.2:1 against white text -- this darker
+    // shade of the same hue (already used elsewhere as a text colour)
+    // passes WCAG AA at ~5.6:1.
+    tagColor: "#bf360c",
     tagTextColor: "#fff",
     featured: true,
     testId: "story-box",
@@ -30,7 +33,8 @@ const products = [
     price: "₹599",
     image: "/FafaKit.jpg",
     tag: "Coming soon",
-    tagColor: "var(--lf-teal)",
+    // var(--lf-teal) is only ~2.1:1 against white -- darker shade passes AA.
+    tagColor: "#00695c",
     tagTextColor: "#fff",
     testId: "fafa-kit",
   },
@@ -89,6 +93,7 @@ export function ShopSection() {
                   alt={p.title}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 380px"
                 />
                 {/* Tag */}
                 <div
@@ -132,7 +137,9 @@ export function ShopSection() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105"
                     style={{
                       background: "rgba(249,199,0,0.12)",
-                      color: "#b8860b",
+                      // #b8860b was only ~3.1:1 against this pale-yellow tint --
+                      // this darker gold (used elsewhere for the same background) passes AA.
+                      color: "#7a5200",
                       border: "1.5px solid rgba(249,199,0,0.4)",
                       cursor: "pointer",
                     }}

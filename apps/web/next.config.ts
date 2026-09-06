@@ -47,6 +47,16 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Static brand assets served straight from /public (images, audio,
+        // fonts) get Next's default short-lived cache otherwise. These are
+        // versioned by filename change, not by content, so a long cache is
+        // safe -- browsers/CDN just re-fetch once the URL itself changes.
+        source: "/:path*.(jpg|jpeg|png|webp|avif|gif|svg|ico|woff|woff2|mp3)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
     ];
   },
   images: {
@@ -62,6 +72,9 @@ const nextConfig: NextConfig = {
         hostname: "*.convex.site",
       },
     ],
+    // Default is 60s -- these are mostly static brand/marketing images that
+    // change rarely, so the optimizer cache can safely live much longer.
+    minimumCacheTTL: 604800,
   },
 };
 

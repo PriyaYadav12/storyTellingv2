@@ -139,6 +139,7 @@ export function CharactersSection() {
               fill
               className="object-cover transition-opacity duration-300"
               style={{ objectPosition: "center 40%" }}
+              sizes="(max-width: 768px) 100vw, 700px"
             />
             {/* Bottom gradient */}
             <div
@@ -294,6 +295,7 @@ export function CharactersSection() {
                   alt={scene.label}
                   fill
                   className="object-cover transition-transform duration-500 hover:scale-105"
+                  sizes="220px"
                 />
                 <div
                   className="absolute inset-0"

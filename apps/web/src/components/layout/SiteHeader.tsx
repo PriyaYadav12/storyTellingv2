@@ -98,6 +98,7 @@ export function SiteHeader() {
               fill
               className="object-contain scale-110"
               priority
+              sizes="58px"
             />
           </div>
           <span

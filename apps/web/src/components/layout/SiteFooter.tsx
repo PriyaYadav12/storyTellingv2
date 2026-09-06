@@ -85,6 +85,7 @@ export function SiteFooter() {
                   alt="Lalli Fafa"
                   fill
                   className="object-contain scale-110"
+                  sizes="58px"
                 />
               </div>
               <span
@@ -102,12 +103,15 @@ export function SiteFooter() {
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.7, maxWidth: 280 }}>
               Personalised storytelling for growing minds. Personalised stories in English &amp; Hindi, where your child is always the hero.
             </p>
-            <address style={{ fontStyle: "normal", color: "rgba(255,255,255,0.4)", fontSize: 13, lineHeight: 1.6 }}>
+            {/* Opacity bumped from 0.4/0.45 -> 0.5: those were under (or right
+                at the edge of) the 4.5:1 WCAG AA contrast ratio against this
+                dark background. */}
+            <address style={{ fontStyle: "normal", color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.6 }}>
               Siliguri, West Bengal, India<br />
-              <a href="tel:+919434636830" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }}>
+              <a href="tel:+919434636830" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>
                 +91 94346 36830
               </a><br />
-              <ObfuscatedEmail style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none" }} />
+              <ObfuscatedEmail style={{ color: "rgba(255,255,255,0.5)", textDecoration: "none" }} />
             </address>
             {/* Socials */}
             <div className="flex items-center gap-3 mt-2">
@@ -143,7 +147,7 @@ export function SiteFooter() {
                   fontWeight: 700,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.4)",
+                  color: "rgba(255,255,255,0.5)",
                 }}
               >
                 {group}
@@ -192,10 +196,10 @@ export function SiteFooter() {
           className="mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3"
           style={{ maxWidth: 1200 }}
         >
-          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
             © <time dateTime={String(new Date().getFullYear())}>{new Date().getFullYear()}</time> Lalli Fafa. All rights reserved.
           </p>
-          <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>
             Made with ❤️ for curious little minds
           </p>
         </div>
